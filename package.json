@@ -11,6 +11,8 @@
     "test:int:watch": "jest --watch --config ./jest/jest.int-config.js",
     "test:e2e": "jest --config ./jest/jest.e2e-config.js",
     "test:all": "jest --config ./jest/jest.all-config.js",
+    "mongo:dev:up": "docker-compose -f ./mongo/mongo-dev/docker-compose.yaml up -d",
+    "mongo:dev:down": "docker-compose -f ./mongo/mongo-dev/docker-compose.yaml down --volumes",
     "format:write": "prettier . --write",
     "format:check": "prettier . --check"
   },
