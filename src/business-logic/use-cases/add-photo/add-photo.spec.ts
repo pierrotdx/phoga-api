@@ -24,11 +24,6 @@ describe("add-photo use case", () => {
       },
       imageBuffer: Buffer.from("dumb buffer content"),
     });
-    await (imageDb as FakePhotoImageDb).createDir();
-  });
-
-  afterEach(async () => {
-    await (imageDb as FakePhotoImageDb).removeDir();
   });
 
   describe("photo image", () => {
