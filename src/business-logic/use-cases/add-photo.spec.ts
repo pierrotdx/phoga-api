@@ -1,22 +1,19 @@
 import { AddPhoto } from "./add-photo";
 import { IPhoto, Photo } from "../models";
-import { IPhotoImageRepository, IPhotoMetadataRepository } from "../gateways";
-import {
-  FakePhotoMetadataRepository,
-  FakePhotoImageRepository,
-} from "../../adapters";
+import { IPhotoImageDb, IPhotoMetadataDb } from "../gateways";
+import { FakePhotoMetadataDb, FakePhotoImageDb } from "../../adapters";
 
 describe("add-photo use case", () => {
   let addPhoto: AddPhoto;
-  let metadataRepo: IPhotoMetadataRepository;
-  let imageRepo: IPhotoImageRepository;
+  let metadataDb: IPhotoMetadataDb;
+  let imageDb: IPhotoImageDb;
 
   let photo: IPhoto;
 
   beforeEach(async () => {
-    metadataRepo = new FakePhotoMetadataRepository();
-    imageRepo = new FakePhotoImageRepository();
-    addPhoto = new AddPhoto(metadataRepo, imageRepo);
+    metadataDb = new FakePhotoMetadataDb();
+    imageDb = new FakePhotoImageDb();
+    addPhoto = new AddPhoto(metadataDb, imageDb);
 
     photo = new Photo("dumb photo id", {
       metadata: {
@@ -27,18 +24,18 @@ describe("add-photo use case", () => {
       },
       imageBuffer: Buffer.from("dumb buffer content"),
     });
-    await (imageRepo as FakePhotoImageRepository).createDir();
+    await (imageDb as FakePhotoImageDb).createDir();
   });
 
   afterEach(async () => {
-    await (imageRepo as FakePhotoImageRepository).removeDir();
+    await (imageDb as FakePhotoImageDb).removeDir();
   });
 
   describe("photo image", () => {
-    it("should be uploaded to image repository", async () => {
+    it("should be uploaded to image db", async () => {
       await addPhoto.execute(photo);
 
-      const uploadedImageBuffer = await imageRepo.getById(photo._id);
+      const uploadedImageBuffer = await imageDb.getById(photo._id);
       expect(uploadedImageBuffer.compare(photo.imageBuffer as Buffer)).toBe(0);
       expect.assertions(1);
     });
@@ -55,11 +52,11 @@ describe("add-photo use case", () => {
   });
 
   describe("photo metadata", () => {
-    it("should be added to metadata repository", async () => {
+    it("should be added to metadata db", async () => {
       await addPhoto.execute(photo);
 
-      const metadataFromRepo = await metadataRepo.getById(photo._id);
-      expect(metadataFromRepo).toEqual(photo.metadata);
+      const metadataFromDb = await metadataDb.getById(photo._id);
+      expect(metadataFromDb).toEqual(photo.metadata);
       expect.assertions(1);
     });
 
@@ -68,8 +65,8 @@ describe("add-photo use case", () => {
         delete photo.imageBuffer;
         await addPhoto.execute(photo);
       } catch (err) {
-        const metadataFromRepo = await metadataRepo.getById(photo._id);
-        expect(metadataFromRepo).toBeUndefined();
+        const metadataFromDb = await metadataDb.getById(photo._id);
+        expect(metadataFromDb).toBeUndefined();
       }
       expect.assertions(1);
     });

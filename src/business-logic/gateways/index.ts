@@ -1,2 +1,2 @@
-export * from "./photo-metadata-repository";
-export * from "./photo-image-repository";
+export * from "./photo-metadata-db";
+export * from "./photo-image-db";

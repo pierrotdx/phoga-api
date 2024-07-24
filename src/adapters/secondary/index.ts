@@ -1,2 +1,2 @@
-export * from "./fake-photo-metadata-repository";
-export * from "./fake-photo-image-repository";
+export * from "./fake-photo-metadata-db";
+export * from "./fake-photo-image-db";

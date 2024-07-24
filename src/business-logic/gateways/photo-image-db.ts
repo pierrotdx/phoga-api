@@ -1,6 +1,6 @@
 import { Photo } from "../models";
 
-export interface IPhotoImageRepository {
+export interface IPhotoImageDb {
   save: (photo: Photo) => Promise<void>;
   getById: (photoId: Photo["_id"]) => Promise<Buffer>;
 }

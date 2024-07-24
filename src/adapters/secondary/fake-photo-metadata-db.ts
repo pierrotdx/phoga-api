@@ -1,8 +1,8 @@
 import { clone } from "ramda";
 import { IPhoto, IPhotoMetadata, Photo } from "../../business-logic/models";
-import { IPhotoMetadataRepository } from "../../business-logic/gateways";
+import { IPhotoMetadataDb } from "../../business-logic/gateways";
 
-export class FakePhotoMetadataRepository implements IPhotoMetadataRepository {
+export class FakePhotoMetadataDb implements IPhotoMetadataDb {
   public readonly docs: Record<Photo["_id"], IPhotoMetadata> = {};
 
   save = async (photo: IPhoto): Promise<void> => {

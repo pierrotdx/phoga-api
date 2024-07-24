@@ -1,10 +1,10 @@
 import { mkdir, writeFile, readFile, rm } from "fs/promises";
 import { existsSync } from "fs";
 import { join } from "path";
-import { IPhotoImageRepository } from "../../business-logic/gateways";
+import { IPhotoImageDb } from "../../business-logic/gateways";
 import { Photo } from "../../business-logic/models";
 
-export class FakePhotoImageRepository implements IPhotoImageRepository {
+export class FakePhotoImageDb implements IPhotoImageDb {
   private readonly dir = "tmp";
 
   constructor() {}
