@@ -1,7 +1,7 @@
 import { AddPhoto } from "./add-photo";
-import { IPhoto, Photo } from "../models";
-import { IPhotoImageDb, IPhotoMetadataDb } from "../gateways";
-import { FakePhotoMetadataDb, FakePhotoImageDb } from "../../adapters";
+import { IPhoto, Photo } from "../../models";
+import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
+import { FakePhotoMetadataDb, FakePhotoImageDb } from "../../../adapters";
 
 describe("add-photo use case", () => {
   let addPhoto: AddPhoto;
