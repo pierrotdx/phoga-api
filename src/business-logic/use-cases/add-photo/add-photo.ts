@@ -1,5 +1,5 @@
-import { IPhotoImageDb, IPhotoMetadataDb } from "../gateways";
-import { IPhoto, Photo } from "../models";
+import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
+import { IPhoto, Photo } from "../../models";
 
 export class AddPhoto {
   constructor(

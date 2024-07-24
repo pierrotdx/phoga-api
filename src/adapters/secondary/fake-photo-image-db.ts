@@ -1,42 +1,19 @@
-import { mkdir, writeFile, readFile, rm } from "fs/promises";
-import { existsSync } from "fs";
-import { join } from "path";
+import { clone } from "ramda";
 import { IPhotoImageDb } from "../../business-logic/gateways";
-import { Photo } from "../../business-logic/models";
+import { IPhoto } from "../../business-logic/models";
 
 export class FakePhotoImageDb implements IPhotoImageDb {
-  private readonly dir = "tmp";
+  public readonly photoImages: Record<IPhoto["_id"], IPhoto["imageBuffer"]> =
+    {};
 
-  constructor() {}
+  async save(photo: IPhoto): Promise<void> {
+    this.photoImages[photo._id] = photo.imageBuffer;
+  }
+  async getById(photoId: IPhoto["_id"]): Promise<Buffer> {
+    return clone(this.photoImages[photoId]);
+  }
 
-  save = async (photo: Photo): Promise<void> => {
-    if (!photo.imageBuffer) {
-      return;
-    }
-    const path = this.getPhotoPath(photo._id);
-    await writeFile(path, photo.imageBuffer);
-  };
-
-  getById = async (id: Photo["_id"]): Promise<Buffer> => {
-    const path = this.getPhotoPath(id);
-    return await readFile(path);
-  };
-
-  public readonly createDir = async () => {
-    if (!existsSync(this.dir)) {
-      await mkdir(this.dir);
-    }
-  };
-
-  public readonly removeDir = async () => {
-    if (existsSync(this.dir)) {
-      await rm(this.dir, {
-        recursive: true,
-        force: true,
-        maxRetries: 1,
-      });
-    }
-  };
-
-  private readonly getPhotoPath = (id: Photo["_id"]) => join(this.dir, id);
+  async delete(photoId: IPhoto["_id"]): Promise<void> {
+    delete this.photoImages[photoId];
+  }
 }

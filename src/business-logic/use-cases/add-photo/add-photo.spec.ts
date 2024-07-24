@@ -1,7 +1,7 @@
 import { AddPhoto } from "./add-photo";
-import { IPhoto, Photo } from "../models";
-import { IPhotoImageDb, IPhotoMetadataDb } from "../gateways";
-import { FakePhotoMetadataDb, FakePhotoImageDb } from "../../adapters";
+import { IPhoto, Photo } from "../../models";
+import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
+import { FakePhotoMetadataDb, FakePhotoImageDb } from "../../../adapters";
 
 describe("add-photo use case", () => {
   let addPhoto: AddPhoto;
@@ -24,11 +24,6 @@ describe("add-photo use case", () => {
       },
       imageBuffer: Buffer.from("dumb buffer content"),
     });
-    await (imageDb as FakePhotoImageDb).createDir();
-  });
-
-  afterEach(async () => {
-    await (imageDb as FakePhotoImageDb).removeDir();
   });
 
   describe("photo image", () => {
