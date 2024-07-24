@@ -1,6 +1,7 @@
-import { Photo } from "../models";
+import { IPhoto } from "../models";
 
 export interface IPhotoImageDb {
-  save: (photo: Photo) => Promise<void>;
-  getById: (photoId: Photo["_id"]) => Promise<Buffer>;
+  save: (photo: IPhoto) => Promise<void>;
+  getById: (id: IPhoto["_id"]) => Promise<Buffer>;
+  delete: (id: IPhoto["_id"]) => Promise<void>;
 }
