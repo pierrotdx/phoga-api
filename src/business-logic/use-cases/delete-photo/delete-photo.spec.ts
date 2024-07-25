@@ -25,7 +25,7 @@ describe("delete-photo use case", () => {
 
   describe("photo metadata", () => {
     it("should be deleted from db", async () => {
-      await metadataDb.save(photo);
+      await metadataDb.insert(photo);
       const dbMetadataBeforeDelete = await metadataDb.getById(photo._id);
 
       await deletePhoto.execute(photo._id);
@@ -40,7 +40,7 @@ describe("delete-photo use case", () => {
     });
 
     it("should not be deleted if image-photo deletion failed", async () => {
-      await metadataDb.save(photo);
+      await metadataDb.insert(photo);
       imageDb.delete = jest
         .fn()
         .mockImplementationOnce(() => Promise.reject("image-deletion failed"));
@@ -59,7 +59,7 @@ describe("delete-photo use case", () => {
 
   describe("photo image", () => {
     it("should be deleted from db", async () => {
-      await imageDb.save(photo);
+      await imageDb.insert(photo);
       const dbImageBeforeDelete = await imageDb.getById(photo._id);
 
       await deletePhoto.execute(photo._id);

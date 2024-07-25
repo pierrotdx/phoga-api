@@ -5,7 +5,7 @@ import { IPhotoMetadataDb } from "../../business-logic/gateways";
 export class FakePhotoMetadataDb implements IPhotoMetadataDb {
   public readonly docs: Record<Photo["_id"], IPhotoMetadata> = {};
 
-  async save(photo: IPhoto) {
+  async insert(photo: IPhoto) {
     if (photo.metadata) {
       this.docs[photo._id] = photo.metadata;
     }
