@@ -59,7 +59,7 @@ describe("delete-photo use case", () => {
 
   describe("photo image", () => {
     it("should be deleted from db", async () => {
-      await imageDb.save(photo);
+      await imageDb.insert(photo);
       const dbImageBeforeDelete = await imageDb.getById(photo._id);
 
       await deletePhoto.execute(photo._id);

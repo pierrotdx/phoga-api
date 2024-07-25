@@ -6,7 +6,7 @@ export class FakePhotoImageDb implements IPhotoImageDb {
   public readonly photoImages: Record<IPhoto["_id"], IPhoto["imageBuffer"]> =
     {};
 
-  async save(photo: IPhoto): Promise<void> {
+  async insert(photo: IPhoto): Promise<void> {
     this.photoImages[photo._id] = photo.imageBuffer;
   }
   async getById(id: IPhoto["_id"]): Promise<Buffer> {

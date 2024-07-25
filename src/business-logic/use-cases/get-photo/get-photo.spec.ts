@@ -27,7 +27,7 @@ describe("get-photo use case", () => {
   });
 
   it("should return the photo with matching id", async () => {
-    await imageDb.save(photo);
+    await imageDb.insert(photo);
     await metadataDb.insert(photo);
     const result = await getPhoto.execute(photo._id);
     expect(result).toBeDefined();

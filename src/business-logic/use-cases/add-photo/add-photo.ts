@@ -17,6 +17,6 @@ export class AddPhoto {
     if (isNil(photo.imageBuffer) || isEmpty(photo.imageBuffer)) {
       throw new Error(`no image to upload for photo: ${photo._id}`);
     }
-    await this.photoImageDb.save(photo);
+    await this.photoImageDb.insert(photo);
   }
 }
