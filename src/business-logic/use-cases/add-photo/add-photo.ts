@@ -9,7 +9,7 @@ export class AddPhoto {
 
   async execute(photo: IPhoto): Promise<void> {
     await this.uploadImage(photo);
-    await this.photoMetadataDb.save(photo);
+    await this.photoMetadataDb.insert(photo);
   }
 
   private async uploadImage(photo: Photo) {
