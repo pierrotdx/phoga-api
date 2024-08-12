@@ -18,4 +18,8 @@ export class FakePhotoMetadataDb implements IPhotoMetadataDb {
   async delete(id: IPhoto["_id"]): Promise<void> {
     delete this.docs[id];
   }
+
+  async replace(photo: IPhoto): Promise<void> {
+    this.docs[photo._id] = photo.metadata;
+  }
 }
