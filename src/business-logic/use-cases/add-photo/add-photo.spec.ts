@@ -40,19 +40,16 @@ describe("add-photo use case", () => {
       ${"undefined"} | ${undefined}
       ${"null"}      | ${null}
       ${"empty"}     | ${{}}
-    `(
-      "should throw if there is image buffer is '$case'",
-      async ({ imageBuffer }) => {
-        try {
-          photo.imageBuffer = imageBuffer;
-          await addPhoto.execute(photo);
-        } catch (err) {
-          expect(err).toBeInstanceOf(Error);
-        } finally {
-          expect.assertions(1);
-        }
-      },
-    );
+    `("should throw if image buffer is `$case`", async ({ imageBuffer }) => {
+      try {
+        photo.imageBuffer = imageBuffer;
+        await addPhoto.execute(photo);
+      } catch (err) {
+        expect(err).toBeInstanceOf(Error);
+      } finally {
+        expect.assertions(1);
+      }
+    });
   });
 
   describe("photo metadata", () => {
@@ -70,7 +67,7 @@ describe("add-photo use case", () => {
       ${"null"}      | ${null}
       ${"empty"}     | ${{}}
     `(
-      "should not be added if image buffer is '$case'",
+      "should not be added if image buffer is `$case`",
       async ({ imageBuffer }) => {
         try {
           photo.imageBuffer = imageBuffer;
