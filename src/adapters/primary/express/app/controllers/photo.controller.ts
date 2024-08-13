@@ -2,13 +2,16 @@ import { Request, Response } from "express";
 
 import {
   AddPhoto,
+  DeletePhoto,
   GetPhoto,
   ReplacePhoto,
 } from "../../../../../business-logic";
 import {
   AddPhotoSchema,
+  DeletePhotoSchema,
   GetPhotoSchema,
   IAddPhotoValidator,
+  IDeletePhotoValidator,
   IGetPhotoValidator,
   IReplacePhotoValidator,
   ReplacePhotoSchema,
@@ -28,11 +31,15 @@ export class PhotoController {
       useCase: ReplacePhoto;
       validator: IReplacePhotoValidator;
     },
+    private readonly deletePhoto: {
+      useCase: DeletePhoto;
+      validator: IDeletePhotoValidator;
+    },
   ) {}
 
   async getPhotoHandler(req: Request, res: Response) {
-    const _id = this.getPhoto.validator.parse(GetPhotoSchema, req);
-    await this.getPhoto.useCase.execute(_id);
+    const id = this.getPhoto.validator.parse(GetPhotoSchema, req);
+    await this.getPhoto.useCase.execute(id);
     res.sendStatus(200);
   }
 
@@ -45,6 +52,12 @@ export class PhotoController {
   async replacePhotoHandler(req: Request, res: Response) {
     const photo = this.replacePhoto.validator.parse(ReplacePhotoSchema, req);
     await this.replacePhoto.useCase.execute(photo);
+    res.sendStatus(200);
+  }
+
+  async deletePhotoHandler(req: Request, res: Response) {
+    const id = this.deletePhoto.validator.parse(DeletePhotoSchema, req);
+    await this.deletePhoto.useCase.execute(id);
     res.sendStatus(200);
   }
 }

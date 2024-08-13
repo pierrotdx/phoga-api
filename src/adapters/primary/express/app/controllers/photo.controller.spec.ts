@@ -3,11 +3,13 @@ import { GetPhoto } from "../../../../../business-logic/use-cases/get-photo/get-
 import { PhotoController } from "./photo.controller";
 import {
   AddPhotoFakeValidator,
+  DeletePhotoFakeValidator,
   GetPhotoFakeValidator,
   ReplacePhotoFakeValidator,
 } from "../../adapters/";
 import {
   AddPhoto,
+  DeletePhoto,
   IPhotoImageDb,
   IPhotoMetadataDb,
   Photo,
@@ -16,6 +18,7 @@ import {
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../../secondary";
 import {
   IAddPhotoValidator,
+  IDeletePhotoValidator,
   IGetPhotoValidator,
   IReplacePhotoValidator,
 } from "../../models";
@@ -39,6 +42,11 @@ describe("photo controller", () => {
   let replacePhoto: {
     useCase: ReplacePhoto;
     validator: IReplacePhotoValidator;
+  };
+
+  let deletePhoto: {
+    useCase: DeletePhoto;
+    validator: IDeletePhotoValidator;
   };
 
   let dumbReq: Request;
@@ -74,7 +82,17 @@ describe("photo controller", () => {
       validator: new ReplacePhotoFakeValidator(),
     };
 
-    photoController = new PhotoController(getPhoto, addPhoto, replacePhoto);
+    deletePhoto = {
+      useCase: new DeletePhoto(metadataDb, imageDb),
+      validator: new DeletePhotoFakeValidator(),
+    };
+
+    photoController = new PhotoController(
+      getPhoto,
+      addPhoto,
+      replacePhoto,
+      deletePhoto,
+    );
 
     dumbReq = {} as Request;
     dumbRes = jest.createMockFromModule<Response>("express");
@@ -137,6 +155,19 @@ describe("photo controller", () => {
       expect(executeSpy).toHaveBeenLastCalledWith(photo);
       expect(dumbRes.sendStatus).toHaveBeenCalledWith(200);
       expect.assertions(3);
+    });
+  });
+
+  describe("deletePhotoHandler", () => {
+    it("should extract photo id from the request and call the delete-photo use case", async () => {
+      dumbReq["params"] = { id };
+      const executeSpy = jest.spyOn(deletePhoto.useCase, "execute");
+
+      await photoController.deletePhotoHandler(dumbReq, dumbRes);
+
+      expect(executeSpy).toHaveBeenCalledTimes(1);
+      expect(executeSpy).toHaveBeenLastCalledWith(id);
+      expect.assertions(2);
     });
   });
 });
