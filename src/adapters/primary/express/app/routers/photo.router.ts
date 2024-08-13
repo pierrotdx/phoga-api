@@ -7,5 +7,6 @@ export class PhotoRouter {
   constructor(private readonly photoController: PhotoController) {
     this.router = Router();
     this.router.get("/:id", this.photoController.getPhotoHandler);
+    this.router.post("/", this.photoController.addPhotoHandler);
   }
 }
