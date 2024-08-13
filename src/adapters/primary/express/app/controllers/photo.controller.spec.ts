@@ -1,15 +1,24 @@
 import { Request, Response } from "express";
 import { GetPhoto } from "../../../../../business-logic/use-cases/get-photo/get-photo";
 import { PhotoController } from "./photo.controller";
-import { AddPhotoFakeValidator, GetPhotoFakeValidator } from "../../adapters/";
+import {
+  AddPhotoFakeValidator,
+  GetPhotoFakeValidator,
+  ReplacePhotoFakeValidator,
+} from "../../adapters/";
 import {
   AddPhoto,
   IPhotoImageDb,
   IPhotoMetadataDb,
   Photo,
+  ReplacePhoto,
 } from "../../../../../business-logic";
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../../secondary";
-import { IAddPhotoValidator, IGetPhotoValidator } from "../../models";
+import {
+  IAddPhotoValidator,
+  IGetPhotoValidator,
+  IReplacePhotoValidator,
+} from "../../models";
 
 describe("photo controller", () => {
   let photoController: PhotoController;
@@ -27,10 +36,24 @@ describe("photo controller", () => {
     validator: IAddPhotoValidator;
   };
 
+  let replacePhoto: {
+    useCase: ReplacePhoto;
+    validator: IReplacePhotoValidator;
+  };
+
   let dumbReq: Request;
   let dumbRes: Response;
 
   const id = "1684a61d-de2f-43c0-a83b-6f8981a31e0b";
+  const photo = new Photo(id, {
+    imageBuffer: Buffer.from("dumb image buffer zeignzeirgn"),
+    metadata: {
+      date: new Date(),
+      description: "dumb description zienvzeifn",
+      location: "dumb location zrogneriugne",
+      titles: ["dumb title 1 ziuefnzeriufn", "dumb title 2 i'urtht"],
+    },
+  });
 
   beforeEach(() => {
     imageDb = new FakePhotoImageDb();
@@ -46,7 +69,12 @@ describe("photo controller", () => {
       validator: new AddPhotoFakeValidator(),
     };
 
-    photoController = new PhotoController(getPhoto, addPhoto);
+    replacePhoto = {
+      useCase: new ReplacePhoto(imageDb, metadataDb),
+      validator: new ReplacePhotoFakeValidator(),
+    };
+
+    photoController = new PhotoController(getPhoto, addPhoto, replacePhoto);
 
     dumbReq = {} as Request;
     dumbRes = jest.createMockFromModule<Response>("express");
@@ -69,33 +97,41 @@ describe("photo controller", () => {
   describe("addPhotoHandler", () => {
     it("should extract photo data from the request and call the add-photo use case ", async () => {
       const executeSpy = jest.spyOn(addPhoto.useCase, "execute");
-
-      const imageBuffer = Buffer.from("dumb image buffer zeignzeirgn");
-      const date = new Date();
-      const description = "dumb description zienvzeifn";
-      const location = "dumb location zrogneriugne";
-      const titles = ["dumb title 1 ziuefnzeriufn", "dumb title 2 i'urtht"];
-
       dumbReq.body = {
         _id: id,
-        imageBuffer,
-        date,
-        description,
-        location,
-        titles,
+        imageBuffer: photo.imageBuffer,
+        date: photo.metadata!.date,
+        description: photo.metadata!.description,
+        location: photo.metadata!.location,
+        titles: photo.metadata!.titles,
       };
 
       await photoController.addPhotoHandler(dumbReq, dumbRes);
 
-      const photo = new Photo(id, {
-        imageBuffer,
-        metadata: {
-          date,
-          description,
-          location,
-          titles,
-        },
+      expect(executeSpy).toHaveBeenCalledTimes(1);
+      expect(executeSpy).toHaveBeenLastCalledWith(photo);
+      expect(dumbRes.sendStatus).toHaveBeenCalledWith(200);
+      expect.assertions(3);
+    });
+  });
+
+  describe("replacePhotoHandler", () => {
+    it("should extract photo data from the request and call the replace-photo use case ", async () => {
+      const executeSpy = jest.spyOn(replacePhoto.useCase, "execute");
+      const initPhoto = new Photo(id, {
+        imageBuffer: Buffer.from("init photo buffer"),
       });
+      await imageDb.insert(initPhoto);
+      dumbReq.body = {
+        _id: id,
+        imageBuffer: photo.imageBuffer,
+        date: photo.metadata!.date,
+        description: photo.metadata!.description,
+        location: photo.metadata!.location,
+        titles: photo.metadata!.titles,
+      };
+
+      await photoController.replacePhotoHandler(dumbReq, dumbRes);
 
       expect(executeSpy).toHaveBeenCalledTimes(1);
       expect(executeSpy).toHaveBeenLastCalledWith(photo);

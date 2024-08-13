@@ -8,5 +8,6 @@ export class PhotoRouter {
     this.router = Router();
     this.router.get("/:id", this.photoController.getPhotoHandler);
     this.router.post("/", this.photoController.addPhotoHandler);
+    this.router.put("/", this.photoController.replacePhotoHandler);
   }
 }
