@@ -1,9 +1,7 @@
-import { get } from "http";
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
-import { IPhotoMetadata, Photo } from "../../models";
+import { Photo } from "../../models";
 import { GetPhoto } from "./get-photo";
-import exp from "constants";
 
 describe("get-photo use case", () => {
   const photo = new Photo("dumb id", {
