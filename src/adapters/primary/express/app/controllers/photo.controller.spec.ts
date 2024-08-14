@@ -20,6 +20,7 @@ import {
   IAddPhotoValidator,
   IDeletePhotoValidator,
   IGetPhotoValidator,
+  IPhotoControllerParams,
   IReplacePhotoValidator,
 } from "../../models";
 
@@ -28,6 +29,8 @@ describe("photo controller", () => {
 
   let imageDb: IPhotoImageDb;
   let metadataDb: IPhotoMetadataDb;
+
+  let photoControllerParams: IPhotoControllerParams;
 
   let getPhoto: {
     useCase: GetPhoto;
@@ -67,32 +70,26 @@ describe("photo controller", () => {
     imageDb = new FakePhotoImageDb();
     metadataDb = new FakePhotoMetadataDb();
 
-    getPhoto = {
-      useCase: new GetPhoto(metadataDb, imageDb),
-      validator: new GetPhotoFakeValidator(),
+    photoControllerParams = {
+      getPhoto: {
+        useCase: new GetPhoto(metadataDb, imageDb),
+        validator: new GetPhotoFakeValidator(),
+      },
+      addPhoto: {
+        useCase: new AddPhoto(metadataDb, imageDb),
+        validator: new AddPhotoFakeValidator(),
+      },
+      replacePhoto: {
+        useCase: new ReplacePhoto(imageDb, metadataDb),
+        validator: new ReplacePhotoFakeValidator(),
+      },
+      deletePhoto: {
+        useCase: new DeletePhoto(metadataDb, imageDb),
+        validator: new DeletePhotoFakeValidator(),
+      },
     };
 
-    addPhoto = {
-      useCase: new AddPhoto(metadataDb, imageDb),
-      validator: new AddPhotoFakeValidator(),
-    };
-
-    replacePhoto = {
-      useCase: new ReplacePhoto(imageDb, metadataDb),
-      validator: new ReplacePhotoFakeValidator(),
-    };
-
-    deletePhoto = {
-      useCase: new DeletePhoto(metadataDb, imageDb),
-      validator: new DeletePhotoFakeValidator(),
-    };
-
-    photoController = new PhotoController(
-      getPhoto,
-      addPhoto,
-      replacePhoto,
-      deletePhoto,
-    );
+    photoController = new PhotoController(photoControllerParams);
 
     dumbReq = {} as Request;
     dumbRes = jest.createMockFromModule<Response>("express");
@@ -102,7 +99,8 @@ describe("photo controller", () => {
   describe("getPhotoHandler", () => {
     it("should extract the photo id from the request and call the get-photo use case", async () => {
       dumbReq["params"] = { id };
-      const executeSpy = jest.spyOn(getPhoto.useCase, "execute");
+      const useCase = photoControllerParams.getPhoto.useCase;
+      const executeSpy = jest.spyOn(useCase, "execute");
 
       await photoController.getPhotoHandler(dumbReq, dumbRes);
 
@@ -114,7 +112,8 @@ describe("photo controller", () => {
 
   describe("addPhotoHandler", () => {
     it("should extract photo data from the request and call the add-photo use case ", async () => {
-      const executeSpy = jest.spyOn(addPhoto.useCase, "execute");
+      const useCase = photoControllerParams.addPhoto.useCase;
+      const executeSpy = jest.spyOn(useCase, "execute");
       dumbReq.body = {
         _id: id,
         imageBuffer: photo.imageBuffer,
@@ -135,7 +134,8 @@ describe("photo controller", () => {
 
   describe("replacePhotoHandler", () => {
     it("should extract photo data from the request and call the replace-photo use case ", async () => {
-      const executeSpy = jest.spyOn(replacePhoto.useCase, "execute");
+      const useCase = photoControllerParams.replacePhoto.useCase;
+      const executeSpy = jest.spyOn(useCase, "execute");
       const initPhoto = new Photo(id, {
         imageBuffer: Buffer.from("init photo buffer"),
       });
@@ -161,7 +161,8 @@ describe("photo controller", () => {
   describe("deletePhotoHandler", () => {
     it("should extract photo id from the request and call the delete-photo use case", async () => {
       dumbReq["params"] = { id };
-      const executeSpy = jest.spyOn(deletePhoto.useCase, "execute");
+      const useCase = photoControllerParams.deletePhoto.useCase;
+      const executeSpy = jest.spyOn(useCase, "execute");
 
       await photoController.deletePhotoHandler(dumbReq, dumbRes);
 
