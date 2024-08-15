@@ -16,13 +16,7 @@ import {
   ReplacePhoto,
 } from "../../../../../business-logic";
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../../secondary";
-import {
-  IAddPhotoValidator,
-  IDeletePhotoValidator,
-  IGetPhotoValidator,
-  IPhotoControllerParams,
-  IReplacePhotoValidator,
-} from "../../models";
+import { IPhotoControllerParams } from "../../models";
 
 describe("photo controller", () => {
   let photoController: PhotoController;
@@ -31,26 +25,6 @@ describe("photo controller", () => {
   let metadataDb: IPhotoMetadataDb;
 
   let photoControllerParams: IPhotoControllerParams;
-
-  let getPhoto: {
-    useCase: GetPhoto;
-    validator: IGetPhotoValidator;
-  };
-
-  let addPhoto: {
-    useCase: AddPhoto;
-    validator: IAddPhotoValidator;
-  };
-
-  let replacePhoto: {
-    useCase: ReplacePhoto;
-    validator: IReplacePhotoValidator;
-  };
-
-  let deletePhoto: {
-    useCase: DeletePhoto;
-    validator: IDeletePhotoValidator;
-  };
 
   let dumbReq: Request;
   let dumbRes: Response;
