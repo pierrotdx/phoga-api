@@ -1,4 +1,5 @@
-import { Request, Response } from "express";
+import express, { type Express } from "express";
+import request, { Response } from "supertest";
 import { GetPhoto } from "../../../../../business-logic/use-cases/get-photo/get-photo";
 import { PhotoController } from "./photo.controller";
 import {
@@ -10,6 +11,8 @@ import {
 import {
   AddPhoto,
   DeletePhoto,
+  GetPhotoField,
+  IPhoto,
   IPhotoImageDb,
   IPhotoMetadataDb,
   Photo,
@@ -17,6 +20,9 @@ import {
 } from "../../../../../business-logic";
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../../secondary";
 import { IPhotoControllerParams } from "../../models";
+import { PhotoRouter } from "../routers";
+import bodyParser from "body-parser";
+import TestAgent from "supertest/lib/agent";
 
 describe("photo controller", () => {
   let photoController: PhotoController;
@@ -26,10 +32,12 @@ describe("photo controller", () => {
 
   let photoControllerParams: IPhotoControllerParams;
 
-  let dumbReq: Request;
-  let dumbRes: Response;
+  let dumbApp: Express;
+  let req: TestAgent;
+  let res$: Promise<Response>;
 
   const id = "1684a61d-de2f-43c0-a83b-6f8981a31e0b";
+  const imageBufferEncoding = "base64";
   const photo = new Photo(id, {
     imageBuffer: Buffer.from("dumb image buffer zeignzeirgn"),
     metadata: {
@@ -43,7 +51,6 @@ describe("photo controller", () => {
   beforeEach(() => {
     imageDb = new FakePhotoImageDb();
     metadataDb = new FakePhotoMetadataDb();
-
     photoControllerParams = {
       getPhoto: {
         useCase: new GetPhoto(metadataDb, imageDb),
@@ -62,87 +69,134 @@ describe("photo controller", () => {
         validator: new DeletePhotoFakeValidator(),
       },
     };
-
     photoController = new PhotoController(photoControllerParams);
-
-    dumbReq = {} as Request;
-    dumbRes = jest.createMockFromModule<Response>("express");
-    dumbRes.sendStatus = jest.fn();
+    dumbApp = getDumbApp(photoController);
+    req = request(dumbApp);
   });
 
-  describe("getPhotoHandler", () => {
-    it("should extract the photo id from the request and call the get-photo use case", async () => {
-      dumbReq["params"] = { id };
+  describe("getPhotoMetadataHandler", () => {
+    beforeEach(() => {
+      res$ = req.get(`/${id}/metadata`);
+    });
+
+    it("should call the get-photo use case with the appropriate arguments", async () => {
       const useCase = photoControllerParams.getPhoto.useCase;
       const executeSpy = jest.spyOn(useCase, "execute");
 
-      await photoController.getPhotoHandler(dumbReq, dumbRes);
+      await res$;
 
       expect(executeSpy).toHaveBeenCalledTimes(1);
-      expect(executeSpy).toHaveBeenLastCalledWith(id);
+      expect(executeSpy).toHaveBeenCalledWith(id, {
+        fields: [GetPhotoField.Metadata],
+      });
+      expect.assertions(2);
+    });
+
+    it("should respond with status 200 and have a header property 'Content-Type: application/json'", async () => {
+      const response = await res$;
+
+      const contentTypeHeader = response.get("Content-Type");
+      expect(contentTypeHeader).toContain("application/json");
+      expect(response.statusCode).toBe(200);
+      expect.assertions(2);
+    });
+  });
+
+  describe("getPhotoImageHandler", () => {
+    let executeSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      const useCase = photoControllerParams.getPhoto.useCase;
+      executeSpy = jest.spyOn(useCase, "execute");
+      executeSpy.mockResolvedValueOnce(photo);
+
+      res$ = req.get(`/${id}/image`);
+    });
+
+    it("should call the get-photo use case with the appropriate arguments", async () => {
+      await res$;
+
+      expect(executeSpy).toHaveBeenCalledTimes(1);
+      expect(executeSpy).toHaveBeenCalledWith(id, {
+        fields: [GetPhotoField.ImageBuffer],
+      });
+      expect.assertions(2);
+    });
+
+    it("should respond with status 200 and have a header property 'Content-Type: image/jpeg'", async () => {
+      const response = await res$;
+
+      const contentTypeHeader = response.get("Content-Type");
+      expect(contentTypeHeader).toContain("image/jpeg");
+      expect(response.statusCode).toBe(200);
       expect.assertions(2);
     });
   });
 
   describe("addPhotoHandler", () => {
-    it("should extract photo data from the request and call the add-photo use case ", async () => {
+    it("should call the add-photo use case with the appropriate arguments and respond with status 200", async () => {
       const useCase = photoControllerParams.addPhoto.useCase;
       const executeSpy = jest.spyOn(useCase, "execute");
-      dumbReq.body = {
-        _id: id,
-        imageBuffer: photo.imageBuffer,
-        date: photo.metadata!.date,
-        description: photo.metadata!.description,
-        location: photo.metadata!.location,
-        titles: photo.metadata!.titles,
-      };
 
-      await photoController.addPhotoHandler(dumbReq, dumbRes);
+      const payload = getReqPayloadFromPhoto(photo, imageBufferEncoding);
+      const response = await req.post("/").send(payload);
 
       expect(executeSpy).toHaveBeenCalledTimes(1);
       expect(executeSpy).toHaveBeenLastCalledWith(photo);
-      expect(dumbRes.sendStatus).toHaveBeenCalledWith(200);
+      expect(response.statusCode).toBe(200);
       expect.assertions(3);
     });
   });
 
   describe("replacePhotoHandler", () => {
-    it("should extract photo data from the request and call the replace-photo use case ", async () => {
-      const useCase = photoControllerParams.replacePhoto.useCase;
-      const executeSpy = jest.spyOn(useCase, "execute");
+    it("should call the replace-photo use case with the appropriate arguments and respond with status 200", async () => {
       const initPhoto = new Photo(id, {
-        imageBuffer: Buffer.from("init photo buffer"),
+        imageBuffer: Buffer.from("init photo buffer", imageBufferEncoding),
       });
       await imageDb.insert(initPhoto);
-      dumbReq.body = {
-        _id: id,
-        imageBuffer: photo.imageBuffer,
-        date: photo.metadata!.date,
-        description: photo.metadata!.description,
-        location: photo.metadata!.location,
-        titles: photo.metadata!.titles,
-      };
+      const useCase = photoControllerParams.replacePhoto.useCase;
+      const executeSpy = jest.spyOn(useCase, "execute");
 
-      await photoController.replacePhotoHandler(dumbReq, dumbRes);
+      const payload = getReqPayloadFromPhoto(photo, imageBufferEncoding);
+      const response = await req.put(`/`).send(payload);
 
       expect(executeSpy).toHaveBeenCalledTimes(1);
       expect(executeSpy).toHaveBeenLastCalledWith(photo);
-      expect(dumbRes.sendStatus).toHaveBeenCalledWith(200);
+      expect(response.statusCode).toBe(200);
       expect.assertions(3);
     });
   });
 
   describe("deletePhotoHandler", () => {
-    it("should extract photo id from the request and call the delete-photo use case", async () => {
-      dumbReq["params"] = { id };
+    it("should call the delete-photo use case with the appropriate arguments and respond with status 200", async () => {
       const useCase = photoControllerParams.deletePhoto.useCase;
       const executeSpy = jest.spyOn(useCase, "execute");
 
-      await photoController.deletePhotoHandler(dumbReq, dumbRes);
+      const response = await req.delete(`/${photo._id}`);
 
       expect(executeSpy).toHaveBeenCalledTimes(1);
       expect(executeSpy).toHaveBeenLastCalledWith(id);
-      expect.assertions(2);
+      expect(response.statusCode).toBe(200);
+      expect.assertions(3);
     });
   });
 });
+
+function getDumbApp(photoController: PhotoController): Express {
+  const app = express();
+  app.use(bodyParser.json());
+  const photoRouter = new PhotoRouter(photoController);
+  app.use(photoRouter.router);
+  return app;
+}
+
+function getReqPayloadFromPhoto(photo: IPhoto, encoding?: BufferEncoding) {
+  return {
+    _id: photo._id,
+    imageBuffer: photo.imageBuffer!.toString(encoding),
+    date: photo.metadata!.date!.toISOString(),
+    description: photo.metadata!.description,
+    location: photo.metadata!.location,
+    titles: photo.metadata!.titles!.join(","),
+  };
+}

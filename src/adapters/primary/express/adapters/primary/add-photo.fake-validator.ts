@@ -6,12 +6,12 @@ export class AddPhotoFakeValidator implements IAddPhotoValidator {
   parse(schema: TSchema, req: Request): IPhoto {
     const { _id, imageBuffer, date, description, location, titles } = req?.body;
     const photo = new Photo(_id, {
-      imageBuffer,
+      imageBuffer: Buffer.from(imageBuffer, "base64"),
       metadata: {
-        date,
+        date: new Date(date as string),
         description,
         location,
-        titles,
+        titles: titles.split(","),
       },
     });
     return photo;

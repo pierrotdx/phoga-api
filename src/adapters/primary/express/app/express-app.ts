@@ -1,10 +1,12 @@
 import express, { Express } from "express";
 import { AppRouter } from "./routers/app.router";
+import bodyParser from "body-parser";
 
 export class ExpressApp {
   app: Express = express();
 
   constructor(private readonly appRouter: AppRouter) {
+    this.app.use(bodyParser.json());
     this.setRouter();
   }
 
