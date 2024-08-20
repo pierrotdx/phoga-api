@@ -1,3 +1,4 @@
+import { imageBufferEncoding } from "../../express-constants";
 import { TSchema } from "../schema";
 
 export const AddPhotoSchema: TSchema = {
@@ -10,11 +11,11 @@ export const AddPhotoSchema: TSchema = {
     },
     imageBuffer: {
       type: "string",
-      contentEncoding: "base64",
+      contentEncoding: imageBufferEncoding,
     },
     date: {
       type: "string",
-      format: "date",
+      format: "iso-date-time",
     },
     description: {
       type: "string",
@@ -22,9 +23,7 @@ export const AddPhotoSchema: TSchema = {
     location: { type: "string" },
     titles: {
       type: "array",
-      items: {
-        type: "string",
-      },
+      items: { type: "string" },
     },
   },
 };

@@ -23,6 +23,7 @@ import { IPhotoControllerParams } from "../../models";
 import { PhotoRouter } from "../routers";
 import bodyParser from "body-parser";
 import TestAgent from "supertest/lib/agent";
+import { imageBufferEncoding } from "../../express-constants";
 
 describe("photo controller", () => {
   let photoController: PhotoController;
@@ -37,7 +38,6 @@ describe("photo controller", () => {
   let res$: Promise<Response>;
 
   const id = "1684a61d-de2f-43c0-a83b-6f8981a31e0b";
-  const imageBufferEncoding = "base64";
   const photo = new Photo(id, {
     imageBuffer: Buffer.from("dumb image buffer zeignzeirgn"),
     metadata: {
