@@ -7,7 +7,7 @@ import {
   DeletePhotoFakeValidator,
   GetPhotoFakeValidator,
   ReplacePhotoFakeValidator,
-} from "../../adapters/";
+} from "../../../adapters/";
 import {
   AddPhoto,
   DeletePhoto,

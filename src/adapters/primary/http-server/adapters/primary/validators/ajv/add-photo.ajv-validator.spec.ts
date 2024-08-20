@@ -9,9 +9,9 @@ import { clone, omit } from "ramda";
 import request from "supertest";
 
 import { AddPhotoAjvValidator } from "./add-photo.ajv-validator";
-import { IPhoto, Photo } from "../../../../../../../../business-logic";
-import { AddPhotoSchema } from "../../../../../models";
-import { imageBufferEncoding } from "../../../../../http-server.constants";
+import { IPhoto, Photo } from "../../../../../../../business-logic";
+import { AddPhotoSchema } from "../../../../models";
+import { imageBufferEncoding } from "../../../../http-server.constants";
 
 describe("AddPhotoAjvValidator", () => {
   let addPhotoAjvValidator: AddPhotoAjvValidator;
