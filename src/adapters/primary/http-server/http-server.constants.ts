@@ -1,6 +1,6 @@
 export const imageBufferEncoding: BufferEncoding = "base64";
 
-export const endpoints = {
+export const entryPoints = {
   baseUrl: "/",
   photoBase: "/photo",
   photo: {

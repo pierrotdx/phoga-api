@@ -4,10 +4,12 @@ import {
   GetPhoto,
   ReplacePhoto,
 } from "../../../../../business-logic";
-import { IAddPhotoValidator } from "../../models/add-photo";
-import { IDeletePhotoValidator } from "../../models/delete-photo";
-import { IGetPhotoValidator } from "../../models/get-photo";
-import { IReplacePhotoValidator } from "../../models/replace-photo";
+import {
+  IAddPhotoValidator,
+  IDeletePhotoValidator,
+  IGetPhotoValidator,
+  IReplacePhotoValidator,
+} from "../../models";
 
 interface IPhotoControllerParamItem<UseCase = unknown, Validator = unknown> {
   useCase: UseCase;

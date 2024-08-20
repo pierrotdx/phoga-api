@@ -1,4 +1,4 @@
-import { AddPhotoSchema } from "../add-photo";
+import { AddPhotoSchema } from "../validation-schemas";
 import { TSchema } from "../../models";
 
 export const ReplacePhotoSchema: TSchema = AddPhotoSchema;
