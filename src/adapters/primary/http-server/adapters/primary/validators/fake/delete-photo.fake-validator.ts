@@ -1,9 +1,12 @@
-import { Request } from "express";
-import { IDeletePhotoValidator, TSchema } from "../../../../models";
+import {
+  IDeletePhotoValidator,
+  TSchema,
+  TValidatorData,
+} from "../../../../models";
 import { IPhoto } from "../../../../../../../business-logic";
 
 export class DeletePhotoFakeValidator implements IDeletePhotoValidator {
-  parse(schema: TSchema, req: Request): IPhoto["_id"] {
-    return req.params["id"];
+  parse(schema: TSchema, data: TValidatorData): IPhoto["_id"] {
+    return data.id as string;
   }
 }

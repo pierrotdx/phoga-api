@@ -83,7 +83,7 @@ const getRequestHandler =
   (validator: AddPhotoAjvValidator, spy: jest.Func) =>
   (req: Request, res: Response, next: NextFunction) => {
     try {
-      const photo = validator.parse(AddPhotoSchema, req);
+      const photo = validator.parse(AddPhotoSchema, req.body);
       spy(photo);
       res.json(photo);
       next();
