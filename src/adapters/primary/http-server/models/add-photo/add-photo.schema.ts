@@ -1,5 +1,5 @@
-import { imageBufferEncoding } from "../../../http-server.constants";
-import { TSchema } from "../schema";
+import { imageBufferEncoding } from "../../http-server.constants";
+import { TSchema } from "../../models";
 
 export const AddPhotoSchema: TSchema = {
   type: "object",

@@ -1,4 +1,4 @@
-import { TSchema } from "../schema";
+import { TSchema } from "../../models";
 
 export const DeletePhotoSchema: TSchema = {
   type: "object",

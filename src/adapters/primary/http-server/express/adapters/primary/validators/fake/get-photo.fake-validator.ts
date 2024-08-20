@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { IGetPhotoValidator, TSchema } from "../../../../models";
+import { IGetPhotoValidator, TSchema } from "../../../../../models";
 import { IPhoto } from "../../../../../../../../business-logic";
 
 export class GetPhotoFakeValidator implements IGetPhotoValidator {

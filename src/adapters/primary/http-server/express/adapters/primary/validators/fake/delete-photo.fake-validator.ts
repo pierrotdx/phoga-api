@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { IDeletePhotoValidator, TSchema } from "../../../../models";
+import { IDeletePhotoValidator, TSchema } from "../../../../../models";
 import { IPhoto } from "../../../../../../../../business-logic";
 
 export class DeletePhotoFakeValidator implements IDeletePhotoValidator {

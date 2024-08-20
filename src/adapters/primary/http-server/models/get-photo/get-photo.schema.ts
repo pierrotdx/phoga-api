@@ -1,4 +1,4 @@
-import { TSchema } from "../schema";
+import { TSchema } from "../../models";
 
 export const GetPhotoSchema: TSchema = {
   type: "object",

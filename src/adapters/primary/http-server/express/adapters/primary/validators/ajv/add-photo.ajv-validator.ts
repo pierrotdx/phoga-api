@@ -2,7 +2,7 @@ import { Request } from "express";
 import Ajv from "ajv";
 import addFormat from "ajv-formats";
 
-import { IAddPhotoValidator, TSchema } from "../../../../models";
+import { IAddPhotoValidator, TSchema } from "../../../../../models";
 import { IPhoto, Photo } from "../../../../../../../../business-logic";
 import { imageBufferEncoding } from "../../../../../http-server.constants";
 

@@ -4,11 +4,11 @@ import {
   AddPhotoSchema,
   DeletePhotoSchema,
   GetPhotoSchema,
-  IPhotoControllerParams,
   ReplacePhotoSchema,
-} from "../../models";
+} from "../../../models";
 import { GetPhotoField } from "../../../../../../business-logic";
 import { Readable } from "node:stream";
+import { IPhotoControllerParams } from "../../models";
 
 export class PhotoController {
   constructor(private readonly params: IPhotoControllerParams) {}

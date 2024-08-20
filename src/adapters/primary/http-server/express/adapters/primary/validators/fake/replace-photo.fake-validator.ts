@@ -1,4 +1,4 @@
-import { IReplacePhotoValidator } from "../../../../models";
+import { IReplacePhotoValidator } from "../../../../../models";
 import { AddPhotoFakeValidator } from "./add-photo.fake-validator";
 
 export class ReplacePhotoFakeValidator
