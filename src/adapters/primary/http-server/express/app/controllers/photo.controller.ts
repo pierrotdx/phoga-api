@@ -7,7 +7,7 @@ import {
   IPhotoControllerParams,
   ReplacePhotoSchema,
 } from "../../models";
-import { GetPhotoField } from "../../../../../business-logic";
+import { GetPhotoField } from "../../../../../../business-logic";
 import { Readable } from "node:stream";
 
 export class PhotoController {

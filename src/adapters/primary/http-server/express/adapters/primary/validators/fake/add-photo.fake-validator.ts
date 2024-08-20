@@ -1,7 +1,7 @@
 import { Request } from "express";
 import { IAddPhotoValidator, TSchema } from "../../../../models";
-import { IPhoto, Photo } from "../../../../../../../business-logic";
-import { imageBufferEncoding } from "../../../../express-constants";
+import { IPhoto, Photo } from "../../../../../../../../business-logic";
+import { imageBufferEncoding } from "../../../../../http-server.constants";
 
 export class AddPhotoFakeValidator implements IAddPhotoValidator {
   parse(schema: TSchema, req: Request): IPhoto {

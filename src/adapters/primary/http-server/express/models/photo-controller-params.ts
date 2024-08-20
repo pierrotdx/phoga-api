@@ -3,7 +3,7 @@ import {
   DeletePhoto,
   GetPhoto,
   ReplacePhoto,
-} from "../../../../business-logic";
+} from "../../../../../business-logic";
 import { IAddPhotoValidator } from "./add-photo";
 import { IDeletePhotoValidator } from "./delete-photo";
 import { IGetPhotoValidator } from "./get-photo";

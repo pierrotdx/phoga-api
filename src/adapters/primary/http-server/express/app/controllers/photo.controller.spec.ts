@@ -1,6 +1,6 @@
 import express, { type Express } from "express";
 import request, { Response } from "supertest";
-import { GetPhoto } from "../../../../../business-logic/use-cases/get-photo/get-photo";
+import { GetPhoto } from "../../../../../../business-logic/use-cases/get-photo/get-photo";
 import { PhotoController } from "./photo.controller";
 import {
   AddPhotoFakeValidator,
@@ -17,13 +17,16 @@ import {
   IPhotoMetadataDb,
   Photo,
   ReplacePhoto,
-} from "../../../../../business-logic";
-import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../../secondary";
+} from "../../../../../../business-logic";
+import {
+  FakePhotoImageDb,
+  FakePhotoMetadataDb,
+} from "../../../../../secondary";
 import { IPhotoControllerParams } from "../../models";
 import { PhotoRouter } from "../routers";
 import bodyParser from "body-parser";
 import TestAgent from "supertest/lib/agent";
-import { imageBufferEncoding } from "../../express-constants";
+import { imageBufferEncoding } from "../../../http-server.constants";
 
 describe("photo controller", () => {
   let photoController: PhotoController;
