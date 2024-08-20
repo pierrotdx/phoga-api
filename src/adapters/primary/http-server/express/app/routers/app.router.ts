@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { PhotoRouter } from "./photo.router";
+import { endpoints } from "../../../http-server.constants";
 
 export class AppRouter {
   router: Router;
@@ -7,11 +8,11 @@ export class AppRouter {
   constructor(private readonly photoRouter: PhotoRouter) {
     this.router = Router();
     this.setBaseRoute();
-    this.router.use("/photo", this.photoRouter.router);
+    this.router.use(endpoints.photoBase, this.photoRouter.router);
   }
 
   private setBaseRoute() {
-    this.router.get("", (req, res) => {
+    this.router.get(endpoints.baseUrl, (req, res) => {
       res.send("Welcome to PHOGA API!");
     });
   }
