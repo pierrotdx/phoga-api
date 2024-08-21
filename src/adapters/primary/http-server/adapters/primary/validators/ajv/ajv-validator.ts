@@ -7,10 +7,10 @@ export class AjvValidator {
   private readonly ajv = new Ajv();
   private ajvValidate: ValidateFunction;
 
-  readonly init = (schema: TSchema) => {
+  private init(schema: TSchema) {
     addFormat(this.ajv);
     this.ajvValidate = this.ajv.compile(schema);
-  };
+  }
 
   readonly validate = (schema: TSchema, data: TValidatorData): void => {
     if (!this.ajvValidate) {

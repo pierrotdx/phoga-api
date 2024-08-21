@@ -25,7 +25,7 @@ describe("AddPhotoAjvValidator", () => {
     dumbApp.post("/", getRequestHandler(addPhotoAjvValidator, spy));
   });
 
-  describe("parse", () => {
+  describe("validateAndParse", () => {
     it("should parse the request data and return the expected photo", async () => {
       await request(dumbApp).post("/").send(payload);
       expect(spy).toHaveBeenCalledWith(photo);
