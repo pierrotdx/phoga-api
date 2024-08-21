@@ -6,7 +6,7 @@ import {
 import { IPhoto } from "../../../../../../../business-logic";
 
 export class GetPhotoFakeValidator implements IGetPhotoValidator {
-  parse(schema: TSchema, data: TValidatorData): IPhoto["_id"] {
+  validateAndParse(schema: TSchema, data: TValidatorData): IPhoto["_id"] {
     return data.id as string;
   }
 }

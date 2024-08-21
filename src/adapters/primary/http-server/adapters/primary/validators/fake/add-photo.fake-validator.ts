@@ -7,7 +7,7 @@ import {
 } from "../../../../models";
 
 export class AddPhotoFakeValidator implements IAddPhotoValidator {
-  parse(schema: TSchema, data: TValidatorData): IPhoto {
+  validateAndParse(schema: TSchema, data: TValidatorData): IPhoto {
     const { _id, imageBuffer, date, description, location, titles } =
       data as Record<string, string>;
     const photo = new Photo(_id, {

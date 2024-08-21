@@ -15,7 +15,7 @@ export class PhotoController {
 
   getPhotoMetadataHandler = async (req: Request, res: Response) => {
     const { useCase, validator } = this.params.getPhoto;
-    const id = validator.parse(GetPhotoSchema, req.params);
+    const id = validator.validateAndParse(GetPhotoSchema, req.params);
     const photo = await useCase.execute(id, {
       fields: [GetPhotoField.Metadata],
     });
@@ -24,7 +24,7 @@ export class PhotoController {
 
   getPhotoImageHandler = async (req: Request, res: Response) => {
     const { useCase, validator } = this.params.getPhoto;
-    const id = validator.parse(GetPhotoSchema, req.params);
+    const id = validator.validateAndParse(GetPhotoSchema, req.params);
     const photo = await useCase.execute(id, {
       fields: [GetPhotoField.ImageBuffer],
     });
@@ -38,21 +38,21 @@ export class PhotoController {
 
   addPhotoHandler = async (req: Request, res: Response) => {
     const { useCase, validator } = this.params.addPhoto;
-    const photo = validator.parse(AddPhotoSchema, req.body);
+    const photo = validator.validateAndParse(AddPhotoSchema, req.body);
     await useCase.execute(photo);
     res.sendStatus(200);
   };
 
   replacePhotoHandler = async (req: Request, res: Response) => {
     const { useCase, validator } = this.params.replacePhoto;
-    const photo = validator.parse(ReplacePhotoSchema, req.body);
+    const photo = validator.validateAndParse(ReplacePhotoSchema, req.body);
     await useCase.execute(photo);
     res.sendStatus(200);
   };
 
   deletePhotoHandler = async (req: Request, res: Response) => {
     const { useCase, validator } = this.params.deletePhoto;
-    const id = validator.parse(DeletePhotoSchema, req.params);
+    const id = validator.validateAndParse(DeletePhotoSchema, req.params);
     await useCase.execute(id);
     res.sendStatus(200);
   };

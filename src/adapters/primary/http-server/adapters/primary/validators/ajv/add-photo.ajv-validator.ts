@@ -16,7 +16,7 @@ export class AddPhotoAjvValidator implements IAddPhotoValidator {
     addFormat(this.ajv);
   }
 
-  private readonly getPhotoFromReq = (data: TValidatorData): IPhoto => {
+  private readonly parse = (data: TValidatorData): IPhoto => {
     const { _id, imageBuffer, date, description, location } = data as Record<
       string,
       string
@@ -33,17 +33,12 @@ export class AddPhotoAjvValidator implements IAddPhotoValidator {
     return photo;
   };
 
-  parse(schema: TSchema, data: TValidatorData): IPhoto {
-    try {
-      const validate = this.ajv.compile(schema);
-      validate(data);
-      if (validate.errors?.length) {
-        throw validate.errors[0];
-      }
-      const photo = this.getPhotoFromReq(data);
-      return photo;
-    } catch (err) {
-      throw err;
+  validateAndParse(schema: TSchema, data: TValidatorData): IPhoto {
+    const validate = this.ajv.compile(schema);
+    validate(data);
+    if (validate.errors?.length) {
+      throw validate.errors[0];
     }
+    return this.parse(data);
   }
 }
