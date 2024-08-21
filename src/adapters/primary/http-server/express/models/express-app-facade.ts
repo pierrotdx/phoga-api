@@ -1,11 +1,15 @@
+import { IUseCases } from "../../../../../business-logic";
+import { IValidators } from "../../models";
 import { AppRouter, ExpressApp, PhotoController, PhotoRouter } from "../app";
-import { IPhotoControllerParams } from "./photo-controller-params";
 
 export class ExpressAppFacade {
   private readonly appRouter: AppRouter;
 
-  constructor(photoControllerParams: IPhotoControllerParams) {
-    const photoController = new PhotoController(photoControllerParams);
+  constructor(
+    private readonly useCases: IUseCases,
+    private readonly validators: IValidators,
+  ) {
+    const photoController = new PhotoController(this.useCases, this.validators);
     const photoRouter = new PhotoRouter(photoController);
     this.appRouter = new AppRouter(photoRouter);
   }

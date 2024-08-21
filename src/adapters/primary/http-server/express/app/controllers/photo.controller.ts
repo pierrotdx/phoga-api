@@ -4,28 +4,35 @@ import {
   AddPhotoSchema,
   DeletePhotoSchema,
   GetPhotoSchema,
+  IValidators,
   ReplacePhotoSchema,
 } from "../../../models";
-import { GetPhotoField } from "../../../../../../business-logic";
+import { GetPhotoField, IUseCases } from "../../../../../../business-logic";
 import { Readable } from "node:stream";
-import { IPhotoControllerParams } from "../../models";
 
 export class PhotoController {
-  constructor(private readonly params: IPhotoControllerParams) {}
+  constructor(
+    private readonly useCases: IUseCases,
+    private readonly validators: IValidators,
+  ) {}
 
   getPhotoMetadataHandler = async (req: Request, res: Response) => {
-    const { useCase, validator } = this.params.getPhoto;
-    const id = validator.validateAndParse(GetPhotoSchema, req.params);
-    const photo = await useCase.execute(id, {
+    const id = this.validators.getPhoto.validateAndParse(
+      GetPhotoSchema,
+      req.params,
+    );
+    const photo = await this.useCases.getPhoto.execute(id, {
       fields: [GetPhotoField.Metadata],
     });
     res.json(photo);
   };
 
   getPhotoImageHandler = async (req: Request, res: Response) => {
-    const { useCase, validator } = this.params.getPhoto;
-    const id = validator.validateAndParse(GetPhotoSchema, req.params);
-    const photo = await useCase.execute(id, {
+    const id = this.validators.getPhoto.validateAndParse(
+      GetPhotoSchema,
+      req.params,
+    );
+    const photo = await this.useCases.getPhoto.execute(id, {
       fields: [GetPhotoField.ImageBuffer],
     });
     const imageStream = Readable.from(photo.imageBuffer);
@@ -37,23 +44,29 @@ export class PhotoController {
   };
 
   addPhotoHandler = async (req: Request, res: Response) => {
-    const { useCase, validator } = this.params.addPhoto;
-    const photo = validator.validateAndParse(AddPhotoSchema, req.body);
-    await useCase.execute(photo);
+    const photo = this.validators.addPhoto.validateAndParse(
+      AddPhotoSchema,
+      req.body,
+    );
+    await this.useCases.addPhoto.execute(photo);
     res.sendStatus(200);
   };
 
   replacePhotoHandler = async (req: Request, res: Response) => {
-    const { useCase, validator } = this.params.replacePhoto;
-    const photo = validator.validateAndParse(ReplacePhotoSchema, req.body);
-    await useCase.execute(photo);
+    const photo = this.validators.replacePhoto.validateAndParse(
+      ReplacePhotoSchema,
+      req.body,
+    );
+    await this.useCases.replacePhoto.execute(photo);
     res.sendStatus(200);
   };
 
   deletePhotoHandler = async (req: Request, res: Response) => {
-    const { useCase, validator } = this.params.deletePhoto;
-    const id = validator.validateAndParse(DeletePhotoSchema, req.params);
-    await useCase.execute(id);
+    const id = this.validators.deletePhoto.validateAndParse(
+      DeletePhotoSchema,
+      req.params,
+    );
+    await this.useCases.deletePhoto.execute(id);
     res.sendStatus(200);
   };
 }

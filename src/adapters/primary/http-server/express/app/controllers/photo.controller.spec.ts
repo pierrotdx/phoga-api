@@ -15,6 +15,7 @@ import {
   IPhoto,
   IPhotoImageDb,
   IPhotoMetadataDb,
+  IUseCases,
   Photo,
   ReplacePhoto,
 } from "../../../../../../business-logic";
@@ -22,11 +23,11 @@ import {
   FakePhotoImageDb,
   FakePhotoMetadataDb,
 } from "../../../../../secondary";
-import { IPhotoControllerParams } from "../../models";
 import { PhotoRouter } from "../routers";
 import bodyParser from "body-parser";
 import TestAgent from "supertest/lib/agent";
 import { imageBufferEncoding } from "../../../http-server.constants";
+import { IValidators } from "../../../models";
 
 describe("photo controller", () => {
   let photoController: PhotoController;
@@ -34,7 +35,8 @@ describe("photo controller", () => {
   let imageDb: IPhotoImageDb;
   let metadataDb: IPhotoMetadataDb;
 
-  let photoControllerParams: IPhotoControllerParams;
+  let useCases: IUseCases;
+  let validators: IValidators;
 
   let dumbApp: Express;
   let req: TestAgent;
@@ -54,25 +56,22 @@ describe("photo controller", () => {
   beforeEach(() => {
     imageDb = new FakePhotoImageDb();
     metadataDb = new FakePhotoMetadataDb();
-    photoControllerParams = {
-      getPhoto: {
-        useCase: new GetPhoto(metadataDb, imageDb),
-        validator: new GetPhotoFakeValidator(),
-      },
-      addPhoto: {
-        useCase: new AddPhoto(metadataDb, imageDb),
-        validator: new AddPhotoFakeValidator(),
-      },
-      replacePhoto: {
-        useCase: new ReplacePhoto(imageDb, metadataDb),
-        validator: new ReplacePhotoFakeValidator(),
-      },
-      deletePhoto: {
-        useCase: new DeletePhoto(metadataDb, imageDb),
-        validator: new DeletePhotoFakeValidator(),
-      },
+
+    useCases = {
+      getPhoto: new GetPhoto(metadataDb, imageDb),
+      addPhoto: new AddPhoto(metadataDb, imageDb),
+      replacePhoto: new ReplacePhoto(imageDb, metadataDb),
+      deletePhoto: new DeletePhoto(metadataDb, imageDb),
     };
-    photoController = new PhotoController(photoControllerParams);
+
+    validators = {
+      getPhoto: new GetPhotoFakeValidator(),
+      addPhoto: new AddPhotoFakeValidator(),
+      replacePhoto: new ReplacePhotoFakeValidator(),
+      deletePhoto: new DeletePhotoFakeValidator(),
+    };
+
+    photoController = new PhotoController(useCases, validators);
     dumbApp = getDumbApp(photoController);
     req = request(dumbApp);
   });
@@ -83,8 +82,7 @@ describe("photo controller", () => {
     });
 
     it("should call the get-photo use case with the appropriate arguments", async () => {
-      const useCase = photoControllerParams.getPhoto.useCase;
-      const executeSpy = jest.spyOn(useCase, "execute");
+      const executeSpy = jest.spyOn(useCases.getPhoto, "execute");
 
       await res$;
 
@@ -109,8 +107,7 @@ describe("photo controller", () => {
     let executeSpy: jest.SpyInstance;
 
     beforeEach(() => {
-      const useCase = photoControllerParams.getPhoto.useCase;
-      executeSpy = jest.spyOn(useCase, "execute");
+      executeSpy = jest.spyOn(useCases.getPhoto, "execute");
       executeSpy.mockResolvedValueOnce(photo);
 
       res$ = req.get(`/${id}/image`);
@@ -138,8 +135,7 @@ describe("photo controller", () => {
 
   describe("addPhotoHandler", () => {
     it("should call the add-photo use case with the appropriate arguments and respond with status 200", async () => {
-      const useCase = photoControllerParams.addPhoto.useCase;
-      const executeSpy = jest.spyOn(useCase, "execute");
+      const executeSpy = jest.spyOn(useCases.addPhoto, "execute");
 
       const payload = getReqPayloadFromPhoto(photo, imageBufferEncoding);
       const response = await req.post("/").send(payload);
@@ -157,8 +153,7 @@ describe("photo controller", () => {
         imageBuffer: Buffer.from("init photo buffer", imageBufferEncoding),
       });
       await imageDb.insert(initPhoto);
-      const useCase = photoControllerParams.replacePhoto.useCase;
-      const executeSpy = jest.spyOn(useCase, "execute");
+      const executeSpy = jest.spyOn(useCases.replacePhoto, "execute");
 
       const payload = getReqPayloadFromPhoto(photo, imageBufferEncoding);
       const response = await req.put(`/`).send(payload);
@@ -172,8 +167,7 @@ describe("photo controller", () => {
 
   describe("deletePhotoHandler", () => {
     it("should call the delete-photo use case with the appropriate arguments and respond with status 200", async () => {
-      const useCase = photoControllerParams.deletePhoto.useCase;
-      const executeSpy = jest.spyOn(useCase, "execute");
+      const executeSpy = jest.spyOn(useCases.deletePhoto, "execute");
 
       const response = await req.delete(`/${photo._id}`);
 
