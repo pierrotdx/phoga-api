@@ -12,7 +12,7 @@ export class Photo implements IPhoto {
 
   constructor(
     public readonly _id: string,
-    private readonly data?: {
+    data?: {
       metadata?: IPhoto["metadata"];
       imageBuffer?: IPhoto["imageBuffer"];
     },
