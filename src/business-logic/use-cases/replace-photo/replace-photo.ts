@@ -4,8 +4,8 @@ import { IPhoto, Photo } from "../../models";
 
 export class ReplacePhoto {
   constructor(
-    private readonly photoImageDb: IPhotoImageDb,
     private readonly photoMetadataDb: IPhotoMetadataDb,
+    private readonly photoImageDb: IPhotoImageDb,
   ) {}
 
   async execute(photo: IPhoto): Promise<void> {

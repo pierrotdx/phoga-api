@@ -60,7 +60,7 @@ describe("photo controller", () => {
     useCases = {
       getPhoto: new GetPhoto(metadataDb, imageDb),
       addPhoto: new AddPhoto(metadataDb, imageDb),
-      replacePhoto: new ReplacePhoto(imageDb, metadataDb),
+      replacePhoto: new ReplacePhoto(metadataDb, imageDb),
       deletePhoto: new DeletePhoto(metadataDb, imageDb),
     };
 

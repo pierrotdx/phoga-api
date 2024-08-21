@@ -25,7 +25,7 @@ describe("replace-photo use case", () => {
     metadataDb = new FakePhotoMetadataDb();
     metadataDb.insert(photo);
 
-    replacePhoto = new ReplacePhoto(imageDb, metadataDb);
+    replacePhoto = new ReplacePhoto(metadataDb, imageDb);
   });
 
   describe("photo image", () => {
