@@ -1,6 +1,3 @@
-import Ajv from "ajv";
-import addFormat from "ajv-formats";
-
 import {
   IAddPhotoValidator,
   TSchema,
@@ -8,15 +5,17 @@ import {
 } from "../../../../models";
 import { IPhoto, Photo } from "../../../../../../../business-logic";
 import { imageBufferEncoding } from "../../../../http-server.constants";
+import { AjvValidator } from "./ajv-validator";
 
 export class AddPhotoAjvValidator implements IAddPhotoValidator {
-  private readonly ajv = new Ajv();
+  private ajvValidator = new AjvValidator();
 
-  constructor() {
-    addFormat(this.ajv);
+  validateAndParse(schema: TSchema, data: TValidatorData): IPhoto {
+    this.ajvValidator.validate(schema, data);
+    return this.parse(data);
   }
 
-  private readonly parse = (data: TValidatorData): IPhoto => {
+  private parse(data: TValidatorData): IPhoto {
     const { _id, imageBuffer, date, description, location } = data as Record<
       string,
       string
@@ -31,14 +30,5 @@ export class AddPhotoAjvValidator implements IAddPhotoValidator {
       },
     });
     return photo;
-  };
-
-  validateAndParse(schema: TSchema, data: TValidatorData): IPhoto {
-    const validate = this.ajv.compile(schema);
-    validate(data);
-    if (validate.errors?.length) {
-      throw validate.errors[0];
-    }
-    return this.parse(data);
   }
 }
