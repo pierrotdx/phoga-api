@@ -1,16 +1,17 @@
 import bodyParser from "body-parser";
 import express, {
+  type Express,
   NextFunction,
   Request,
   Response,
-  type Express,
 } from "express";
 import { clone, omit } from "ramda";
 import request from "supertest";
 
-import { AddPhotoAjvValidator } from "./add-photo.ajv-validator";
 import { IPhoto, Photo } from "@business-logic";
 import { AddPhotoSchema, imageBufferEncoding } from "@http-server";
+
+import { AddPhotoAjvValidator } from "./add-photo.ajv-validator";
 
 describe("AddPhotoAjvValidator", () => {
   let addPhotoAjvValidator: AddPhotoAjvValidator;

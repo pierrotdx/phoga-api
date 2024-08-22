@@ -1,5 +1,6 @@
 import { IPhoto } from "@business-logic";
 import { IDeletePhotoValidator, TSchema, TValidatorData } from "@http-server";
+
 import { AjvValidator } from "./ajv-validator";
 
 export class DeletePhotoAjvValidator implements IDeletePhotoValidator {

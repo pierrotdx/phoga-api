@@ -1,10 +1,11 @@
+import { IPhoto, Photo } from "@business-logic";
 import {
   IAddPhotoValidator,
-  imageBufferEncoding,
   TSchema,
   TValidatorData,
+  imageBufferEncoding,
 } from "@http-server";
-import { IPhoto, Photo } from "@business-logic";
+
 import { AjvValidator } from "./ajv-validator";
 
 export class AddPhotoAjvValidator implements IAddPhotoValidator {

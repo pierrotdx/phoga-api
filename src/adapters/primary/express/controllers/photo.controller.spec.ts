@@ -1,8 +1,16 @@
-import express, { type Express } from "express";
-import TestAgent from "supertest/lib/agent";
-import request, { Response } from "supertest";
 import bodyParser from "body-parser";
-import { PhotoController } from "./photo.controller";
+import express, { type Express } from "express";
+import request, { Response } from "supertest";
+import TestAgent from "supertest/lib/agent";
+
+import {
+  AddPhotoFakeValidator,
+  DeletePhotoFakeValidator,
+  FakePhotoImageDb,
+  FakePhotoMetadataDb,
+  GetPhotoFakeValidator,
+  ReplacePhotoFakeValidator,
+} from "@adapters";
 import {
   AddPhoto,
   DeletePhoto,
@@ -15,17 +23,10 @@ import {
   Photo,
   ReplacePhoto,
 } from "@business-logic";
-import {
-  FakePhotoImageDb,
-  FakePhotoMetadataDb,
-  AddPhotoFakeValidator,
-  DeletePhotoFakeValidator,
-  GetPhotoFakeValidator,
-  ReplacePhotoFakeValidator,
-} from "@adapters";
-import { PhotoRouter } from "../routers";
+import { IValidators, imageBufferEncoding } from "@http-server";
 
-import { imageBufferEncoding, IValidators } from "@http-server";
+import { PhotoRouter } from "../routers";
+import { PhotoController } from "./photo.controller";
 
 describe("photo controller", () => {
   let photoController: PhotoController;

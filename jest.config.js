@@ -13,5 +13,5 @@ module.exports = {
     "<rootDir>**/src/**/*.int-spec.(ts)",
     "<rootDir>**/src/**/*.e2e-spec.(ts)",
   ],
-  moduleNameMapper
+  moduleNameMapper,
 };

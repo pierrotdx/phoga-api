@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
+import { Readable } from "node:stream";
 
+import { GetPhotoField, IUseCases } from "@business-logic";
 import {
   AddPhotoSchema,
   DeletePhotoSchema,
@@ -7,8 +9,6 @@ import {
   IValidators,
   ReplacePhotoSchema,
 } from "@http-server";
-import { GetPhotoField, IUseCases } from "@business-logic";
-import { Readable } from "node:stream";
 
 export class PhotoController {
   constructor(

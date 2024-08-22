@@ -13,7 +13,9 @@
       "@business-logic/*": ["src/business-logic/*"],
       "@http-server": ["src/http-server"],
       "@http-server/*": ["src/http-server/*"],
-      "@adapters": ["src/adapters"]
+      "@adapters": ["src/adapters"],
+      "@adapters/databases": ["src/adapters/secondary/databases"],
+      "@adapters/validators": ["src/adapters/primary/validators"]
     }
   },
   "lib": ["es2015"],

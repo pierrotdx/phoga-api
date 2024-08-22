@@ -1,10 +1,12 @@
-import express, { type Express } from "express";
-import { AppRouter, PhotoController, PhotoRouter } from ".";
-import { Server } from "http";
-import helmet from "helmet";
 import bodyParser from "body-parser";
+import express, { type Express } from "express";
+import helmet from "helmet";
+import { Server } from "http";
+
 import { IUseCases } from "@business-logic";
 import { IValidators, PhogaHttpServer } from "@http-server";
+
+import { AppRouter, PhotoController, PhotoRouter } from ".";
 
 export class ExpressHttpServer implements PhogaHttpServer {
   public readonly app: Express = express();

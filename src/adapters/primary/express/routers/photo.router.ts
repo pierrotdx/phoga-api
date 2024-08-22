@@ -1,6 +1,8 @@
 import { Router } from "express";
-import { PhotoController } from "../controllers";
+
 import { entryPoints } from "@http-server";
+
+import { PhotoController } from "../controllers";
 
 export class PhotoRouter {
   public readonly router: Router;

@@ -1,13 +1,15 @@
 import express, {
+  type Express,
   NextFunction,
   Request,
   Response,
-  type Express,
 } from "express";
 import request from "supertest";
-import { GetPhotoAjvValidator } from "./get-photo.ajv-validator";
+
 import { IPhoto } from "@business-logic";
 import { GetPhotoSchema } from "@http-server";
+
+import { GetPhotoAjvValidator } from "./get-photo.ajv-validator";
 
 describe("GetPhotoAjvValidator", () => {
   let getPhotoAjvValidator: GetPhotoAjvValidator;

@@ -1,5 +1,12 @@
 import { type Express } from "express";
 import request from "supertest";
+
+import { FakePhotoImageDb, FakePhotoMetadataDb } from "@adapters/databases";
+import {
+  AddPhotoAjvValidator,
+  DeletePhotoAjvValidator,
+  GetPhotoAjvValidator,
+} from "@adapters/validators";
 import {
   AddPhoto,
   DeletePhoto,
@@ -9,15 +16,8 @@ import {
   IUseCases,
   ReplacePhoto,
 } from "@business-logic";
-import {
-  AddPhotoAjvValidator,
-  DeletePhotoAjvValidator,
-  GetPhotoAjvValidator,
-  FakePhotoImageDb,
-  FakePhotoMetadataDb,
-  ExpressHttpServer,
-} from "../..";
 import { IValidators } from "@http-server";
+
 import {
   addPhotoEntryPoint,
   deletePhotoEntryPoint,
@@ -31,6 +31,7 @@ import {
   replacePhotoEntryPoint,
   replacingPhoto,
 } from "./express-app.int-spec.utils";
+import { ExpressHttpServer } from "./express-http-server";
 
 describe("express app (image db: fake, metadata db: fake, validators: ajv) ", () => {
   let expressHttpServer: ExpressHttpServer;

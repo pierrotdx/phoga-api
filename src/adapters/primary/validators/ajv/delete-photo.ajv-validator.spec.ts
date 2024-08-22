@@ -1,13 +1,15 @@
 import express, {
-  NextFunction,
   type Express,
+  NextFunction,
   type Request,
   type Response,
 } from "express";
 import request from "supertest";
-import { DeletePhotoAjvValidator } from "./delete-photo.ajv-validator";
+
 import { IPhoto } from "@business-logic";
 import { DeletePhotoSchema } from "@http-server";
+
+import { DeletePhotoAjvValidator } from "./delete-photo.ajv-validator";
 
 describe("DeletePhotoAjvValidator", () => {
   let deletePhotoAjvValidator: DeletePhotoAjvValidator;

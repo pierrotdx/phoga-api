@@ -1,5 +1,6 @@
 import { IPhoto } from "@business-logic";
 import { IGetPhotoValidator, TSchema, TValidatorData } from "@http-server";
+
 import { AjvValidator } from "./ajv-validator";
 
 export class GetPhotoAjvValidator implements IGetPhotoValidator {
