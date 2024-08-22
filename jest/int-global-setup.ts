@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+
 import { setupMongoContainer } from "../mongo/mongo-docker-manager";
 
 const setGlobalVariables = (projectConfig: any, configRepo: string) => {

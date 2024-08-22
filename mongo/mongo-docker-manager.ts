@@ -1,5 +1,5 @@
-import path from "path";
 import compose from "docker-compose";
+import path from "path";
 
 const mongoServiceName = "mongodb";
 

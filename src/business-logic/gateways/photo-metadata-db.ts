@@ -1,5 +1,4 @@
-import { IPhotoMetadata } from "../models/photo-metadata";
-import { IPhoto } from "../models";
+import { IPhoto, IPhotoMetadata } from "../models";
 
 export interface IPhotoMetadataDb {
   insert: (photo: IPhoto) => Promise<void>;

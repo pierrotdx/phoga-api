@@ -8,5 +8,5 @@ module.exports = {
     "<rootDir>**/src/**/*.spec.(ts)",
     "<rootDir>**/src/**/*.int-spec.(ts)",
     "<rootDir>**/src/**/*.e2e-spec.(ts)",
-  ]
+  ],
 };
