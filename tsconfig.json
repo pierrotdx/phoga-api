@@ -6,9 +6,17 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
-    "types": ["node", "@types/jest"]
+    "types": ["node", "@types/jest"],
+    "baseUrl": "./",
+    "paths": {
+      "@business-logic/*": ["src/business-logic/*"],
+      "@http-server/*": ["src/http-server/*"],
+      "@adapters": ["src/adapters"]
+    }
   },
   "lib": ["es2015"],
   "include": ["src/**/*"],
-  "exclude": ["src/**/*.*spec.ts"]
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  }
 }
