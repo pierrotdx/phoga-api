@@ -1,2 +1,2 @@
-export * from "./primary/http-server";
+export * from "./primary";
 export * from "./secondary";
