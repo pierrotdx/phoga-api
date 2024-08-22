@@ -1,6 +1,6 @@
 import path from "path";
-import { IPhoto, Photo } from "../../../business-logic";
-import { entryPoints, imageBufferEncoding } from "../../../http-server";
+import { IPhoto, Photo } from "@business-logic";
+import { entryPoints, imageBufferEncoding } from "@http-server";
 
 export const addPhotoEntryPoint = getUrl(
   entryPoints.baseUrl,

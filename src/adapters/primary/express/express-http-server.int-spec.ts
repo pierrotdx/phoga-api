@@ -8,7 +8,7 @@ import {
   IPhotoMetadataDb,
   IUseCases,
   ReplacePhoto,
-} from "../../../business-logic";
+} from "@business-logic";
 import {
   AddPhotoAjvValidator,
   DeletePhotoAjvValidator,
@@ -17,7 +17,7 @@ import {
   FakePhotoMetadataDb,
   ExpressHttpServer,
 } from "../..";
-import { IValidators } from "../../../http-server";
+import { IValidators } from "@http-server";
 import {
   addPhotoEntryPoint,
   deletePhotoEntryPoint,

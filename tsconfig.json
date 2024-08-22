@@ -9,7 +9,9 @@
     "types": ["node", "@types/jest"],
     "baseUrl": "./",
     "paths": {
+      "@business-logic": ["src/business-logic"],
       "@business-logic/*": ["src/business-logic/*"],
+      "@http-server": ["src/http-server"],
       "@http-server/*": ["src/http-server/*"],
       "@adapters": ["src/adapters"]
     }

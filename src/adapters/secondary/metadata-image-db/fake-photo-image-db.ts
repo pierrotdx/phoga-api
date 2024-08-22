@@ -1,5 +1,5 @@
 import { clone } from "ramda";
-import { IPhoto, IPhotoImageDb } from "../../../business-logic";
+import { IPhoto, IPhotoImageDb } from "@business-logic";
 
 export class FakePhotoImageDb implements IPhotoImageDb {
   public readonly photoImages: Record<IPhoto["_id"], IPhoto["imageBuffer"]> =

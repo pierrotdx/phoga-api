@@ -1,7 +1,7 @@
 import Ajv, { ValidateFunction } from "ajv";
 import addFormat from "ajv-formats";
 
-import { TSchema, TValidatorData } from "../../../../http-server";
+import { TSchema, TValidatorData } from "@http-server";
 
 export class AjvValidator {
   private readonly ajv = new Ajv();

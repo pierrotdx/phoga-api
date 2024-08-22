@@ -14,7 +14,7 @@ import {
   IUseCases,
   Photo,
   ReplacePhoto,
-} from "../../../../business-logic";
+} from "@business-logic";
 import {
   FakePhotoImageDb,
   FakePhotoMetadataDb,
@@ -22,10 +22,10 @@ import {
   DeletePhotoFakeValidator,
   GetPhotoFakeValidator,
   ReplacePhotoFakeValidator,
-} from "../../../../adapters";
+} from "@adapters";
 import { PhotoRouter } from "../routers";
 
-import { imageBufferEncoding, IValidators } from "../../../../http-server";
+import { imageBufferEncoding, IValidators } from "@http-server";
 
 describe("photo controller", () => {
   let photoController: PhotoController;

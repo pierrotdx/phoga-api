@@ -1,9 +1,5 @@
-import {
-  IGetPhotoValidator,
-  TSchema,
-  TValidatorData,
-} from "../../../../http-server";
-import { IPhoto } from "../../../../business-logic";
+import { IGetPhotoValidator, TSchema, TValidatorData } from "@http-server";
+import { IPhoto } from "@business-logic";
 
 export class GetPhotoFakeValidator implements IGetPhotoValidator {
   validateAndParse(schema: TSchema, data: TValidatorData): IPhoto["_id"] {

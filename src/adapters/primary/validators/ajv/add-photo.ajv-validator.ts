@@ -3,8 +3,8 @@ import {
   imageBufferEncoding,
   TSchema,
   TValidatorData,
-} from "../../../../http-server";
-import { IPhoto, Photo } from "../../../../business-logic";
+} from "@http-server";
+import { IPhoto, Photo } from "@business-logic";
 import { AjvValidator } from "./ajv-validator";
 
 export class AddPhotoAjvValidator implements IAddPhotoValidator {

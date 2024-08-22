@@ -4,7 +4,7 @@ import {
   IPhotoMetadata,
   IPhotoMetadataDb,
   Photo,
-} from "../../../business-logic";
+} from "@business-logic";
 
 export class FakePhotoMetadataDb implements IPhotoMetadataDb {
   public readonly docs: Record<Photo["_id"], IPhotoMetadata> = {};

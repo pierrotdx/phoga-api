@@ -3,8 +3,8 @@ import { AppRouter, PhotoController, PhotoRouter } from ".";
 import { Server } from "http";
 import helmet from "helmet";
 import bodyParser from "body-parser";
-import { IUseCases } from "../../../business-logic";
-import { IValidators, PhogaHttpServer } from "../../../http-server";
+import { IUseCases } from "@business-logic";
+import { IValidators, PhogaHttpServer } from "@http-server";
 
 export class ExpressHttpServer implements PhogaHttpServer {
   public readonly app: Express = express();

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { PhotoRouter } from "./photo.router";
-import { entryPoints } from "../../../../http-server";
+import { entryPoints } from "@http-server";
 
 export class AppRouter {
   router: Router;

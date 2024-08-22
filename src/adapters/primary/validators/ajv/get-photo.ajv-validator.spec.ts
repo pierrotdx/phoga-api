@@ -6,8 +6,8 @@ import express, {
 } from "express";
 import request from "supertest";
 import { GetPhotoAjvValidator } from "./get-photo.ajv-validator";
-import { IPhoto } from "../../../../business-logic";
-import { GetPhotoSchema } from "../../../../http-server";
+import { IPhoto } from "@business-logic";
+import { GetPhotoSchema } from "@http-server";
 
 describe("GetPhotoAjvValidator", () => {
   let getPhotoAjvValidator: GetPhotoAjvValidator;

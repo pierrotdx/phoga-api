@@ -1,10 +1,10 @@
-import { IPhoto, Photo } from "../../../../business-logic";
+import { IPhoto, Photo } from "@business-logic";
 import {
   IAddPhotoValidator,
   imageBufferEncoding,
   TSchema,
   TValidatorData,
-} from "../../../../http-server";
+} from "@http-server";
 
 export class AddPhotoFakeValidator implements IAddPhotoValidator {
   validateAndParse(schema: TSchema, data: TValidatorData): IPhoto {

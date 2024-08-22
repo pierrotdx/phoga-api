@@ -6,8 +6,8 @@ import express, {
 } from "express";
 import request from "supertest";
 import { DeletePhotoAjvValidator } from "./delete-photo.ajv-validator";
-import { IPhoto } from "../../../../business-logic";
-import { DeletePhotoSchema } from "../../../../http-server";
+import { IPhoto } from "@business-logic";
+import { DeletePhotoSchema } from "@http-server";
 
 describe("DeletePhotoAjvValidator", () => {
   let deletePhotoAjvValidator: DeletePhotoAjvValidator;

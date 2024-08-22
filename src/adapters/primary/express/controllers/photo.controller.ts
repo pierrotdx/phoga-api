@@ -6,8 +6,8 @@ import {
   GetPhotoSchema,
   IValidators,
   ReplacePhotoSchema,
-} from "../../../../http-server";
-import { GetPhotoField, IUseCases } from "../../../../business-logic";
+} from "@http-server";
+import { GetPhotoField, IUseCases } from "@business-logic";
 import { Readable } from "node:stream";
 
 export class PhotoController {
