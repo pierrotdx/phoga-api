@@ -1,7 +1,11 @@
 import { type Express } from "express";
 import request from "supertest";
 
-import { FakePhotoImageDb, FakePhotoMetadataDb } from "@adapters/databases";
+import {
+  FakePhotoImageDb,
+  MongoBase,
+  PhotoMetadataDbMongo,
+} from "@adapters/databases";
 import {
   AddPhotoAjvValidator,
   DeletePhotoAjvValidator,
@@ -33,16 +37,19 @@ import {
 } from "./express-app.int-spec.utils";
 import { ExpressHttpServer } from "./express-http-server";
 
-describe("express app (image db: fake, metadata db: fake, validators: ajv) ", () => {
+describe("express app (image db: fake, metadata db: mongo, validators: ajv) ", () => {
   let expressHttpServer: ExpressHttpServer;
   let app: Express;
+  let mongoBase: MongoBase;
   let metadataDb: IPhotoMetadataDb;
   let imageDb: IPhotoImageDb;
   let useCases: IUseCases;
   let validators: IValidators;
 
   beforeAll(async () => {
-    metadataDb = new FakePhotoMetadataDb();
+    mongoBase = new MongoBase(global.__MONGO_URL__, global.__MONGO_DB_NAME);
+    await mongoBase.open();
+    metadataDb = new PhotoMetadataDbMongo(mongoBase);
     imageDb = new FakePhotoImageDb();
 
     useCases = {
@@ -66,7 +73,8 @@ describe("express app (image db: fake, metadata db: fake, validators: ajv) ", ()
     await useCases.addPhoto.execute(photoInDbFromStart);
   });
 
-  afterAll(() => {
+  afterAll(async () => {
+    await mongoBase.close();
     expressHttpServer.close();
   });
 

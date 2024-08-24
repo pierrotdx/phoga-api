@@ -70,25 +70,22 @@ export const photoToAdd = new Photo("7583bb57-ee95-4d4b-ada2-aac914aec411", {
   },
 });
 
-export const replacingPhoto = new Photo(
-  "7583bb57-ee95-4d4b-ada2-aac914aec427",
-  {
-    imageBuffer: Buffer.from(
-      "dumb image buffer pk,reogknerogner",
-      imageBufferEncoding,
-    ),
-    metadata: {
-      location: "dumb location eorkgnertognortnzeofnzeigfnirgunreign",
-      description: "dumb description 651fergkrng",
-      titles: [
-        "dumb titlte 1 651661",
-        "dumb titlte 2 zgfezfzegfeznrgizefze",
-        "title 3 zaeuyazduyefiueh",
-      ],
-      date: new Date(),
-    },
+export const replacingPhoto = new Photo(photoInDbFromStart._id, {
+  imageBuffer: Buffer.from(
+    "dumb image buffer pk,reogknerogner",
+    imageBufferEncoding,
+  ),
+  metadata: {
+    location: "dumb location eorkgnertognortnzeofnzeigfnirgunreign",
+    description: "dumb description 651fergkrng",
+    titles: [
+      "dumb titlte 1 651661",
+      "dumb titlte 2 zgfezfzegfeznrgizefze",
+      "title 3 zaeuyazduyefiueh",
+    ],
+    date: new Date(),
   },
-);
+});
 
 export const photoToDelete = new Photo("7583bb57-ee95-4d4b-ada2-aac914aec725", {
   imageBuffer: Buffer.from(
