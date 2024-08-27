@@ -1,13 +1,14 @@
 import compose from "docker-compose";
 import path from "path";
 
-const mongoServiceName = "mongodb";
+import { DockerService } from "./constants.docker";
 
-export const setupMongoContainer = async (
+export const setupContainer = async (
+  serviceName: DockerService,
   configRepo: string = path.join(__dirname),
 ) => {
   try {
-    const result = await compose.upOne(mongoServiceName, { cwd: configRepo });
+    const result = await compose.upOne(serviceName, { cwd: configRepo });
     console.info(result.err);
   } catch (err) {
     console.error(err);
@@ -15,13 +16,14 @@ export const setupMongoContainer = async (
   }
 };
 
-export const teardownMongoContainer = async (
+export const teardownContainer = async (
+  serviceName: DockerService,
   configRepo: string = path.join(__dirname),
 ) => {
   try {
     const result = await compose.down({
       cwd: configRepo,
-      commandOptions: [mongoServiceName, ["--volumes"]],
+      commandOptions: [serviceName, ["--volumes"]],
     });
     console.info(result.err);
   } catch (err) {

@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 
-import { setupMongoContainer } from "../mongo/mongo-docker-manager";
+import { DockerService, setupContainer } from "../docker";
 
 const setGlobalVariables = (projectConfig: any, configRepo: string) => {
   dotenv.config({ path: `${configRepo}/.env` });
@@ -8,12 +8,12 @@ const setGlobalVariables = (projectConfig: any, configRepo: string) => {
   const username = process.env.MONGO_INITDB_ROOT_USERNAME;
   const password = process.env.MONGO_INITDB_ROOT_PASSWORD;
   projectConfig.globals.__MONGO_URL__ = `mongodb://${username}:${password}@localhost:27017`;
-
   projectConfig.globals.__MONGO_DB_NAME__ = process.env.MONGO_DB;
 };
 
 export default async function (globalConfig, projectConfig) {
-  const configRepo = `${projectConfig.rootDir}/mongo/mongo-tests`;
-  await setupMongoContainer(configRepo);
+  const configRepo = `${projectConfig.rootDir}/docker/tests`;
+  await setupContainer(DockerService.Gcs, configRepo);
+  await setupContainer(DockerService.Mongo, configRepo);
   setGlobalVariables(projectConfig, configRepo);
 }

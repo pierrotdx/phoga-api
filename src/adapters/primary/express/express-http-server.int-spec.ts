@@ -2,9 +2,10 @@ import { type Express } from "express";
 import request from "supertest";
 
 import {
-  FakePhotoImageDb,
   MongoBase,
+  PhotoImageDbGcs,
   PhotoMetadataDbMongo,
+  getTestStorage,
 } from "@adapters/databases";
 import {
   AddPhotoAjvValidator,
@@ -20,8 +21,10 @@ import {
   IUseCases,
   ReplacePhoto,
 } from "@business-logic";
+import { Storage } from "@google-cloud/storage";
 import { IValidators } from "@http-server";
 
+import { ExpressHttpServer } from "./express-http-server";
 import {
   addPhotoEntryPoint,
   deletePhotoEntryPoint,
@@ -34,15 +37,15 @@ import {
   photoToDelete,
   replacePhotoEntryPoint,
   replacingPhoto,
-} from "./express-app.int-spec.utils";
-import { ExpressHttpServer } from "./express-http-server";
+} from "./express-http.int-spec.utils";
 
-describe("express app (image db: fake, metadata db: mongo, validators: ajv) ", () => {
+describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker), validators: ajv) ", () => {
   let expressHttpServer: ExpressHttpServer;
   let app: Express;
   let mongoBase: MongoBase;
   let metadataDb: IPhotoMetadataDb;
   let imageDb: IPhotoImageDb;
+  let storage: Storage;
   let useCases: IUseCases;
   let validators: IValidators;
 
@@ -50,7 +53,9 @@ describe("express app (image db: fake, metadata db: mongo, validators: ajv) ", (
     mongoBase = new MongoBase(global.__MONGO_URL__, global.__MONGO_DB_NAME);
     await mongoBase.open();
     metadataDb = new PhotoMetadataDbMongo(mongoBase);
-    imageDb = new FakePhotoImageDb();
+
+    storage = await getTestStorage();
+    imageDb = new PhotoImageDbGcs(storage);
 
     useCases = {
       getPhoto: new GetPhoto(metadataDb, imageDb),
