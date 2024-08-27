@@ -12,8 +12,8 @@
     "test:int:watch": "jest --watch --config ./jest/jest.int-config.js --runInBand",
     "test:e2e": "jest --config ./jest/jest.e2e-config.js --runInBand",
     "test:all": "jest --config ./jest/jest.all-config.js --runInBand",
-    "mongo:dev:up": "docker-compose -f ./mongo/mongo-dev/docker-compose.yaml up -d",
-    "mongo:dev:down": "docker-compose -f ./mongo/mongo-dev/docker-compose.yaml down --volumes",
+    "docker:dev:up": "docker-compose -f ./docker/dev/docker-compose.yaml up -d",
+    "docker:dev:down": "docker-compose -f ./docker/dev/docker-compose.yaml down --volumes",
     "format:write": "prettier . --write",
     "format:check": "prettier . --check"
   },
@@ -37,6 +37,7 @@
     "tsconfig-paths-jest": "^0.0.1"
   },
   "dependencies": {
+    "@google-cloud/storage": "^7.12.1",
     "@types/node": "^20.14.11",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",

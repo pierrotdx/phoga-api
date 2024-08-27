@@ -1,6 +1,7 @@
-import { teardownMongoContainer } from "../mongo/mongo-docker-manager";
+import { DockerService, teardownContainer } from "../docker";
 
 export default async function (globalConfig, projectConfig) {
-  const configRepo = `${projectConfig.rootDir}/mongo/mongo-tests`;
-  await teardownMongoContainer(configRepo);
+  const configRepo = `${projectConfig.rootDir}/docker/tests`;
+  await teardownContainer(DockerService.Gcs, configRepo);
+  await teardownContainer(DockerService.Mongo, configRepo);
 }

@@ -37,15 +37,33 @@ services:
     depends_on:
       - mongodb
 
+  fake-gcs-server:
+    image: fsouza/fake-gcs-server
+    container_name: fake-gcs-server
+    ports:
+      - '4443:4443'
+    command: -scheme http
+    volumes:
+      - storage_data:/storage
+    networks:
+      - gcs_network
+
 volumes:
   mongodb-data:
     driver: local
     name: mongo-data
+
   mongodb-log:
     driver: local
     name: mongo-log
+
+  storage_data:
 
 networks:
   mongodb_network:
     driver: bridge
     name: mongo-network
+
+  gcs_network:
+    driver: bridge
+    name: gcs-network
