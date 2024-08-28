@@ -1,5 +1,10 @@
 import bodyParser from "body-parser";
-import express, { type Express } from "express";
+import express, {
+  type Express,
+  type NextFunction,
+  type Request,
+  Response,
+} from "express";
 import helmet from "helmet";
 import { Server } from "http";
 
@@ -23,6 +28,7 @@ export class ExpressHttpServer implements PhogaHttpServer {
     this.app.use(helmet());
     this.app.use(bodyParser.json());
     this.initRouter();
+    this.app.use(this.errorHandler);
   }
 
   private initRouter() {
@@ -30,6 +36,16 @@ export class ExpressHttpServer implements PhogaHttpServer {
     const photoRouter = new PhotoRouter(photoController);
     const appRouter = new AppRouter(photoRouter).router;
     this.app.use(appRouter);
+  }
+
+  private errorHandler(
+    err: any,
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    console.error(err);
+    res.status(500).json(err);
   }
 
   listen(port = 3000) {
