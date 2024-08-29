@@ -15,7 +15,9 @@
       "@http-server/*": ["src/http-server/*"],
       "@adapters": ["src/adapters"],
       "@adapters/databases": ["src/adapters/secondary/databases"],
-      "@adapters/validators": ["src/adapters/primary/validators"]
+      "@adapters/validators": ["src/adapters/primary/validators"],
+      "@logger": ["src/logger/"],
+      "@logger/*": ["src/logger/*"],
     }
   },
   "lib": ["es2015"],
