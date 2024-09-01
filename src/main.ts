@@ -1,9 +1,50 @@
-import { Logger } from "@logger/models";
+import dotenv from "dotenv";
 
-import { LoggerWinston } from "./adapters/secondary/loggers";
+import {
+  AddPhotoAjvValidator,
+  DeletePhotoAjvValidator,
+  ExpressHttpServer,
+  GetPhotoAjvValidator,
+  MongoBase,
+  PhotoImageDbGcs,
+  PhotoMetadataDbMongo,
+  getTestStorage,
+} from "@adapters";
+import {
+  AddPhoto,
+  DeletePhoto,
+  GetPhoto,
+  IPhotoImageDb,
+  IPhotoMetadataDb,
+  ReplacePhoto,
+} from "@business-logic";
 
-const logger: Logger = new LoggerWinston();
+dotenv.config();
 
-logger.info("Welcome to phoga api!");
-const tmpError = new Error("testing error");
-logger.error(tmpError.stack);
+const mongoBase = new MongoBase(process.env.MONGO_URL, process.env.MONGO_DB);
+let metadataDb: IPhotoMetadataDb;
+mongoBase.open().then(() => {
+  metadataDb = new PhotoMetadataDbMongo(mongoBase);
+});
+
+let imageDb: IPhotoImageDb;
+getTestStorage().then((storage) => {
+  imageDb = new PhotoImageDbGcs(storage);
+});
+
+const useCases = {
+  getPhoto: new GetPhoto(metadataDb, imageDb),
+  addPhoto: new AddPhoto(metadataDb, imageDb),
+  replacePhoto: new ReplacePhoto(metadataDb, imageDb),
+  deletePhoto: new DeletePhoto(metadataDb, imageDb),
+};
+
+const validators = {
+  getPhoto: new GetPhotoAjvValidator(),
+  addPhoto: new AddPhotoAjvValidator(),
+  replacePhoto: new AddPhotoAjvValidator(),
+  deletePhoto: new DeletePhotoAjvValidator(),
+};
+
+const expressHttpServer = new ExpressHttpServer(useCases, validators);
+expressHttpServer.listen();
