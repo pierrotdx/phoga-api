@@ -1,3 +1,4 @@
+export * from "./http-error";
 export * from "./http-server.constants";
 export * from "./models";
 export * from "./phoga-http-server";

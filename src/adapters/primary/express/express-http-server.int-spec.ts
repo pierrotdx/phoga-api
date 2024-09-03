@@ -7,6 +7,7 @@ import {
   PhotoMetadataDbMongo,
   getTestStorage,
 } from "@adapters/databases";
+import { LoggerWinston } from "@adapters/loggers";
 import {
   AddPhotoAjvValidator,
   DeletePhotoAjvValidator,
@@ -22,7 +23,7 @@ import {
   ReplacePhoto,
 } from "@business-logic";
 import { Storage } from "@google-cloud/storage";
-import { IValidators } from "@http-server";
+import { HttpError, IValidators } from "@http-server";
 
 import { ExpressHttpServer } from "./express-http-server";
 import {
@@ -40,6 +41,7 @@ import {
 } from "./express-http.int-spec.utils";
 
 describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker), validators: ajv) ", () => {
+  let logger;
   let expressHttpServer: ExpressHttpServer;
   let app: Express;
   let mongoBase: MongoBase;
@@ -71,7 +73,10 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
       deletePhoto: new DeletePhotoAjvValidator(),
     };
 
-    expressHttpServer = new ExpressHttpServer(useCases, validators);
+    const silentLogger = true;
+    logger = new LoggerWinston(silentLogger);
+
+    expressHttpServer = new ExpressHttpServer(useCases, validators, logger);
     expressHttpServer.listen();
     app = expressHttpServer.app;
 
@@ -176,6 +181,22 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
       expect(metadataFromDbAfter).toBeUndefined();
 
       expect.assertions(4);
+    });
+  });
+
+  describe("error", () => {
+    it("should log the error and respond a string with status code 500", async () => {
+      const errorLogSpy = jest.spyOn(logger, "error");
+
+      const incorrectPayload = {};
+      const response = await request(app)
+        .put(replacePhotoEntryPoint)
+        .send(incorrectPayload);
+
+      expect(response.statusCode).toBe(500);
+      expect(errorLogSpy).toHaveBeenCalledTimes(1);
+      expect(response.body).toEqual(HttpError.Default);
+      expect.assertions(3);
     });
   });
 });

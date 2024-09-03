@@ -10,6 +10,7 @@ import {
   PhotoMetadataDbMongo,
   getTestStorage,
 } from "@adapters";
+import { LoggerWinston } from "@adapters/loggers";
 import {
   AddPhoto,
   DeletePhoto,
@@ -23,14 +24,23 @@ dotenv.config();
 
 const mongoBase = new MongoBase(process.env.MONGO_URL, process.env.MONGO_DB);
 let metadataDb: IPhotoMetadataDb;
-mongoBase.open().then(() => {
-  metadataDb = new PhotoMetadataDbMongo(mongoBase);
-});
+mongoBase
+  .open()
+  .then(() => {
+    metadataDb = new PhotoMetadataDbMongo(mongoBase);
+  })
+  .catch((err) => {
+    console.error("mongobase error", err);
+  });
 
 let imageDb: IPhotoImageDb;
-getTestStorage().then((storage) => {
-  imageDb = new PhotoImageDbGcs(storage);
-});
+getTestStorage()
+  .then((storage) => {
+    imageDb = new PhotoImageDbGcs(storage);
+  })
+  .catch((err) => {
+    console.error("imagedb error", err);
+  });
 
 const useCases = {
   getPhoto: new GetPhoto(metadataDb, imageDb),
@@ -46,5 +56,7 @@ const validators = {
   deletePhoto: new DeletePhotoAjvValidator(),
 };
 
-const expressHttpServer = new ExpressHttpServer(useCases, validators);
+const logger = new LoggerWinston();
+
+const expressHttpServer = new ExpressHttpServer(useCases, validators, logger);
 expressHttpServer.listen();

@@ -11,23 +11,26 @@ import { Logger } from "@logger";
 export class LoggerWinston implements Logger {
   private winstonLogger: WLogger;
 
+  public transports: transport[];
+
   private localTransport: transport;
   private consoleTransport: transport;
 
-  constructor() {
+  constructor(private readonly silent = false) {
     this.initLogger();
   }
 
   private initLogger() {
-    this.setTransports();
+    this.initTransports();
     this.winstonLogger = winston.createLogger({
       transports: [this.localTransport, this.consoleTransport],
     });
   }
 
-  private setTransports() {
+  private initTransports() {
     this.localTransport = this.getLocalTransport();
     this.consoleTransport = this.getConsoleTransport();
+    this.transports = [this.localTransport, this.consoleTransport];
   }
 
   private getLocalTransport() {
@@ -37,6 +40,7 @@ export class LoggerWinston implements Logger {
       datePattern: "YYYY-MM-DD",
       zippedArchive: true,
       maxSize: "20m",
+      silent: this.silent,
     });
     const localFormat = format.combine(format.timestamp(), format.json());
     localTransport.format = localFormat;
@@ -54,6 +58,7 @@ export class LoggerWinston implements Logger {
         format.colorize(),
         format.printf(this.transformInfoForConsole),
       ),
+      silent: this.silent,
     });
     return consoleTransport;
   }

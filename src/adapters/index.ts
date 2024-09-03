@@ -1,2 +1,2 @@
 export * from "./primary";
-export * from "./secondary/databases";
+export * from "./secondary";

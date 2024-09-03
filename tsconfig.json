@@ -16,8 +16,9 @@
       "@adapters": ["src/adapters"],
       "@adapters/databases": ["src/adapters/secondary/databases"],
       "@adapters/validators": ["src/adapters/primary/validators"],
+      "@adapters/loggers": ["src/adapters/secondary/loggers"],
       "@logger": ["src/logger/"],
-      "@logger/*": ["src/logger/*"],
+      "@logger/*": ["src/logger/*"]
     }
   },
   "lib": ["es2015"],
