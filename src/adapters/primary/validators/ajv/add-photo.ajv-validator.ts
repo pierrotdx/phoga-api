@@ -1,4 +1,6 @@
-import { IPhoto, Photo } from "@business-logic";
+import { isEmpty } from "ramda";
+
+import { IPhoto, IPhotoMetadata, Photo } from "@business-logic";
 import {
   IAddPhotoValidator,
   TSchema,
@@ -17,19 +19,32 @@ export class AddPhotoAjvValidator implements IAddPhotoValidator {
   }
 
   private parse(data: TValidatorData): IPhoto {
-    const { _id, imageBuffer, date, description, location } = data as Record<
-      string,
-      string
-    >;
+    const { _id, imageBuffer } = data as Record<string, string>;
     const photo = new Photo(_id, {
       imageBuffer: Buffer.from(imageBuffer, imageBufferEncoding),
-      metadata: {
-        date: new Date(date as string),
-        description: (description as string).trim(),
-        location,
-        titles: data.titles as string[],
-      },
     });
+    this.addMetadata(photo, data);
     return photo;
+  }
+
+  private addMetadata(photo: IPhoto, data: TValidatorData) {
+    const { date, description, location } = data as Record<string, string>;
+    const metadata: IPhotoMetadata = {};
+    if (date) {
+      metadata.date = new Date(date);
+    }
+    if (description) {
+      metadata.description = description;
+    }
+    if (location) {
+      metadata.location = location;
+    }
+    const titles = data.titles as string[];
+    if (titles?.length) {
+      metadata.titles = titles;
+    }
+    if (!isEmpty(metadata)) {
+      photo.metadata = metadata;
+    }
   }
 }
