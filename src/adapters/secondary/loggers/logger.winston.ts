@@ -79,11 +79,9 @@ export class LoggerWinston implements Logger {
     this.winstonLogger.warn(message, meta);
   }
 
-  error(err: unknown): void {
-    if (err instanceof Error) {
-      this.winstonLogger.error(err.name, err);
-    } else {
-      this.winstonLogger.error(err);
-    }
+  error(err: Error | string): void {
+    const error = new Error();
+    error.stack = err instanceof Error ? err.stack : err;
+    this.winstonLogger.error(error.stack);
   }
 }
