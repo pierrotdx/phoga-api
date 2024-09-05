@@ -1,4 +1,7 @@
+import { Permission } from "../permission";
+
 export interface IEntryPoint {
-    orderedParents?: IEntryPoint[];
-    getRelativePath: () => string;
+    getFullPath(): string;
+    getRelativePath(): string;
+    getPermissions(): Permission[];
 }
