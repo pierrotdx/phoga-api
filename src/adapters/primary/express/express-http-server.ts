@@ -11,13 +11,13 @@ import { Server } from "http";
 
 import { LoggerWinston } from "@adapters/loggers";
 import { IUseCases } from "@business-logic";
-import { HttpError, IValidators, PhogaHttpServer } from "@http-server";
+import { HttpError, IValidators, AppHttpServer } from "@http-server";
 import { Logger } from "@logger";
 
 import { AppRouter, PhotoController, PhotoRouter } from ".";
 import { ExpressLoggerWinston } from "./loggers";
 
-export class ExpressHttpServer implements PhogaHttpServer {
+export class ExpressHttpServer implements AppHttpServer {
   public readonly app: Express = express();
   private server: Server;
   private loggerHandler: Handler;
