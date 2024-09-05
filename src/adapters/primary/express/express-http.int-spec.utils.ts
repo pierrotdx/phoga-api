@@ -1,44 +1,14 @@
-import path from "path";
-
 import { IPhoto, Photo } from "@business-logic";
-import { entryPoints, imageBufferEncoding } from "@http-server";
+import { EntryPointId, entryPoints, imageBufferEncoding } from "@http-server";
 
-export const addPhotoEntryPoint = getUrl(
-  entryPoints.baseUrl,
-  entryPoints.photoBase,
-  entryPoints.photo.add,
-);
+export const addPhotoEntryPoint = entryPoints.getFullPath(EntryPointId.AddPhoto);
+export const getMetadataEntryPoint = entryPoints.getFullPath(EntryPointId.GetPhotoMetadata);
+export const getImageEntryPoint = entryPoints.getFullPath(EntryPointId.GetPhotoImage);
+export const replacePhotoEntryPoint = entryPoints.getFullPath(EntryPointId.ReplacePhoto);
+export const deletePhotoEntryPoint = entryPoints.getFullPath(EntryPointId.DeletePhoto);
 
-export const getMetadataEntryPoint = getUrl(
-  entryPoints.baseUrl,
-  entryPoints.photoBase,
-  entryPoints.photo.getMetadata,
-);
-
-export const getImageEntryPoint = getUrl(
-  entryPoints.baseUrl,
-  entryPoints.photoBase,
-  entryPoints.photo.getImage,
-);
-
-export const replacePhotoEntryPoint = getUrl(
-  entryPoints.baseUrl,
-  entryPoints.photoBase,
-  entryPoints.photo.replace,
-);
-
-export const deletePhotoEntryPoint = getUrl(
-  entryPoints.baseUrl,
-  entryPoints.photoBase,
-  entryPoints.photo.delete,
-);
-
-export function getUrl(...entryPoints: string[]): string {
-  return path.join(...entryPoints).replace(/\\/g, "/");
-}
-
-export function getUrlWithReplacedId(id: string, ...entryPoints: string[]) {
-  return getUrl(...entryPoints).replace(":id", id);
+export function getUrlWithReplacedId(id: string, entryPointId: EntryPointId) {
+  return entryPoints.getFullPath(entryPointId).replace(":id", id);
 }
 
 export const photoInDbFromStart = new Photo(

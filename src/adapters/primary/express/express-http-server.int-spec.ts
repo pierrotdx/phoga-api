@@ -23,7 +23,7 @@ import {
   ReplacePhoto,
 } from "@business-logic";
 import { Storage } from "@google-cloud/storage";
-import { HttpError, IValidators } from "@http-server";
+import { EntryPointId, HttpError, IValidators } from "@http-server";
 
 import { ExpressHttpServer } from "./express-http-server";
 import {
@@ -39,9 +39,10 @@ import {
   replacePhotoEntryPoint,
   replacingPhoto,
 } from "./express-http.int-spec.utils";
+import { Logger } from "@logger/models";
 
 describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker), validators: ajv) ", () => {
-  let logger;
+  let logger: Logger;
   let expressHttpServer: ExpressHttpServer;
   let app: Express;
   let mongoBase: MongoBase;
@@ -112,7 +113,7 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
     it("should return the metadata of the photo with matching id", async () => {
       const url = getUrlWithReplacedId(
         photoInDbFromStart._id,
-        getMetadataEntryPoint,
+        EntryPointId.GetPhotoMetadata,
       );
       await request(app).get(url);
       const metadataFromDb = await metadataDb.getById(photoInDbFromStart._id);
@@ -125,7 +126,7 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
     it("should return the image buffer of the photo with matching id", async () => {
       const url = getUrlWithReplacedId(
         photoInDbFromStart._id,
-        getImageEntryPoint,
+        EntryPointId.GetPhotoImage,
       );
       await request(app).get(url);
       const imageFromDb = await imageDb.getById(photoInDbFromStart._id);
@@ -168,7 +169,7 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
 
       const url = getUrlWithReplacedId(
         photoToDelete._id,
-        deletePhotoEntryPoint,
+        EntryPointId.DeletePhoto,
       );
       await request(app).delete(url);
 

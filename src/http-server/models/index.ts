@@ -1,4 +1,7 @@
 export * from "./add-photo-validator";
+export * from "./entry-point";
+export * from "./entry-point-id";
+export * from "./entry-points";
 export * from "./delete-photo-validator";
 export * from "./get-photo-validator";
 export * from "./replace-photo-validator";
