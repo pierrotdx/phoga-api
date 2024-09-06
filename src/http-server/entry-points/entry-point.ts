@@ -4,35 +4,35 @@ import { IEntryPoint } from "../models";
 import { Permission } from "../permission";
 
 export class EntryPoint implements IEntryPoint {
+  constructor(
+    private readonly relativePath: string,
+    public readonly parent?: IEntryPoint,
+    public readonly permissions?: Permission[],
+  ) {}
 
-    constructor(
-        private readonly relativePath: string,
-        public readonly orderedParents?: IEntryPoint[],
-        public readonly permissions?: Permission[],
-    ) {}
+  getParent(): IEntryPoint {
+    return this.parent;
+  }
 
-    getPermissions(): Permission[] {
-     return this.permissions || [];
+  getPermissions(): Permission[] {
+    const permissions = this.permissions || [];
+    const parentPermissions = this.parent?.getPermissions() || [];
+    const allPermissions = [...permissions, ...parentPermissions];
+    return allPermissions;
+  }
+
+  getRelativePath() {
+    return this.relativePath;
+  }
+
+  getFullPath() {
+    if (!this.parent) {
+      return this.getRelativePath();
     }
-
-    getRelativePath() {
-        return this.relativePath;
-    };
-
-    getFullPath() {
-        if (!this.orderedParents?.length) {
-            return this.getRelativePath();
-        }
-        const orderedParentsPaths = this.getOrderedParentsPaths();
-        const allPathFragments = [...orderedParentsPaths, this.getRelativePath()];
-        return path.join(...allPathFragments).replace(/\\/g, "/");
-    }
-
-    private getOrderedParentsPaths(): string[] {
-        return this.orderedParents?.reduce(
-            (pathsAcc: string[], entryPoint: IEntryPoint) => {
-                pathsAcc.push(entryPoint.getRelativePath());
-                return pathsAcc;
-            }, []) || [];
-    }
+    const allPathFragments = [
+      this.parent.getFullPath(),
+      this.getRelativePath(),
+    ];
+    return path.join(...allPathFragments).replace(/\\/g, "/");
+  }
 }

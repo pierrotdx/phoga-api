@@ -1,4 +1,5 @@
 export * from "./controllers";
-export * from "./routers";
-export * from "./express-http-server";
 export * from "./error-catcher";
+export * from "./express-http-server";
+export * from "./routers";
+export * from "./test-utils.express";

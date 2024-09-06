@@ -2,13 +2,7 @@ import { Request, Response } from "express";
 import { Readable } from "node:stream";
 
 import { GetPhotoField, IUseCases } from "@business-logic";
-import {
-  AddPhotoSchema,
-  DeletePhotoSchema,
-  GetPhotoSchema,
-  IValidators,
-  ReplacePhotoSchema,
-} from "@http-server";
+import { GetPhotoSchema, IValidators } from "@http-server";
 
 export class PhotoController {
   constructor(
@@ -41,32 +35,5 @@ export class PhotoController {
     imageStream.on("end", () => {
       res.end();
     });
-  };
-
-  addPhotoHandler = async (req: Request, res: Response) => {
-    const photo = this.validators.addPhoto.validateAndParse(
-      AddPhotoSchema,
-      req.body,
-    );
-    await this.useCases.addPhoto.execute(photo);
-    res.sendStatus(200);
-  };
-
-  replacePhotoHandler = async (req: Request, res: Response) => {
-    const photo = this.validators.replacePhoto.validateAndParse(
-      ReplacePhotoSchema,
-      req.body,
-    );
-    await this.useCases.replacePhoto.execute(photo);
-    res.sendStatus(200);
-  };
-
-  deletePhotoHandler = async (req: Request, res: Response) => {
-    const id = this.validators.deletePhoto.validateAndParse(
-      DeletePhotoSchema,
-      req.params,
-    );
-    await this.useCases.deletePhoto.execute(id);
-    res.sendStatus(200);
   };
 }

@@ -1,7 +1,8 @@
 import { Permission } from "../permission";
 
 export interface IEntryPoint {
-    getFullPath(): string;
-    getRelativePath(): string;
-    getPermissions(): Permission[];
+  getFullPath(): string;
+  getRelativePath(): string;
+  getPermissions(): Permission[];
+  getParent(): IEntryPoint;
 }

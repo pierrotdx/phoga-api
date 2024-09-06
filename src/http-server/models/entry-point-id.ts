@@ -1,9 +1,11 @@
 export enum EntryPointId {
-    Base = "base",
-    PhotoBase = "photo",
-    GetPhotoImage = "getPhotoImage",
-    GetPhotoMetadata = "getPhotoMetadata",
-    AddPhoto = "addPhoto",
-    ReplacePhoto = "replacePhoto",
-    DeletePhoto = "deletePhoto"
-  }
+  AddPhoto = "addPhoto",
+  AdminBase = "admin",
+  AdminPhotoBase = "adminPhoto",
+  Base = "base",
+  DeletePhoto = "deletePhoto",
+  GetPhotoImage = "getPhotoImage",
+  GetPhotoMetadata = "getPhotoMetadata",
+  PhotoBase = "photo",
+  ReplacePhoto = "replacePhoto",
+}

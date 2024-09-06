@@ -8,7 +8,7 @@ import {
   generatePhoto,
   getPhotoImageBuffer,
   photoParams,
-} from "./photo-image-db.gcs.int-spec.utils";
+} from "./test-utils.photo-image-db.gcs";
 
 describe("PhotoImageDbGcs", () => {
   let photoImageDbGcs: PhotoImageDbGcs;

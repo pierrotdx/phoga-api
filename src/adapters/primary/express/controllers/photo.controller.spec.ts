@@ -1,5 +1,4 @@
-import bodyParser from "body-parser";
-import express, { type Express } from "express";
+import { type Express } from "express";
 import request, { Response } from "supertest";
 import TestAgent from "supertest/lib/agent";
 
@@ -16,16 +15,16 @@ import {
   DeletePhoto,
   GetPhoto,
   GetPhotoField,
-  IPhoto,
   IPhotoImageDb,
   IPhotoMetadataDb,
   IUseCases,
   Photo,
   ReplacePhoto,
 } from "@business-logic";
-import { IValidators, imageBufferEncoding } from "@http-server";
+import { IValidators } from "@http-server";
 
 import { PhotoRouter } from "../routers";
+import { getDumbApp } from "../test-utils.express";
 import { PhotoController } from "./photo.controller";
 
 describe("photo controller", () => {
@@ -71,7 +70,8 @@ describe("photo controller", () => {
     };
 
     photoController = new PhotoController(useCases, validators);
-    dumbApp = getDumbApp(photoController);
+    const router = new PhotoRouter(photoController).getRouter();
+    dumbApp = getDumbApp(router);
     req = request(dumbApp);
   });
 
@@ -131,68 +131,4 @@ describe("photo controller", () => {
       expect.assertions(2);
     });
   });
-
-  describe("addPhotoHandler", () => {
-    it("should call the add-photo use case with the appropriate arguments and respond with status 200", async () => {
-      const executeSpy = jest.spyOn(useCases.addPhoto, "execute");
-
-      const payload = getReqPayloadFromPhoto(photo, imageBufferEncoding);
-      const response = await req.post("/").send(payload);
-
-      expect(executeSpy).toHaveBeenCalledTimes(1);
-      expect(executeSpy).toHaveBeenLastCalledWith(photo);
-      expect(response.statusCode).toBe(200);
-      expect.assertions(3);
-    });
-  });
-
-  describe("replacePhotoHandler", () => {
-    it("should call the replace-photo use case with the appropriate arguments and respond with status 200", async () => {
-      const initPhoto = new Photo(id, {
-        imageBuffer: Buffer.from("init photo buffer", imageBufferEncoding),
-      });
-      await imageDb.insert(initPhoto);
-      const executeSpy = jest.spyOn(useCases.replacePhoto, "execute");
-
-      const payload = getReqPayloadFromPhoto(photo, imageBufferEncoding);
-      const response = await req.put(`/`).send(payload);
-
-      expect(executeSpy).toHaveBeenCalledTimes(1);
-      expect(executeSpy).toHaveBeenLastCalledWith(photo);
-      expect(response.statusCode).toBe(200);
-      expect.assertions(3);
-    });
-  });
-
-  describe("deletePhotoHandler", () => {
-    it("should call the delete-photo use case with the appropriate arguments and respond with status 200", async () => {
-      const executeSpy = jest.spyOn(useCases.deletePhoto, "execute");
-
-      const response = await req.delete(`/${photo._id}`);
-
-      expect(executeSpy).toHaveBeenCalledTimes(1);
-      expect(executeSpy).toHaveBeenLastCalledWith(id);
-      expect(response.statusCode).toBe(200);
-      expect.assertions(3);
-    });
-  });
 });
-
-function getDumbApp(photoController: PhotoController): Express {
-  const app = express();
-  app.use(bodyParser.json());
-  const photoRouter = new PhotoRouter(photoController);
-  app.use(photoRouter.router);
-  return app;
-}
-
-function getReqPayloadFromPhoto(photo: IPhoto, encoding?: BufferEncoding) {
-  return {
-    _id: photo._id,
-    imageBuffer: photo.imageBuffer!.toString(encoding),
-    date: photo.metadata!.date!.toISOString(),
-    description: photo.metadata!.description,
-    location: photo.metadata!.location,
-    titles: photo.metadata!.titles!.join(","),
-  };
-}

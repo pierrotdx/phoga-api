@@ -11,10 +11,17 @@ import { Server } from "http";
 
 import { LoggerWinston } from "@adapters/loggers";
 import { IUseCases } from "@business-logic";
-import { HttpError, IValidators, AppHttpServer } from "@http-server";
+import { AppHttpServer, HttpError, IValidators } from "@http-server";
 import { Logger } from "@logger";
 
-import { AppRouter, PhotoController, PhotoRouter } from ".";
+import {
+  AdminPhotoController,
+  AdminPhotoRouter,
+  AdminRouter,
+  AppRouter,
+  PhotoController,
+  PhotoRouter,
+} from ".";
 import { ExpressLoggerWinston } from "./loggers";
 
 export class ExpressHttpServer implements AppHttpServer {
@@ -57,10 +64,28 @@ export class ExpressHttpServer implements AppHttpServer {
   }
 
   private initRouter() {
+    const photoRouter = this.getPhotoRouter();
+    const adminRouter = this.getAdminRouter();
+    const router = new AppRouter(photoRouter, adminRouter).getRouter();
+    this.app.use(router);
+  }
+
+  private getPhotoRouter(): PhotoRouter {
     const photoController = new PhotoController(this.useCases, this.validators);
-    const photoRouter = new PhotoRouter(photoController);
-    const appRouter = new AppRouter(photoRouter).router;
-    this.app.use(appRouter);
+    return new PhotoRouter(photoController);
+  }
+
+  private getAdminRouter(): AdminRouter {
+    const adminPhotoRouter = this.getAdminPhotoRouter();
+    return new AdminRouter(adminPhotoRouter);
+  }
+
+  private getAdminPhotoRouter(): AdminPhotoRouter {
+    const adminPhotoController = new AdminPhotoController(
+      this.useCases,
+      this.validators,
+    );
+    return new AdminPhotoRouter(adminPhotoController);
   }
 
   private errorHandler(

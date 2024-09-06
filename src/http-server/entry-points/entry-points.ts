@@ -1,27 +1,50 @@
+import { EntryPointId, IEntryPoints } from "../models";
 import { Permission } from "../permission";
-import { IEntryPoints, EntryPointId } from "../models";
 import { EntryPoint } from "./entry-point";
 
 class EntryPoints implements IEntryPoints {
-
   private readonly base = new EntryPoint("/");
 
-  private readonly photo = new EntryPoint("/photo", [this.base], [Permission.PhotosRead]);
-  private readonly getPhotoImage = new EntryPoint("/:id/image", [this.base, this.photo], [Permission.PhotosRead]);
-  private readonly getPhotoMetadata = new EntryPoint("/:id/metadata", [this.base, this.photo], [Permission.PhotosRead]);
-  private readonly replacePhoto = new EntryPoint("/", [this.base, this.photo], [Permission.PhotosWrite]);
-  private readonly addPhoto = new EntryPoint("/", [this.base, this.photo], [Permission.PhotosWrite]);
-  private readonly deletePhoto = new EntryPoint("/:id", [this.base, this.photo], [Permission.PhotosWrite]);
+  private readonly photoBase = new EntryPoint("/photo", this.base, [
+    Permission.PhotosRead,
+  ]);
+  private readonly getPhotoImage = new EntryPoint(
+    "/:id/image",
+    this.photoBase,
+    [Permission.PhotosRead],
+  );
+  private readonly getPhotoMetadata = new EntryPoint(
+    "/:id/metadata",
+    this.photoBase,
+    [Permission.PhotosRead],
+  );
+
+  private readonly adminBase = new EntryPoint("/admin", this.base, [
+    Permission.RestrictedRead,
+  ]);
+
+  private readonly adminPhotoBase = new EntryPoint("/photo", this.adminBase);
+  private readonly replacePhoto = new EntryPoint("/", this.adminPhotoBase, [
+    Permission.PhotosWrite,
+  ]);
+  private readonly addPhoto = new EntryPoint("/", this.adminPhotoBase, [
+    Permission.PhotosWrite,
+  ]);
+  private readonly deletePhoto = new EntryPoint("/:id", this.adminPhotoBase, [
+    Permission.PhotosWrite,
+  ]);
 
   private readonly entryPoints: Record<EntryPointId, EntryPoint> = {
-    [EntryPointId.Base]: this.base,
-    [EntryPointId.PhotoBase]: this.photo,
+    [EntryPointId.AdminBase]: this.adminBase,
+    [EntryPointId.AdminPhotoBase]: this.adminPhotoBase,
     [EntryPointId.AddPhoto]: this.addPhoto,
+    [EntryPointId.Base]: this.base,
     [EntryPointId.DeletePhoto]: this.deletePhoto,
     [EntryPointId.GetPhotoImage]: this.getPhotoImage,
     [EntryPointId.GetPhotoMetadata]: this.getPhotoMetadata,
+    [EntryPointId.PhotoBase]: this.photoBase,
     [EntryPointId.ReplacePhoto]: this.replacePhoto,
-}
+  };
 
   getRelativePath(id: EntryPointId): string {
     return this.entryPoints[id].getRelativePath();

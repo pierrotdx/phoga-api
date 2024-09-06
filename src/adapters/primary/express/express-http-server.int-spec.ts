@@ -24,22 +24,22 @@ import {
 } from "@business-logic";
 import { Storage } from "@google-cloud/storage";
 import { EntryPointId, HttpError, IValidators } from "@http-server";
+import { Logger } from "@logger/models";
 
 import { ExpressHttpServer } from "./express-http-server";
 import {
-  addPhotoEntryPoint,
-  deletePhotoEntryPoint,
-  getImageEntryPoint,
-  getMetadataEntryPoint,
+  addPhotoPath,
+  deletePhotoPath,
+  getImagePath,
+  getMetadataPath,
   getPayloadFromPhoto,
   getUrlWithReplacedId,
   photoInDbFromStart,
   photoToAdd,
   photoToDelete,
-  replacePhotoEntryPoint,
+  replacePhotoPath,
   replacingPhoto,
-} from "./express-http.int-spec.utils";
-import { Logger } from "@logger/models";
+} from "./test-utils.express";
 
 describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker), validators: ajv) ", () => {
   let logger: Logger;
@@ -89,13 +89,13 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
     expressHttpServer.close();
   });
 
-  describe(`POST ${addPhotoEntryPoint}`, () => {
+  describe(`POST ${addPhotoPath}`, () => {
     it("should add the photo image and metadata to their respective DBs", async () => {
       const imageFromDbBefore = await imageDb.getById(photoToAdd._id);
       const metadataFromDbBefore = await metadataDb.getById(photoToAdd._id);
 
       const payload = getPayloadFromPhoto(photoToAdd);
-      await request(app).post(addPhotoEntryPoint).send(payload);
+      await request(app).post(addPhotoPath).send(payload);
 
       const imageFromDbAfter = await imageDb.getById(photoToAdd._id);
       expect(imageFromDbBefore).toBeUndefined();
@@ -109,7 +109,7 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
     });
   });
 
-  describe(`GET ${getMetadataEntryPoint}`, () => {
+  describe(`GET ${getMetadataPath}`, () => {
     it("should return the metadata of the photo with matching id", async () => {
       const url = getUrlWithReplacedId(
         photoInDbFromStart._id,
@@ -122,7 +122,7 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
     });
   });
 
-  describe(`GET ${getImageEntryPoint}`, () => {
+  describe(`GET ${getImagePath}`, () => {
     it("should return the image buffer of the photo with matching id", async () => {
       const url = getUrlWithReplacedId(
         photoInDbFromStart._id,
@@ -135,7 +135,7 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
     });
   });
 
-  describe(`PUT ${replacePhotoEntryPoint}`, () => {
+  describe(`PUT ${replacePhotoPath}`, () => {
     it("should replace the photo with the one in the request", async () => {
       const imageFromDbBefore = await imageDb.getById(photoInDbFromStart._id);
       const metadataFromDbBefore = await metadataDb.getById(
@@ -143,7 +143,7 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
       );
 
       const payload = getPayloadFromPhoto(replacingPhoto);
-      await request(app).put(replacePhotoEntryPoint).send(payload);
+      await request(app).put(replacePhotoPath).send(payload);
 
       expect(photoInDbFromStart._id).toBe(replacingPhoto._id);
 
@@ -161,7 +161,7 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
     });
   });
 
-  describe(`DELETE ${deletePhotoEntryPoint}`, () => {
+  describe(`DELETE ${deletePhotoPath}`, () => {
     it("should delete the image and metadata from their respective DBs of the targeted photo", async () => {
       await useCases.addPhoto.execute(photoToDelete);
       const imageFromDbBefore = await imageDb.getById(photoToDelete._id);
@@ -191,7 +191,7 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
 
       const incorrectPayload = {};
       const response = await request(app)
-        .put(replacePhotoEntryPoint)
+        .put(replacePhotoPath)
         .send(incorrectPayload);
 
       expect(response.statusCode).toBe(500);
