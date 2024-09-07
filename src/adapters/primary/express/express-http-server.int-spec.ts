@@ -39,7 +39,7 @@ import {
   photoToDelete,
   replacePhotoPath,
   replacingPhoto,
-} from "./test-utils.express";
+} from "./services/test-utils.service";
 
 describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker), validators: ajv) ", () => {
   let logger: Logger;

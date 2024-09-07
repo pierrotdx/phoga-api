@@ -3,6 +3,7 @@ import { Router } from "express";
 import { EntryPointId, entryPoints } from "@http-server";
 
 import { IExpressRouter } from "../models";
+import { addSubRouter } from "../services";
 import { AdminRouter } from "./admin";
 import { PhotoRouter } from "./photo.router";
 
@@ -15,8 +16,8 @@ export class AppRouter implements IExpressRouter {
   ) {
     this.router = Router();
     this.setBaseRoute();
-    this.addSubRouter(EntryPointId.PhotoBase, this.photoRouter);
-    this.addSubRouter(EntryPointId.AdminBase, this.adminRouter);
+    addSubRouter(this.router, this.photoRouter, EntryPointId.PhotoBase);
+    addSubRouter(this.router, this.adminRouter, EntryPointId.AdminBase);
   }
 
   getRouter(): Router {
@@ -28,14 +29,5 @@ export class AppRouter implements IExpressRouter {
     this.router.get(basePath, (req, res) => {
       res.send("Welcome to PHOGA API!");
     });
-  }
-
-  private addSubRouter(
-    entryPointId: EntryPointId,
-    expressRouter: IExpressRouter,
-  ) {
-    const path = entryPoints.getRelativePath(entryPointId);
-    const router = expressRouter.getRouter();
-    this.router.use(path, router);
   }
 }

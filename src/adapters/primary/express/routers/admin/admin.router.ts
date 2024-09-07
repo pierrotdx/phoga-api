@@ -1,8 +1,9 @@
 import { Router } from "express";
 
-import { EntryPointId, entryPoints } from "@http-server";
+import { EntryPointId } from "@http-server";
 
 import { IExpressRouter } from "../../models";
+import { addSubRouter } from "../../services";
 import { AdminPhotoRouter } from "./admin-photo.router";
 
 export class AdminRouter implements IExpressRouter {
@@ -10,19 +11,14 @@ export class AdminRouter implements IExpressRouter {
 
   constructor(private readonly adminPhotoRouter: AdminPhotoRouter) {
     this.router = Router();
-    this.addSubRouter(EntryPointId.AdminPhotoBase, this.adminPhotoRouter);
+    addSubRouter(
+      this.router,
+      this.adminPhotoRouter,
+      EntryPointId.AdminPhotoBase,
+    );
   }
 
   getRouter(): Router {
     return this.router;
-  }
-
-  private addSubRouter(
-    entryPointId: EntryPointId,
-    expressRouter: IExpressRouter,
-  ) {
-    const path = entryPoints.getRelativePath(entryPointId);
-    const router = expressRouter.getRouter();
-    this.router.use(path, router);
   }
 }

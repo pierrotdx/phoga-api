@@ -24,7 +24,10 @@ import {
 import { IValidators, imageBufferEncoding } from "@http-server";
 
 import { AdminPhotoRouter } from "../../routers/admin/admin-photo.router";
-import { getDumbApp, getPayloadFromPhoto } from "../../test-utils.express";
+import {
+  getDumbApp,
+  getPayloadFromPhoto,
+} from "../../services/test-utils.service";
 
 describe("adminPhotoController", () => {
   let adminPhotoController: AdminPhotoController;

@@ -24,7 +24,7 @@ import {
 import { IValidators } from "@http-server";
 
 import { PhotoRouter } from "../routers";
-import { getDumbApp } from "../test-utils.express";
+import { getDumbApp } from "../services/test-utils.service";
 import { PhotoController } from "./photo.controller";
 
 describe("photo controller", () => {
