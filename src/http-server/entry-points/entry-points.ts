@@ -46,6 +46,10 @@ class EntryPoints implements IEntryPoints {
     [EntryPointId.ReplacePhoto]: this.replacePhoto,
   };
 
+  get(id: EntryPointId) {
+    return this.entryPoints[id];
+  }
+
   getRelativePath(id: EntryPointId): string {
     return this.entryPoints[id].getRelativePath();
   }
