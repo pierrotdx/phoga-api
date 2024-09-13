@@ -3,7 +3,7 @@ import request from "supertest";
 
 import { Scope } from "@http-server";
 
-import { AuthExpressHandler } from "./auth-express-handler.oauth2-jwt-bearer";
+import { ExpressAuthHandler } from "./express-auth-handler.oauth2-jwt-bearer";
 import {
   OAuth2ServerMock,
   audience,
@@ -13,9 +13,9 @@ import {
   restrictedRoute,
 } from "./test-utils.service";
 
-describe("AuthExpressHandler", () => {
+describe("ExpressAuthHandler", () => {
   const oauth2Server = new OAuth2ServerMock(issuerHost, issuerPort);
-  let authProvider: AuthExpressHandler;
+  let authProvider: ExpressAuthHandler;
   let dumbApp: Express;
 
   beforeAll(async () => {
@@ -24,7 +24,7 @@ describe("AuthExpressHandler", () => {
   });
 
   beforeEach(() => {
-    authProvider = new AuthExpressHandler(oauth2Server.issuerBaseURL, audience);
+    authProvider = new ExpressAuthHandler(oauth2Server.issuerBaseURL, audience);
     dumbApp = express();
     dumbApp.use(authProvider.requiresAuth);
   });

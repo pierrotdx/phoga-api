@@ -1,1 +1,1 @@
-export * from "./auth-express-handler.oauth2-jwt-bearer";
+export * from "./express-auth-handler.oauth2-jwt-bearer";
