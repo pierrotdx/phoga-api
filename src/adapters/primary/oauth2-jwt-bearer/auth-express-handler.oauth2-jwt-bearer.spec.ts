@@ -1,7 +1,7 @@
 import express, { type Express } from "express";
 import request from "supertest";
 
-import { Permission } from "@http-server";
+import { Scope } from "@http-server";
 
 import { AuthExpressHandler } from "./auth-express-handler.oauth2-jwt-bearer";
 import {
@@ -52,26 +52,25 @@ describe("AuthExpressHandler", () => {
     });
   });
 
-  describe("hasPermissions", () => {
-    const requiredPermissions: Permission | Permission[] = [
-      Permission.PhotosWrite,
-      Permission.PhotosRead,
+  describe("requiredScores", () => {
+    const requiredScopes: Scope | Scope[] = [
+      Scope.PhotosWrite,
+      Scope.PhotosRead,
     ];
 
     beforeEach(async () => {
-      const permissionHandler =
-        authProvider.hasPermissions(requiredPermissions);
-      dumbApp.get(restrictedRoute, permissionHandler, dumbReqHandler);
+      const scopesHandler = authProvider.requiredScopes(requiredScopes);
+      dumbApp.get(restrictedRoute, scopesHandler, dumbReqHandler);
     });
 
     it.each`
-      case                         | value                                                  | expectedStatus
-      ${"does not have any of"}    | ${undefined}                                           | ${403}
-      ${"does not contain all of"} | ${requiredPermissions.slice(0, 1)}                     | ${403}
-      ${"does contain all of"}     | ${requiredPermissions}                                 | ${200}
-      ${"does contain more than"}  | ${[...requiredPermissions, Permission.RestrictedRead]} | ${200}
+      case                         | value                                        | expectedStatus
+      ${"does not have any of"}    | ${undefined}                                 | ${403}
+      ${"does not contain all of"} | ${requiredScopes.slice(0, 1)}                | ${403}
+      ${"does contain all of"}     | ${requiredScopes}                            | ${200}
+      ${"does contain more than"}  | ${[...requiredScopes, Scope.RestrictedRead]} | ${200}
     `(
-      "should respond with the status code `$expectedStatus` if the request $case the required permissions",
+      "should respond with the status code `$expectedStatus` if the request $case the required scopes",
       async ({ value, expectedStatus }) => {
         if (value) {
           oauth2Server.customizeEmittedTokens("onlyNext", {

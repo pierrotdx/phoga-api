@@ -1,7 +1,10 @@
 import { Handler } from "express";
-import { auth, requiredScopes } from "express-oauth2-jwt-bearer";
+import {
+  auth,
+  requiredScopes as checkRequiredScopes,
+} from "express-oauth2-jwt-bearer";
 
-import { Permission } from "@http-server";
+import { Scope } from "@http-server";
 
 import { IAuthExpressHandler } from "../express";
 
@@ -21,7 +24,7 @@ export class AuthExpressHandler implements IAuthExpressHandler {
     });
   }
 
-  hasPermissions(requiredPermissions: Permission | Permission[]): Handler {
-    return requiredScopes(requiredPermissions);
+  requiredScopes(requiredScopes: Scope | Scope[]): Handler {
+    return checkRequiredScopes(requiredScopes);
   }
 }

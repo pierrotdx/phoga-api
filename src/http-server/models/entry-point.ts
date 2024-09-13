@@ -1,8 +1,8 @@
-import { Permission } from "../permission";
+import { Scope } from "../scope";
 
 export interface IEntryPoint {
   getFullPath(): string;
   getRelativePath(): string;
-  getPermissions(): Permission[];
+  getScopes(): Scope[];
   getParent(): IEntryPoint;
 }

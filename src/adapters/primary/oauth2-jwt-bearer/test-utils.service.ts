@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { OAuth2Server } from "oauth2-mock-server";
 import { post } from "superagent";
 
-import { Permission } from "@http-server";
+import { Scope } from "@http-server";
 
 export const issuerPort = 8080;
 export const issuerHost = "localhost";
@@ -11,7 +11,7 @@ export const baseRoute = "/";
 export const restrictedRoute = "/restricted";
 
 export type TokenCustomization = {
-  scope?: Permission | Permission[];
+  scope?: Scope | Scope[];
   aud?: string;
 };
 

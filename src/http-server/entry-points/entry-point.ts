@@ -1,24 +1,24 @@
 import path from "path";
 
 import { IEntryPoint } from "../models";
-import { Permission } from "../permission";
+import { Scope } from "../scope";
 
 export class EntryPoint implements IEntryPoint {
   constructor(
     private readonly relativePath: string,
     public readonly parent?: IEntryPoint,
-    public readonly permissions?: Permission[],
+    public readonly scopes?: Scope[],
   ) {}
 
   getParent(): IEntryPoint {
     return this.parent;
   }
 
-  getPermissions(): Permission[] {
-    const permissions = this.permissions || [];
-    const parentPermissions = this.parent?.getPermissions() || [];
-    const allPermissions = [...permissions, ...parentPermissions];
-    return allPermissions;
+  getScopes(): Scope[] {
+    const scopes = this.scopes || [];
+    const parentScopes = this.parent?.getScopes() || [];
+    const allScopes = [...scopes, ...parentScopes];
+    return allScopes;
   }
 
   getRelativePath() {
