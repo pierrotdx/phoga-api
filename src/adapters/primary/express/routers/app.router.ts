@@ -1,27 +1,20 @@
-import { Router } from "express";
-
 import { EntryPointId, entryPoints } from "@http-server";
 
-import { IExpressRouter } from "../models";
-import { addSubRouter } from "../services";
+import { IExpressAuthHandler } from "../models";
 import { AdminRouter } from "./admin";
+import { ExpressRouter } from "./express-router";
 import { PhotoRouter } from "./photo.router";
 
-export class AppRouter implements IExpressRouter {
-  router: Router;
-
+export class AppRouter extends ExpressRouter {
   constructor(
     private readonly photoRouter: PhotoRouter,
     private readonly adminRouter: AdminRouter,
+    private readonly authHandler: IExpressAuthHandler,
   ) {
-    this.router = Router();
+    super();
     this.setBaseRoute();
-    addSubRouter(this.router, this.photoRouter, EntryPointId.PhotoBase);
-    addSubRouter(this.router, this.adminRouter, EntryPointId.AdminBase);
-  }
-
-  getRouter(): Router {
-    return this.router;
+    this.addPhotoRouter();
+    this.addAdminRouter();
   }
 
   private setBaseRoute() {
@@ -29,5 +22,15 @@ export class AppRouter implements IExpressRouter {
     this.router.get(basePath, (req, res) => {
       res.send("Welcome to PHOGA API!");
     });
+  }
+
+  private addPhotoRouter() {
+    const path = entryPoints.getRelativePath(EntryPointId.PhotoBase);
+    this.addSubRouter(this.photoRouter, path);
+  }
+
+  private addAdminRouter() {
+    const path = entryPoints.getRelativePath(EntryPointId.AdminBase);
+    this.addSubRouter(this.adminRouter, path, this.authHandler.requiresAuth);
   }
 }

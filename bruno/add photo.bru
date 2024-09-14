@@ -5,15 +5,19 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/photo
+  url: {{baseUrl}}/admin/photo
   body: json
   auth: none
+}
+
+auth:bearer {
+  token: {{token}}
 }
 
 body:json {
   {
     "_id": "3154ce8c-f4c6-41bc-88ed-37ba0ea6ea20",
-    "description": "test",
+    "description": "test 2",
     "date": "2024-09-04T17:04:37.131Z",
     "location": "Paris",
     "titles": ["titre 1", "titre 2"],

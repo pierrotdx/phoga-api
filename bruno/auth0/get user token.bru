@@ -1,0 +1,30 @@
+meta {
+  name: get user token
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{issuerBaseUrl}}/oauth/token
+  body: json
+  auth: basic
+}
+
+auth:bearer {
+  token: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ikdfc19USWh3Z2taLU4wWjNsb1p6YiJ9.eyJpc3MiOiJodHRwczovL3Bob2dhLWRldi5ldS5hdXRoMC5jb20vIiwic3ViIjoic1psdnEwakRONXZTVm1DRmhXQ242VjB0VTBBVTZQd0ZAY2xpZW50cyIsImF1ZCI6InBob2dhLWRldi1wdWJsaWMtYXBpIiwiaWF0IjoxNzI2MzI3MjY0LCJleHAiOjE3MjY0MTM2NjQsImd0eSI6ImNsaWVudC1jcmVkZW50aWFscyIsImF6cCI6InNabHZxMGpETjV2U1ZtQ0ZoV0NuNlYwdFUwQVU2UHdGIiwicGVybWlzc2lvbnMiOltdfQ.hz5xP6UwDXzPxI_bkiTzrgRuutNja4jGAF_Mjy6-sTucIlkUX8puFcjfR3n9aVLgqsa_cVMesxoFrp1TAAyzCSbR7qzZwR2YdteaRKaO39IArtmqqFKL_O5i7N4MzLRNpdo4W6B1G2yecX7mAIatC-Q80kQJhoAc2muedONccX22n_6SmERMRCkQfNzGUQ4LPrYIkTLYWE8Ah_pYounPN6kJv1vtNhwJ2SCkOe4rg4zv62M96YIZki1Y1vgKrkXSv6s-n2xOE4urxtopEUfuOfoMkplM0Yya72btlixfugH-6i_Wbn7VVR-mGh8K59sHJxM-iq6MaJvG4KosCfHNog
+}
+
+body:json {
+  {
+    "client_id": "{{clientId}}",
+    "grant_type": "password",
+    "audience": "{{audience}}",
+    "username": "{{email}}",
+    "password": "{{password}}",
+    "scope": "read:restricted write:photos"
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("token", res.body.access_token);
+}

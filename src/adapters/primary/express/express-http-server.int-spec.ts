@@ -23,10 +23,18 @@ import {
   ReplacePhoto,
 } from "@business-logic";
 import { Storage } from "@google-cloud/storage";
-import { EntryPointId, HttpError, IValidators } from "@http-server";
+import { EntryPointId, IValidators, entryPoints } from "@http-server";
 import { Logger } from "@logger/models";
 
+import { ExpressAuthHandler } from "../oauth2-jwt-bearer";
+import {
+  OAuth2ServerMock,
+  audience,
+  issuerHost,
+  issuerPort,
+} from "../oauth2-jwt-bearer/test-utils.service";
 import { ExpressHttpServer } from "./express-http-server";
+import { IExpressAuthHandler } from "./models";
 import {
   addPhotoPath,
   deletePhotoPath,
@@ -41,16 +49,22 @@ import {
   replacingPhoto,
 } from "./services/test-utils.service";
 
-describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker), validators: ajv) ", () => {
-  let logger: Logger;
+describe("ExpressHttpServer", () => {
   let expressHttpServer: ExpressHttpServer;
   let app: Express;
+  let logger: Logger;
+  let authHandler: IExpressAuthHandler;
+
   let mongoBase: MongoBase;
   let metadataDb: IPhotoMetadataDb;
   let imageDb: IPhotoImageDb;
+
   let storage: Storage;
+
   let useCases: IUseCases;
   let validators: IValidators;
+
+  let oauth2Server: OAuth2ServerMock;
 
   beforeAll(async () => {
     mongoBase = new MongoBase(global.__MONGO_URL__, global.__MONGO_DB_NAME);
@@ -59,6 +73,9 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
 
     storage = await getTestStorage();
     imageDb = new PhotoImageDbGcs(storage);
+
+    oauth2Server = new OAuth2ServerMock(issuerHost, issuerPort);
+    await oauth2Server.start({ aud: audience });
   });
 
   beforeEach(async () => {
@@ -79,7 +96,14 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
     const silentLogger = true;
     logger = new LoggerWinston(silentLogger);
 
-    expressHttpServer = new ExpressHttpServer(useCases, validators, logger);
+    authHandler = new ExpressAuthHandler(oauth2Server.issuerBaseURL, audience);
+
+    expressHttpServer = new ExpressHttpServer(
+      useCases,
+      validators,
+      logger,
+      authHandler,
+    );
     expressHttpServer.listen();
     app = expressHttpServer.app;
 
@@ -92,15 +116,40 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
 
   afterAll(async () => {
     await mongoBase.close();
+    await oauth2Server.close();
   });
 
   describe(`POST ${addPhotoPath}`, () => {
+    const requiredScopes = entryPoints.getScopes(EntryPointId.AddPhoto);
+    const payload = getPayloadFromPhoto(photoToAdd);
+
+    it("should deny the access and respond with status code 401 if no token is associated to the request", async () => {
+      const response = await request(app).post(addPhotoPath).send(payload);
+      expect(response.statusCode).toBe(401);
+      expect.assertions(1);
+    });
+
+    it("should deny the access and respond with status code 403 if the token scope of the request is invalid", async () => {
+      const token = await oauth2Server.fetchAccessToken();
+      const response = await request(app)
+        .post(addPhotoPath)
+        .auth(token, { type: "bearer" })
+        .send(payload);
+      expect(response.statusCode).toBe(403);
+      expect.assertions(1);
+    });
+
     it("should add the photo image and metadata to their respective DBs", async () => {
       const imageFromDbBefore = await imageDb.getById(photoToAdd._id);
       const metadataFromDbBefore = await metadataDb.getById(photoToAdd._id);
 
-      const payload = getPayloadFromPhoto(photoToAdd);
-      await request(app).post(addPhotoPath).send(payload);
+      const token = await oauth2Server.fetchAccessToken({
+        scope: requiredScopes,
+      });
+      await request(app)
+        .post(addPhotoPath)
+        .auth(token, { type: "bearer" })
+        .send(payload);
 
       const imageFromDbAfter = await imageDb.getById(photoToAdd._id);
       expect(imageFromDbBefore).toBeUndefined();
@@ -141,14 +190,32 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
   });
 
   describe(`PUT ${replacePhotoPath}`, () => {
+    const requiredScopes = entryPoints.getScopes(EntryPointId.ReplacePhoto);
+    const payload = getPayloadFromPhoto(replacingPhoto);
+
+    it("should deny the access and respond with status code 403 if the token scope of the request is invalid", async () => {
+      const token = await oauth2Server.fetchAccessToken();
+      const response = await request(app)
+        .post(replacePhotoPath)
+        .auth(token, { type: "bearer" })
+        .send(payload);
+      expect(response.statusCode).toBe(403);
+      expect.assertions(1);
+    });
+
     it("should replace the photo with the one in the request", async () => {
       const imageFromDbBefore = await imageDb.getById(photoInDbFromStart._id);
       const metadataFromDbBefore = await metadataDb.getById(
         photoInDbFromStart._id,
       );
 
-      const payload = getPayloadFromPhoto(replacingPhoto);
-      await request(app).put(replacePhotoPath).send(payload);
+      const token = await oauth2Server.fetchAccessToken({
+        scope: requiredScopes,
+      });
+      await request(app)
+        .put(replacePhotoPath)
+        .auth(token, { type: "bearer" })
+        .send(payload);
 
       expect(photoInDbFromStart._id).toBe(replacingPhoto._id);
 
@@ -167,16 +234,31 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
   });
 
   describe(`DELETE ${deletePhotoPath}`, () => {
+    const requiredScopes = entryPoints.getScopes(EntryPointId.DeletePhoto);
+    const url = getUrlWithReplacedId(
+      photoToDelete._id,
+      EntryPointId.DeletePhoto,
+    );
+
+    it("should deny the access and respond with status code 403 if the token scope of the request is invalid", async () => {
+      const token = await oauth2Server.fetchAccessToken();
+      const response = await request(app)
+        .delete(url)
+        .auth(token, { type: "bearer" });
+      expect(response.statusCode).toBe(403);
+      expect.assertions(1);
+    });
+
     it("should delete the image and metadata from their respective DBs of the targeted photo", async () => {
       await useCases.addPhoto.execute(photoToDelete);
       const imageFromDbBefore = await imageDb.getById(photoToDelete._id);
       const metadataFromDbBefore = await metadataDb.getById(photoToDelete._id);
 
-      const url = getUrlWithReplacedId(
-        photoToDelete._id,
-        EntryPointId.DeletePhoto,
-      );
-      await request(app).delete(url);
+      oauth2Server.customizeEmittedTokens("onlyNext", {
+        scope: requiredScopes,
+      });
+      const token = await oauth2Server.fetchAccessToken();
+      await request(app).delete(url).auth(token, { type: "bearer" });
 
       expect(imageFromDbBefore).toBeDefined();
       const imageFromDbAfter = await imageDb.getById(photoToDelete._id);
@@ -191,18 +273,22 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
   });
 
   describe("error", () => {
-    it("should log the error and respond a string with status code 500", async () => {
+    it("should log the error and respond with status code 500", async () => {
       const errorLogSpy = jest.spyOn(logger, "error");
 
       const incorrectPayload = {};
+      const requiredScopes = entryPoints.getScopes(EntryPointId.ReplacePhoto);
+      const token = await oauth2Server.fetchAccessToken({
+        scope: requiredScopes,
+      });
       const response = await request(app)
         .put(replacePhotoPath)
-        .send(incorrectPayload);
+        .send(incorrectPayload)
+        .auth(token, { type: "bearer" });
 
       expect(response.statusCode).toBe(500);
       expect(errorLogSpy).toHaveBeenCalledTimes(1);
-      expect(response.body).toEqual(HttpError.Default);
-      expect.assertions(3);
+      expect.assertions(2);
     });
   });
 });

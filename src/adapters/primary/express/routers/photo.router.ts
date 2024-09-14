@@ -1,16 +1,12 @@
-import { Router } from "express";
-
 import { EntryPointId, entryPoints } from "@http-server";
 
 import { PhotoController } from "../controllers";
 import { wrapWithErrorCatcher } from "../error-catcher";
-import { IExpressRouter } from "../models";
+import { ExpressRouter } from "./express-router";
 
-export class PhotoRouter implements IExpressRouter {
-  private readonly router: Router;
-
+export class PhotoRouter extends ExpressRouter {
   constructor(private readonly photoController: PhotoController) {
-    this.router = Router();
+    super();
     this.router.get(
       entryPoints.getRelativePath(EntryPointId.GetPhotoImage),
       wrapWithErrorCatcher(this.photoController.getPhotoImageHandler),
@@ -19,9 +15,5 @@ export class PhotoRouter implements IExpressRouter {
       entryPoints.getRelativePath(EntryPointId.GetPhotoMetadata),
       wrapWithErrorCatcher(this.photoController.getPhotoMetadataHandler),
     );
-  }
-
-  getRouter() {
-    return this.router;
   }
 }

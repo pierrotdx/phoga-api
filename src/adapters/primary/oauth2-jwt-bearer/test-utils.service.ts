@@ -10,7 +10,7 @@ export const audience = "dumb-audience";
 export const baseRoute = "/";
 export const restrictedRoute = "/restricted";
 
-export type TokenCustomization = {
+type TokenCustomization = {
   scope?: Scope | Scope[];
   aud?: string;
 };
@@ -28,16 +28,28 @@ export class OAuth2ServerMock {
     this.issuerBaseURL = `http://${issuerHost}:${issuerPort.toString()}`;
   }
 
-  async start() {
-    await this.server.issuer.keys.generate(this.tokenAlg);
+  async start(defaultTokenCustomization?: TokenCustomization) {
+    await this.generateKey();
+    if (defaultTokenCustomization) {
+      this.customizeEmittedTokens("all", defaultTokenCustomization);
+    }
     await this.server.start(this.issuerPort, this.issuerHost);
   }
 
-  async stop() {
+  private async generateKey() {
+    await this.server.issuer.keys.generate(this.tokenAlg);
+  }
+
+  async close() {
     await this.server.stop();
   }
 
-  async fetchAccessToken(): Promise<string> {
+  async fetchAccessToken(
+    tokenCustomization?: TokenCustomization,
+  ): Promise<string> {
+    if (tokenCustomization) {
+      this.customizeEmittedTokens("onlyNext", tokenCustomization);
+    }
     const response = await post(`${this.issuerBaseURL}/token`).send({
       grant_type: "authorization_code",
     });

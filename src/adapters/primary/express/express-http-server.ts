@@ -11,7 +11,7 @@ import { Server } from "http";
 
 import { LoggerWinston } from "@adapters/loggers";
 import { IUseCases } from "@business-logic";
-import { AppHttpServer, HttpError, IValidators } from "@http-server";
+import { AppHttpServer, IValidators } from "@http-server";
 import { Logger } from "@logger";
 
 import {
@@ -19,6 +19,7 @@ import {
   AdminPhotoRouter,
   AdminRouter,
   AppRouter,
+  IExpressAuthHandler,
   PhotoController,
   PhotoRouter,
 } from ".";
@@ -33,6 +34,7 @@ export class ExpressHttpServer implements AppHttpServer {
     private readonly useCases: IUseCases,
     private readonly validators: IValidators,
     private readonly logger: Logger,
+    private readonly authHandler: IExpressAuthHandler,
   ) {
     this.setLoggerHandler();
     this.initExpressApp();
@@ -43,7 +45,7 @@ export class ExpressHttpServer implements AppHttpServer {
     this.app.use(bodyParser.json());
     this.initExpressLogger();
     this.initRouter();
-    this.app.use(this.errorHandler.bind(this));
+    this.app.use(this.logError.bind(this));
   }
 
   private initExpressLogger() {
@@ -66,7 +68,11 @@ export class ExpressHttpServer implements AppHttpServer {
   private initRouter() {
     const photoRouter = this.getPhotoRouter();
     const adminRouter = this.getAdminRouter();
-    const router = new AppRouter(photoRouter, adminRouter).getRouter();
+    const router = new AppRouter(
+      photoRouter,
+      adminRouter,
+      this.authHandler,
+    ).getRouter();
     this.app.use(router);
   }
 
@@ -77,7 +83,7 @@ export class ExpressHttpServer implements AppHttpServer {
 
   private getAdminRouter(): AdminRouter {
     const adminPhotoRouter = this.getAdminPhotoRouter();
-    return new AdminRouter(adminPhotoRouter);
+    return new AdminRouter(adminPhotoRouter, this.authHandler);
   }
 
   private getAdminPhotoRouter(): AdminPhotoRouter {
@@ -85,17 +91,12 @@ export class ExpressHttpServer implements AppHttpServer {
       this.useCases,
       this.validators,
     );
-    return new AdminPhotoRouter(adminPhotoController);
+    return new AdminPhotoRouter(adminPhotoController, this.authHandler);
   }
 
-  private errorHandler(
-    err: any,
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) {
+  private logError(err: any, req: Request, res: Response, next: NextFunction) {
     this.logger.error(err);
-    res.status(500).json(HttpError.Default);
+    next(err);
   }
 
   listen(port = 3000) {
@@ -106,7 +107,19 @@ export class ExpressHttpServer implements AppHttpServer {
     this.logger.info(`express server listening on port: ${port}`);
   }
 
-  close() {
-    this.server?.close();
+  async close() {
+    this.server.close();
+    await this.serverClosed();
   }
+
+  private serverClosed = () => {
+    return new Promise<void>((resolve, reject) => {
+      this.server.on("close", (err: Error) => {
+        if (err) {
+          reject(err);
+        }
+        resolve();
+      });
+    });
+  };
 }

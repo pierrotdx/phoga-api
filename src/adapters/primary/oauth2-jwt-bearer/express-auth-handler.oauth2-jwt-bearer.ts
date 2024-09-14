@@ -15,7 +15,7 @@ export class ExpressAuthHandler implements IExpressAuthHandler {
   }
 
   constructor(
-    private readonly issuerBaseURL: string,
+    public readonly issuerBaseURL: string,
     private readonly audience: string,
   ) {
     this._requiresAuth = auth({

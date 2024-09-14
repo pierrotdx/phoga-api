@@ -98,9 +98,11 @@ export function getPayloadFromPhoto(
   };
 }
 
-export function getDumbApp(router: Router): Express {
+export function getDumbApp(router?: Router): Express {
   const app = express();
   app.use(bodyParser.json());
-  app.use(router);
+  if (router) {
+    app.use(router);
+  }
   return app;
 }

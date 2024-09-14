@@ -1,24 +1,21 @@
-import { Router } from "express";
+import { EntryPointId, entryPoints } from "@http-server";
 
-import { EntryPointId } from "@http-server";
-
-import { IExpressRouter } from "../../models";
-import { addSubRouter } from "../../services";
+import { IExpressAuthHandler } from "../../models";
+import { ExpressRouter } from "../express-router";
 import { AdminPhotoRouter } from "./admin-photo.router";
 
-export class AdminRouter implements IExpressRouter {
-  private readonly router: Router;
-
-  constructor(private readonly adminPhotoRouter: AdminPhotoRouter) {
-    this.router = Router();
-    addSubRouter(
-      this.router,
-      this.adminPhotoRouter,
-      EntryPointId.AdminPhotoBase,
-    );
+export class AdminRouter extends ExpressRouter {
+  constructor(
+    private readonly adminPhotoRouter: AdminPhotoRouter,
+    private readonly authHandler: IExpressAuthHandler,
+  ) {
+    super();
+    this.router.use(this.authHandler.requiresAuth);
+    this.addAdminPhotoBaseRouter();
   }
 
-  getRouter(): Router {
-    return this.router;
+  private addAdminPhotoBaseRouter() {
+    const path = entryPoints.getRelativePath(EntryPointId.AdminPhotoBase);
+    this.addSubRouter(this.adminPhotoRouter, path);
   }
 }

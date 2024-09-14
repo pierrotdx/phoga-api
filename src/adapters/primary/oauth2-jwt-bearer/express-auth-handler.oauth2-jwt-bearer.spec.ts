@@ -15,22 +15,21 @@ import {
 
 describe("ExpressAuthHandler", () => {
   const oauth2Server = new OAuth2ServerMock(issuerHost, issuerPort);
-  let authProvider: ExpressAuthHandler;
+  let authHandler: ExpressAuthHandler;
   let dumbApp: Express;
 
   beforeAll(async () => {
-    await oauth2Server.start();
-    oauth2Server.customizeEmittedTokens("all", { aud: audience });
+    await oauth2Server.start({ aud: audience });
   });
 
   beforeEach(() => {
-    authProvider = new ExpressAuthHandler(oauth2Server.issuerBaseURL, audience);
+    authHandler = new ExpressAuthHandler(oauth2Server.issuerBaseURL, audience);
     dumbApp = express();
-    dumbApp.use(authProvider.requiresAuth);
+    dumbApp.use(authHandler.requiresAuth);
   });
 
   afterAll(async () => {
-    await oauth2Server.stop();
+    await oauth2Server.close();
   });
 
   describe("requiresAuth", () => {
@@ -59,7 +58,7 @@ describe("ExpressAuthHandler", () => {
     ];
 
     beforeEach(async () => {
-      const scopesHandler = authProvider.requiredScopes(requiredScopes);
+      const scopesHandler = authHandler.requiredScopes(requiredScopes);
       dumbApp.get(restrictedRoute, scopesHandler, dumbReqHandler);
     });
 
@@ -70,14 +69,11 @@ describe("ExpressAuthHandler", () => {
       ${"does contain all of"}     | ${requiredScopes}                            | ${200}
       ${"does contain more than"}  | ${[...requiredScopes, Scope.RestrictedRead]} | ${200}
     `(
-      "should respond with the status code `$expectedStatus` if the request $case the required scopes",
+      "should respond with the status code $expectedStatus if the request $case the required scopes",
       async ({ value, expectedStatus }) => {
-        if (value) {
-          oauth2Server.customizeEmittedTokens("onlyNext", {
-            scope: value,
-          });
-        }
-        const token = await oauth2Server.fetchAccessToken();
+        const token = await oauth2Server.fetchAccessToken({
+          scope: value,
+        });
         const response = await request(dumbApp)
           .get(restrictedRoute)
           .auth(token, { type: "bearer" });
