@@ -59,7 +59,9 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
 
     storage = await getTestStorage();
     imageDb = new PhotoImageDbGcs(storage);
+  });
 
+  beforeEach(async () => {
     useCases = {
       getPhoto: new GetPhoto(metadataDb, imageDb),
       addPhoto: new AddPhoto(metadataDb, imageDb),
@@ -84,9 +86,12 @@ describe("express app (image db: fake-gcs (docker), metadata db: mongo (docker),
     await useCases.addPhoto.execute(photoInDbFromStart);
   });
 
+  afterEach(() => {
+    expressHttpServer.close();
+  });
+
   afterAll(async () => {
     await mongoBase.close();
-    expressHttpServer.close();
   });
 
   describe(`POST ${addPhotoPath}`, () => {
