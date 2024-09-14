@@ -21,12 +21,17 @@ import {
   Photo,
   ReplacePhoto,
 } from "@business-logic";
-import { IValidators, imageBufferEncoding } from "@http-server";
+import {
+  EntryPointId,
+  IValidators,
+  entryPoints,
+  imageBufferEncoding,
+} from "@http-server";
 
-import { AdminPhotoRouter } from "../../routers/admin/admin-photo.router";
 import {
   getDumbApp,
   getPayloadFromPhoto,
+  getUrlWithReplacedId,
 } from "../../services/test-utils.service";
 
 describe("adminPhotoController", () => {
@@ -71,17 +76,22 @@ describe("adminPhotoController", () => {
     };
 
     adminPhotoController = new AdminPhotoController(useCases, validators);
-    const router = new AdminPhotoRouter(adminPhotoController).getRouter();
-    dumbApp = getDumbApp(router);
+    dumbApp = getDumbApp();
     req = request(dumbApp);
   });
 
   describe("addPhotoHandler", () => {
+    const entryPoint = entryPoints.get(EntryPointId.AddPhoto);
+    const path = entryPoint.getRelativePath();
+    beforeEach(() => {
+      dumbApp.post(path, adminPhotoController.addPhotoHandler);
+    });
+
     it("should call the add-photo use case with the appropriate arguments and respond with status 200", async () => {
       const executeSpy = jest.spyOn(useCases.addPhoto, "execute");
 
       const payload = getPayloadFromPhoto(photo);
-      const response = await req.post("/").send(payload);
+      const response = await req.post(path).send(payload);
 
       expect(executeSpy).toHaveBeenCalledTimes(1);
       expect(executeSpy).toHaveBeenLastCalledWith(photo);
@@ -91,6 +101,12 @@ describe("adminPhotoController", () => {
   });
 
   describe("replacePhotoHandler", () => {
+    const entryPoint = entryPoints.get(EntryPointId.ReplacePhoto);
+    const path = entryPoint.getRelativePath();
+    beforeEach(() => {
+      dumbApp.put(path, adminPhotoController.replacePhotoHandler);
+    });
+
     it("should call the replace-photo use case with the appropriate arguments and respond with status 200", async () => {
       const initPhoto = new Photo(id, {
         imageBuffer: Buffer.from("init photo buffer", imageBufferEncoding),
@@ -99,7 +115,7 @@ describe("adminPhotoController", () => {
       const executeSpy = jest.spyOn(useCases.replacePhoto, "execute");
 
       const payload = getPayloadFromPhoto(photo);
-      const response = await req.put(`/`).send(payload);
+      const response = await req.put(path).send(payload);
 
       expect(executeSpy).toHaveBeenCalledTimes(1);
       expect(executeSpy).toHaveBeenLastCalledWith(photo);
@@ -109,10 +125,17 @@ describe("adminPhotoController", () => {
   });
 
   describe("deletePhotoHandler", () => {
+    const entryPoint = entryPoints.get(EntryPointId.DeletePhoto);
+    const path = entryPoint.getFullPath();
+    const url = getUrlWithReplacedId(photo._id, EntryPointId.DeletePhoto);
+    beforeEach(() => {
+      dumbApp.delete(path, adminPhotoController.deletePhotoHandler);
+    });
+
     it("should call the delete-photo use case with the appropriate arguments and respond with status 200", async () => {
       const executeSpy = jest.spyOn(useCases.deletePhoto, "execute");
 
-      const response = await req.delete(`/${photo._id}`);
+      const response = await req.delete(url);
 
       expect(executeSpy).toHaveBeenCalledTimes(1);
       expect(executeSpy).toHaveBeenLastCalledWith(id);

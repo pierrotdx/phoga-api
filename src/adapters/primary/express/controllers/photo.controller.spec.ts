@@ -21,10 +21,12 @@ import {
   Photo,
   ReplacePhoto,
 } from "@business-logic";
-import { IValidators } from "@http-server";
+import { EntryPointId, IValidators, entryPoints } from "@http-server";
 
-import { PhotoRouter } from "../routers";
-import { getDumbApp } from "../services/test-utils.service";
+import {
+  getDumbApp,
+  getUrlWithReplacedId,
+} from "../services/test-utils.service";
 import { PhotoController } from "./photo.controller";
 
 describe("photo controller", () => {
@@ -70,14 +72,17 @@ describe("photo controller", () => {
     };
 
     photoController = new PhotoController(useCases, validators);
-    const router = new PhotoRouter(photoController).getRouter();
-    dumbApp = getDumbApp(router);
+    dumbApp = getDumbApp();
     req = request(dumbApp);
   });
 
   describe("getPhotoMetadataHandler", () => {
     beforeEach(() => {
-      res$ = req.get(`/${id}/metadata`);
+      const entryPoint = entryPoints.get(EntryPointId.GetPhotoMetadata);
+      const path = entryPoint.getFullPath();
+      const url = getUrlWithReplacedId(id, EntryPointId.GetPhotoMetadata);
+      dumbApp.get(path, photoController.getPhotoMetadataHandler);
+      res$ = req.get(url);
     });
 
     it("should call the get-photo use case with the appropriate arguments", async () => {
@@ -109,7 +114,11 @@ describe("photo controller", () => {
       executeSpy = jest.spyOn(useCases.getPhoto, "execute");
       executeSpy.mockResolvedValueOnce(photo);
 
-      res$ = req.get(`/${id}/image`);
+      const entryPoint = entryPoints.get(EntryPointId.GetPhotoImage);
+      const path = entryPoint.getFullPath();
+      const url = getUrlWithReplacedId(id, EntryPointId.GetPhotoImage);
+      dumbApp.get(path, photoController.getPhotoImageHandler);
+      res$ = req.get(url);
     });
 
     it("should call the get-photo use case with the appropriate arguments", async () => {
