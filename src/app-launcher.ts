@@ -29,11 +29,11 @@ dotenv.config();
 export class AppLauncher {
   private metadataDb: IPhotoMetadataDb;
   private imageDb: IPhotoImageDb;
-  private logger = new LoggerWinston();
 
   private useCases: IUseCases;
   private validators: IValidators;
 
+  private logger = new LoggerWinston();
   private authHandler: ExpressAuthHandler;
 
   async start() {

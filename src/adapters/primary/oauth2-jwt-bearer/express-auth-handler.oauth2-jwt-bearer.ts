@@ -6,9 +6,9 @@ import {
 
 import { Scope } from "@http-server";
 
-import { IExpressAuthHandler } from "../express";
+import { IAuthHandler } from "../express";
 
-export class ExpressAuthHandler implements IExpressAuthHandler {
+export class ExpressAuthHandler implements IAuthHandler {
   private _requiresAuth: Handler;
   get requiresAuth() {
     return this._requiresAuth;

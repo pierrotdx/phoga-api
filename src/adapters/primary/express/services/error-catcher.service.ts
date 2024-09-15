@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 
-import { RequestHandler } from "./models";
+import { RequestHandler } from "../models";
 
 export function wrapWithErrorCatcher<T>(
   handler: RequestHandler<T>,

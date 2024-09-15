@@ -2,7 +2,9 @@ import { Handler } from "express";
 import expressWinston from "express-winston";
 import { transport } from "winston";
 
-export class ExpressLoggerWinston {
+import { IExpressLogger } from "../models";
+
+export class ExpressLoggerWinston implements IExpressLogger {
   public readonly handler: Handler;
   private readonly bodyBlacklist = ["password"];
 

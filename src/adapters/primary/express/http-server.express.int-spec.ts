@@ -33,8 +33,8 @@ import {
   issuerHost,
   issuerPort,
 } from "../oauth2-jwt-bearer/test-utils.service";
-import { ExpressHttpServer } from "./express-http-server";
-import { IExpressAuthHandler } from "./models";
+import { ExpressHttpServer } from "./http-server.express";
+import { IAuthHandler } from "./models";
 import {
   addPhotoPath,
   deletePhotoPath,
@@ -53,7 +53,7 @@ describe("ExpressHttpServer", () => {
   let expressHttpServer: ExpressHttpServer;
   let app: Express;
   let logger: Logger;
-  let authHandler: IExpressAuthHandler;
+  let authHandler: IAuthHandler;
 
   let mongoBase: MongoBase;
   let metadataDb: IPhotoMetadataDb;
@@ -254,10 +254,9 @@ describe("ExpressHttpServer", () => {
       const imageFromDbBefore = await imageDb.getById(photoToDelete._id);
       const metadataFromDbBefore = await metadataDb.getById(photoToDelete._id);
 
-      oauth2Server.customizeEmittedTokens("onlyNext", {
+      const token = await oauth2Server.fetchAccessToken({
         scope: requiredScopes,
       });
-      const token = await oauth2Server.fetchAccessToken();
       await request(app).delete(url).auth(token, { type: "bearer" });
 
       expect(imageFromDbBefore).toBeDefined();

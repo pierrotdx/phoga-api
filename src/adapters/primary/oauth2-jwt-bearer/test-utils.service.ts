@@ -56,7 +56,7 @@ export class OAuth2ServerMock {
     return response.body.access_token;
   }
 
-  customizeEmittedTokens(
+  private customizeEmittedTokens(
     concernedEmissions: "onlyNext" | "all",
     customization: TokenCustomization,
   ) {

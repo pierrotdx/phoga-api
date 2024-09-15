@@ -1,7 +1,6 @@
 import bodyParser from "body-parser";
 import express, {
   type Express,
-  Handler,
   type NextFunction,
   type Request,
   Response,
@@ -19,7 +18,8 @@ import {
   AdminPhotoRouter,
   AdminRouter,
   AppRouter,
-  IExpressAuthHandler,
+  IAuthHandler,
+  IExpressLogger,
   PhotoController,
   PhotoRouter,
 } from ".";
@@ -28,13 +28,13 @@ import { ExpressLoggerWinston } from "./loggers";
 export class ExpressHttpServer implements AppHttpServer {
   public readonly app: Express = express();
   private server: Server;
-  private loggerHandler: Handler;
+  private loggerHandler: IExpressLogger["handler"];
 
   constructor(
     private readonly useCases: IUseCases,
     private readonly validators: IValidators,
     private readonly logger: Logger,
-    private readonly authHandler: IExpressAuthHandler,
+    private readonly authHandler: IAuthHandler,
   ) {
     this.setLoggerHandler();
     this.initExpressApp();

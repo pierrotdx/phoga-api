@@ -3,14 +3,14 @@ import { Handler } from "express";
 import { EntryPointId, IEntryPoint, entryPoints } from "@http-server";
 
 import { AdminPhotoController } from "../../controllers";
-import { wrapWithErrorCatcher } from "../../error-catcher";
-import { IExpressAuthHandler, RequestHandler } from "../../models";
+import { IAuthHandler, RequestHandler } from "../../models";
+import { wrapWithErrorCatcher } from "../../services";
 import { ExpressRouter } from "../express-router";
 
 export class AdminPhotoRouter extends ExpressRouter {
   constructor(
     private readonly adminPhotoController: AdminPhotoController,
-    private readonly authHandler: IExpressAuthHandler,
+    private readonly authHandler: IAuthHandler,
   ) {
     super();
     this.setAddPhotoRoute();

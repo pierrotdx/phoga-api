@@ -1,6 +1,6 @@
 import { EntryPointId, entryPoints } from "@http-server";
 
-import { IExpressAuthHandler } from "../models";
+import { IAuthHandler } from "../models";
 import { AdminRouter } from "./admin";
 import { ExpressRouter } from "./express-router";
 import { PhotoRouter } from "./photo.router";
@@ -9,7 +9,7 @@ export class AppRouter extends ExpressRouter {
   constructor(
     private readonly photoRouter: PhotoRouter,
     private readonly adminRouter: AdminRouter,
-    private readonly authHandler: IExpressAuthHandler,
+    private readonly authHandler: IAuthHandler,
   ) {
     super();
     this.setBaseRoute();

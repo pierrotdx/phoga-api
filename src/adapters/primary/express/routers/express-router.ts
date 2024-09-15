@@ -13,7 +13,7 @@ export abstract class ExpressRouter implements IExpressRouter {
     return this.router;
   };
 
-  readonly addSubRouter = (
+  protected readonly addSubRouter = (
     expressSubRouter: IExpressRouter,
     path: string,
     permissionHandler?: Handler,

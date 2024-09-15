@@ -1,7 +1,7 @@
 import { EntryPointId, entryPoints } from "@http-server";
 
 import { PhotoController } from "../controllers";
-import { wrapWithErrorCatcher } from "../error-catcher";
+import { wrapWithErrorCatcher } from "../services";
 import { ExpressRouter } from "./express-router";
 
 export class PhotoRouter extends ExpressRouter {
