@@ -25,15 +25,19 @@ npm install
 ### Unit tests
 
 ```bash
-npm run test:unit
+npm run test:unit // -- --verbose (for details)
 ```
 
 ### Integration tests
 
-Integration tests should be working if Docker is running locally. The first launch might take some time as Docker images need to be downloaded.
+1. Duplicate the file `docker\dev\.env.demo` and rename it `.env`.
+
+2. Start Docker Desktop.
+
+3. Run the following command (_note that the first launch might take some time as some Docker images will be downloaded_):
 
 ```bash
-npm run test:int
+npm run test:int // -- --verbose (for details)
 ```
 
 ### E2E tests
