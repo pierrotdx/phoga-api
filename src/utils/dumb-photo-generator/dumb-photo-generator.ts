@@ -1,7 +1,7 @@
 import { clone } from "ramda";
 
 import { IPhoto, Photo } from "@business-logic";
-import { assertPhoto } from "@utils/is-photo";
+import { assertPhoto } from "@utils/is-photo/is-photo";
 
 import {
   IDumbPhotoGenerator,
