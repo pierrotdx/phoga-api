@@ -30,7 +30,7 @@ npm run test:unit // -- --verbose (for details)
 
 ### Integration tests
 
-1. Duplicate the file `docker\dev\.env.demo` and rename it `.env`.
+1. Duplicate the file `docker\tests\.env.demo` and rename it `.env`.
 
 2. Start Docker Desktop.
 
