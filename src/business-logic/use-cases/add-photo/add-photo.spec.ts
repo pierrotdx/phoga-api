@@ -1,6 +1,7 @@
+import { dumbPhotoGenerator } from "@utils";
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
-import { IPhoto, Photo } from "../../models";
+import { IPhoto } from "../../models";
 import { AddPhoto } from "./add-photo";
 
 describe("add-photo use case", () => {
@@ -15,15 +16,7 @@ describe("add-photo use case", () => {
     imageDb = new FakePhotoImageDb();
     addPhoto = new AddPhoto(metadataDb, imageDb);
 
-    photo = new Photo("dumb photo id", {
-      metadata: {
-        titles: ["title 1", "title2"],
-        date: new Date(),
-        description: "dumb description",
-        location: "Paris",
-      },
-      imageBuffer: Buffer.from("dumb buffer content"),
-    });
+    photo = dumbPhotoGenerator.generate();
   });
 
   describe("photo image", () => {

@@ -28,6 +28,7 @@ import {
   getUrlWithReplacedId,
 } from "../services/test-utils.service";
 import { PhotoController } from "./photo.controller";
+import { dumbPhotoGenerator } from "@utils";
 
 describe("photo controller", () => {
   let photoController: PhotoController;
@@ -42,16 +43,8 @@ describe("photo controller", () => {
   let req: TestAgent;
   let res$: Promise<Response>;
 
-  const id = "1684a61d-de2f-43c0-a83b-6f8981a31e0b";
-  const photo = new Photo(id, {
-    imageBuffer: Buffer.from("dumb image buffer zeignzeirgn"),
-    metadata: {
-      date: new Date(),
-      description: "dumb description zienvzeifn",
-      location: "dumb location zrogneriugne",
-      titles: ["dumb title 1 ziuefnzeriufn", "dumb title 2 i'urtht"],
-    },
-  });
+  const _id = "1684a61d-de2f-43c0-a83b-6f8981a31e0b";
+  const photo = dumbPhotoGenerator.generate({ _id });
 
   beforeEach(() => {
     imageDb = new FakePhotoImageDb();
@@ -80,7 +73,7 @@ describe("photo controller", () => {
     beforeEach(() => {
       const entryPoint = entryPoints.get(EntryPointId.GetPhotoMetadata);
       const path = entryPoint.getFullPath();
-      const url = getUrlWithReplacedId(id, EntryPointId.GetPhotoMetadata);
+      const url = getUrlWithReplacedId(_id, EntryPointId.GetPhotoMetadata);
       dumbApp.get(path, photoController.getPhotoMetadataHandler);
       res$ = req.get(url);
     });
@@ -91,7 +84,7 @@ describe("photo controller", () => {
       await res$;
 
       expect(executeSpy).toHaveBeenCalledTimes(1);
-      expect(executeSpy).toHaveBeenCalledWith(id, {
+      expect(executeSpy).toHaveBeenCalledWith(_id, {
         fields: [GetPhotoField.Metadata],
       });
       expect.assertions(2);
@@ -116,7 +109,7 @@ describe("photo controller", () => {
 
       const entryPoint = entryPoints.get(EntryPointId.GetPhotoImage);
       const path = entryPoint.getFullPath();
-      const url = getUrlWithReplacedId(id, EntryPointId.GetPhotoImage);
+      const url = getUrlWithReplacedId(_id, EntryPointId.GetPhotoImage);
       dumbApp.get(path, photoController.getPhotoImageHandler);
       res$ = req.get(url);
     });
@@ -125,7 +118,7 @@ describe("photo controller", () => {
       await res$;
 
       expect(executeSpy).toHaveBeenCalledTimes(1);
-      expect(executeSpy).toHaveBeenCalledWith(id, {
+      expect(executeSpy).toHaveBeenCalledWith(_id, {
         fields: [GetPhotoField.ImageBuffer],
       });
       expect.assertions(2);

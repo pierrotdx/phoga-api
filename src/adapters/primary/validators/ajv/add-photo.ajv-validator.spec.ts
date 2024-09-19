@@ -8,12 +8,17 @@ import express, {
 import { clone, omit } from "ramda";
 import request from "supertest";
 
-import { IPhoto, Photo } from "@business-logic";
-import { AddPhotoSchema, imageBufferEncoding } from "@http-server";
+import { IPhoto } from "@business-logic";
+import { AddPhotoSchema } from "@http-server";
+import { dumbPhotoGenerator } from "@utils";
 
+import { getPayloadFromPhoto } from "../../express";
 import { AddPhotoAjvValidator } from "./add-photo.ajv-validator";
 
 describe("AddPhotoAjvValidator", () => {
+  const photo = dumbPhotoGenerator.generate();
+  const payload = getPayloadFromPhoto(photo);
+
   let addPhotoAjvValidator: AddPhotoAjvValidator;
   let dumbApp: Express;
   const spy = jest.fn((photo: IPhoto) => {});
@@ -52,32 +57,6 @@ describe("AddPhotoAjvValidator", () => {
     });
   });
 });
-
-const photo = new Photo("19e99c37-13d3-4d20-8da4-ce6c57c98b75", {
-  imageBuffer: Buffer.from(
-    "dumb test buffer eoijrngoqzeng",
-    imageBufferEncoding,
-  ),
-  metadata: {
-    date: new Date(),
-    description: "dumb description aokznfjgfnh",
-    location: "dumb test location erzuyerjgun",
-    titles: [
-      "dumb title 1 zeifunzerf",
-      "dumb title 2 ergherigouner",
-      "dumb title 3 perg,erogne",
-    ],
-  },
-});
-
-const payload = {
-  _id: photo._id,
-  imageBuffer: photo.imageBuffer!.toString(imageBufferEncoding),
-  date: photo.metadata!.date!.toISOString(),
-  description: photo.metadata!.description,
-  location: photo.metadata!.location,
-  titles: photo.metadata!.titles,
-};
 
 const getRequestHandler =
   (validator: AddPhotoAjvValidator, spy: jest.Func) =>

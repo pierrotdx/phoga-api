@@ -25,6 +25,7 @@ import {
 import { Storage } from "@google-cloud/storage";
 import { EntryPointId, IValidators, entryPoints } from "@http-server";
 import { Logger } from "@logger/models";
+import { dumbPhotoGenerator } from "@utils";
 
 import { ExpressAuthHandler } from "../oauth2-jwt-bearer";
 import {
@@ -42,14 +43,17 @@ import {
   getMetadataPath,
   getPayloadFromPhoto,
   getUrlWithReplacedId,
-  photoInDbFromStart,
-  photoToAdd,
-  photoToDelete,
   replacePhotoPath,
-  replacingPhoto,
 } from "./services/test-utils.service";
 
 describe("ExpressHttpServer", () => {
+  const photoInDbFromStart = dumbPhotoGenerator.generate();
+  const photoToAdd = dumbPhotoGenerator.generate();
+  const replacingPhoto = dumbPhotoGenerator.generate({
+    _id: photoInDbFromStart._id,
+  });
+  const photoToDelete = dumbPhotoGenerator.generate();
+
   let expressHttpServer: ExpressHttpServer;
   let app: Express;
   let logger: Logger;

@@ -4,17 +4,10 @@ import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
 import { GetPhotoField, Photo } from "../../models";
 import { AddPhoto } from "../add-photo/add-photo";
 import { GetPhoto } from "./get-photo";
+import { dumbPhotoGenerator } from "@utils";
 
 describe("get-photo use case", () => {
-  const photo = new Photo("dumb id", {
-    imageBuffer: Buffer.from("dumb buffer"),
-    metadata: {
-      titles: ["title 1", "title2"],
-      date: new Date(),
-      description: "dumb description",
-      location: "Paris",
-    },
-  });
+  const photo = dumbPhotoGenerator.generate();
 
   let getPhoto: GetPhoto;
   let addPhoto: AddPhoto;

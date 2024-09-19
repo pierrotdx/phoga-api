@@ -1,21 +1,13 @@
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
-import { Photo } from "../../models";
 import { DeletePhoto } from "./delete-photo";
+import { dumbPhotoGenerator } from "@utils";
 
 describe("delete-photo use case", () => {
   let deletePhoto: DeletePhoto;
   let imageDb: IPhotoImageDb;
   let metadataDb: IPhotoMetadataDb;
-  const photo = new Photo("dumb id", {
-    imageBuffer: Buffer.from("dumb buffer"),
-    metadata: {
-      titles: ["title 1", "title2"],
-      date: new Date(),
-      description: "dumb description",
-      location: "Paris",
-    },
-  });
+  const photo = dumbPhotoGenerator.generate();
 
   beforeEach(async () => {
     metadataDb = new FakePhotoMetadataDb();

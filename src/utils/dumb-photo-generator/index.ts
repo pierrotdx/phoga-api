@@ -1,1 +1,1 @@
-export * from "./dumb-photo-generator";
+export { dumbPhotoGenerator } from "./dumb-photo-generator";

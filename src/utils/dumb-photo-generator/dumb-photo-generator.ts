@@ -9,6 +9,7 @@ import {
   ILoremIpsumGenerator,
   IUuidGenerator,
 } from "../models";
+import { LoremIpsumGenerator, UuidGenerator } from "@adapters";
 
 export class DumbPhotoGenerator implements IDumbPhotoGenerator {
   constructor(
@@ -63,3 +64,7 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     return description;
   }
 }
+
+const uuidGenerator: IUuidGenerator = new UuidGenerator();
+const loremIpsumGenerator: ILoremIpsumGenerator = new LoremIpsumGenerator();
+export const dumbPhotoGenerator = new DumbPhotoGenerator(uuidGenerator, loremIpsumGenerator);
