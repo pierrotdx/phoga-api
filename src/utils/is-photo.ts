@@ -1,6 +1,7 @@
 import assert from "assert";
 
 import { IPhoto } from "@business-logic";
+import { isUuid } from "./is-uuid";
 
 export function isPhoto(candidate: any): candidate is IPhoto {
   if (!candidate) {
@@ -8,6 +9,7 @@ export function isPhoto(candidate: any): candidate is IPhoto {
   }
   try {
     assert(!!candidate._id, "no id provided");
+    assert(isUuid(candidate._id), "invalid id format (should be uuid)");
     assert(!!candidate.imageBuffer, "no image buffer provided");
     assert(
       candidate.imageBuffer instanceof Buffer,

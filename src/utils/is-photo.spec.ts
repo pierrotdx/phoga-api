@@ -1,6 +1,9 @@
 import { IPhoto, Photo } from "@business-logic";
 
+
+
 import { isPhoto } from "./is-photo";
+
 
 describe("isPhoto", () => {
   const imageBuffer = Buffer.from("dumb buffer");
@@ -13,7 +16,10 @@ describe("isPhoto", () => {
   let candidate: IPhoto;
 
   beforeEach(() => {
-    candidate = new Photo("dumb id", { imageBuffer, metadata });
+    candidate = new Photo("18b4eacc-2e2d-469e-bff0-f97d50794eb1", {
+      imageBuffer,
+      metadata,
+    });
   });
 
   it("should return true if everything is ok", () => {
@@ -29,6 +35,12 @@ describe("isPhoto", () => {
 
   it("should return false if candidate has no id", () => {
     delete candidate._id;
+    expect(isPhoto(candidate)).toBe(false);
+    expect.assertions(1);
+  });
+
+  it("should return false if candidate's id format is not uuid", () => {
+    candidate._id = "dumb id";
     expect(isPhoto(candidate)).toBe(false);
     expect.assertions(1);
   });
