@@ -33,6 +33,7 @@ import {
   getPayloadFromPhoto,
   getUrlWithReplacedId,
 } from "../../services/test-utils.service";
+import { dumbPhotoGenerator } from "@utils";
 
 describe("adminPhotoController", () => {
   let adminPhotoController: AdminPhotoController;
@@ -46,16 +47,8 @@ describe("adminPhotoController", () => {
   let dumbApp: Express;
   let req: TestAgent;
 
-  const id = "1684a61d-de2f-43c0-a83b-6f8981a31e0c";
-  const photo = new Photo(id, {
-    imageBuffer: Buffer.from("dumb image buffer zeignzeirgn"),
-    metadata: {
-      date: new Date(),
-      description: "dumb description zienvzeifn",
-      location: "dumb location zrogneriugne",
-      titles: ["dumb title 1 ziuefnzeriufn", "dumb title 2 i'urtht"],
-    },
-  });
+  const _id = "1684a61d-de2f-43c0-a83b-6f8981a31e0c";
+  const photo = dumbPhotoGenerator.generate({ _id });
 
   beforeEach(() => {
     imageDb = new FakePhotoImageDb();
@@ -108,9 +101,7 @@ describe("adminPhotoController", () => {
     });
 
     it("should call the replace-photo use case with the appropriate arguments and respond with status 200", async () => {
-      const initPhoto = new Photo(id, {
-        imageBuffer: Buffer.from("init photo buffer", imageBufferEncoding),
-      });
+      const initPhoto = dumbPhotoGenerator.generate({ _id });
       await imageDb.insert(initPhoto);
       const executeSpy = jest.spyOn(useCases.replacePhoto, "execute");
 
@@ -138,7 +129,7 @@ describe("adminPhotoController", () => {
       const response = await req.delete(url);
 
       expect(executeSpy).toHaveBeenCalledTimes(1);
-      expect(executeSpy).toHaveBeenLastCalledWith(id);
+      expect(executeSpy).toHaveBeenLastCalledWith(_id);
       expect(response.statusCode).toBe(200);
       expect.assertions(3);
     });

@@ -1,22 +1,19 @@
+import { dumbPhotoGenerator } from "@utils";
+
+
+
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
 import { Photo } from "../../models";
 import { ReplacePhoto } from "./replace-photo";
+
 
 describe("replace-photo use case", () => {
   let replacePhoto: ReplacePhoto;
   let imageDb: IPhotoImageDb;
   let metadataDb: IPhotoMetadataDb;
 
-  const photo = new Photo("dumb photo id", {
-    metadata: {
-      titles: ["title 1", "title2"],
-      date: new Date(),
-      description: "dumb description",
-      location: "Paris",
-    },
-    imageBuffer: Buffer.from("dumb buffer content"),
-  });
+  const photo = dumbPhotoGenerator.generate();
 
   beforeEach(() => {
     imageDb = new FakePhotoImageDb();
@@ -51,9 +48,7 @@ describe("replace-photo use case", () => {
 
     it("should throw an error if the image to replace is not found", async () => {
       try {
-        const newPhoto = new Photo("id not in db", {
-          imageBuffer: Buffer.from("dumb buffer"),
-        });
+        const newPhoto = dumbPhotoGenerator.generate();
         await replacePhoto.execute(newPhoto);
       } catch (err) {
         expect(err).toBeDefined();
@@ -79,13 +74,7 @@ describe("replace-photo use case", () => {
 
   describe("photo metadata", () => {
     it("should replace the data in the metadata db", async () => {
-      const newPhoto = new Photo(photo._id, {
-        imageBuffer: Buffer.from("new photo image"),
-        metadata: {
-          date: new Date(),
-          description: "a new description",
-        },
-      });
+      const newPhoto = dumbPhotoGenerator.generate({ _id: photo._id });
       const dbMetadataBefore = await metadataDb.getById(photo._id);
 
       await replacePhoto.execute(newPhoto);
@@ -95,10 +84,10 @@ describe("replace-photo use case", () => {
       expect(dbMetadataAfter).not.toEqual(dbMetadataBefore);
 
       expect(dbMetadataBefore.location).toBeDefined();
-      expect(dbMetadataAfter.location).toBeUndefined();
+      expect(dbMetadataAfter.location).not.toEqual(dbMetadataBefore.location);
 
       expect(dbMetadataBefore.titles).toBeDefined();
-      expect(dbMetadataAfter.titles).toBeUndefined();
+      expect(dbMetadataAfter.titles).not.toEqual(dbMetadataBefore.titles);
 
       expect.assertions(6);
     });
@@ -128,15 +117,7 @@ describe("replace-photo use case", () => {
       await metadataDb.delete(photo._id);
       const dbMetadataBefore = await metadataDb.getById(photo._id);
 
-      const newPhoto = new Photo(photo._id, {
-        imageBuffer: Buffer.from("dumb new image"),
-        metadata: {
-          titles: ["dumb new title 1", "dumb new title 2"],
-          location: "Paris",
-          date: new Date(),
-          description: "new description",
-        },
-      });
+      const newPhoto = dumbPhotoGenerator.generate({ _id: photo._id });
       await replacePhoto.execute(newPhoto);
       const dbMetadataAfter = await metadataDb.getById(photo._id);
 
