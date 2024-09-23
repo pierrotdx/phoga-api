@@ -15,29 +15,45 @@ export function isPhoto(candidate: any): candidate is IPhoto {
   }
 }
 
-export function assertPhoto(candidate: any) {
-  assert(!!candidate._id, "no id provided");
-  assert(isUuid(candidate._id), "invalid id format (should be uuid)");
-  assert(!!candidate.imageBuffer, "no image buffer provided");
-  assert(
-    candidate.imageBuffer instanceof Buffer,
-    "should be an instance of buffer",
-  );
-  if (!candidate.metadata) {
-    return true;
-  }
-  if (candidate.metadata?.date) {
-    assert(candidate.metadata.date instanceof Date);
-  }
-  if (candidate.metadata?.location) {
-    assert(typeof candidate.metadata.location === "string");
-  }
-  if (candidate.metadata?.description) {
-    assert(typeof candidate.metadata.description === "string");
-  }
-  if (candidate.metadata?.titles) {
-    assert(Array.isArray(candidate.metadata.titles));
-    assert(typeof candidate.metadata.titles[0] === "string");
+export function assertPhoto(photoCandidate: any) {
+  assertPhotoId(photoCandidate._id);
+  assertPhotoImageBuffer(photoCandidate.imageBuffer);
+  if (photoCandidate.metadata) {
+    assertPhotoMetadata(photoCandidate.metadata);
   }
   return true;
+}
+
+function assertPhotoId(photoIdCandidate: any) {
+  assert(!!photoIdCandidate, "no id provided");
+  assert(isUuid(photoIdCandidate), "invalid id format (should be uuid)");
+}
+
+function assertPhotoImageBuffer(imageBufferCandidate: any) {
+  assert(!!imageBufferCandidate, "no image buffer provided");
+  assert(
+    imageBufferCandidate instanceof Buffer,
+    "should be an instance of buffer",
+  );
+}
+
+function assertPhotoMetadata(metadataCandidate: any) {
+  if (metadataCandidate.date) {
+    assert(
+      metadataCandidate.date instanceof Date,
+      "photo.metadata.date: should be instance of date",
+    );
+  }
+  if (metadataCandidate.location) {
+    assert(typeof metadataCandidate.location === "string");
+  }
+  if (metadataCandidate.description) {
+    assert(typeof metadataCandidate.description === "string");
+  }
+  if (metadataCandidate.titles) {
+    assert(Array.isArray(metadataCandidate.titles));
+    (metadataCandidate.titles as Array<unknown>).forEach((title) => {
+      assert(typeof title === "string");
+    });
+  }
 }
