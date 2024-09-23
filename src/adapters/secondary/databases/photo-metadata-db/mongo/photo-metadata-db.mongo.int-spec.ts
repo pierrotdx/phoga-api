@@ -1,9 +1,16 @@
-import { IPhoto, Photo } from "@business-logic";
+import { IPhoto } from "@business-logic";
+import { dumbPhotoGenerator } from "@utils";
 
 import { MongoBase, MongoCollection } from "../../mongo";
 import { PhotoMetadataDbMongo } from "./photo-metadata-db.mongo";
 
 describe("PhotoMetadataDbMongo", () => {
+  const photoToInsert = dumbPhotoGenerator.generate();
+  const photoInDbFromStart = dumbPhotoGenerator.generate();
+  const replacingPhoto = dumbPhotoGenerator.generate({
+    _id: photoInDbFromStart._id,
+  });
+
   let photoMetadataDbMongo: PhotoMetadataDbMongo;
   let mongoBase: MongoBase;
 
@@ -117,30 +124,3 @@ async function getPhotoMetadataById(mongoBase: MongoBase, _id: string) {
   const doc = await collection.findOne({ _id });
   return doc ?? undefined;
 }
-
-const photoToInsert = new Photo("14018c6f-7205-48dd-9070-2610bdc56b6c", {
-  metadata: {
-    date: new Date(),
-    description: "erignerignerigneirgnering",
-    location: "iegnerigniergneri",
-    titles: ["tznzeonr", "iergnerisgner"],
-  },
-});
-
-const photoInDbFromStart = new Photo("7583bb57-ee95-4d4b-ada2-aac914aec428", {
-  metadata: {
-    location: "dumb location zoefnzeifnze rueygerugn",
-    description: "dumb description oeirngeroingerijgn",
-    titles: ["dumb titlte 1 po,goerng", "dumb title 2 eorignerkgnerigujne"],
-    date: new Date(),
-  },
-});
-
-const replacingPhoto = new Photo(photoInDbFromStart._id, {
-  metadata: {
-    location: "oeinrgiuergnierugning",
-    date: new Date(),
-    description: "ezirgneirtngp,ozoing pzef, eifzin apzo,d oef",
-    titles: ["éizefnziefn", "riegnierngreijgnerij", "oekgoerkg"],
-  },
-});
