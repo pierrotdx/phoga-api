@@ -1,4 +1,4 @@
-import { clone } from "ramda";
+import { clone, pick } from "ramda";
 
 import { IPhoto, IPhotoImageDb } from "@business-logic";
 
@@ -12,6 +12,11 @@ export class FakePhotoImageDb implements IPhotoImageDb {
 
   async getById(id: IPhoto["_id"]): Promise<Buffer> {
     return clone(this.photoImages[id]);
+  }
+
+  async getByIds(ids: IPhoto["_id"][]): Promise<Record<IPhoto["_id"], Buffer>> {
+    const images = pick(ids, this.photoImages);
+    return clone(images);
   }
 
   async delete(id: IPhoto["_id"]): Promise<void> {

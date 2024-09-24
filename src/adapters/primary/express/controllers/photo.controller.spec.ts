@@ -20,15 +20,16 @@ import {
   IUseCases,
   Photo,
   ReplacePhoto,
+  SearchPhoto,
 } from "@business-logic";
 import { EntryPointId, IValidators, entryPoints } from "@http-server";
+import { dumbPhotoGenerator } from "@utils";
 
 import {
   getDumbApp,
   getUrlWithReplacedId,
 } from "../services/test-utils.service";
 import { PhotoController } from "./photo.controller";
-import { dumbPhotoGenerator } from "@utils";
 
 describe("photo controller", () => {
   let photoController: PhotoController;
@@ -55,6 +56,7 @@ describe("photo controller", () => {
       addPhoto: new AddPhoto(metadataDb, imageDb),
       replacePhoto: new ReplacePhoto(metadataDb, imageDb),
       deletePhoto: new DeletePhoto(metadataDb, imageDb),
+      searchPhoto: new SearchPhoto(metadataDb, imageDb),
     };
 
     validators = {

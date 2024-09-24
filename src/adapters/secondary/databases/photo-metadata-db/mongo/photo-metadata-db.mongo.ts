@@ -1,7 +1,12 @@
 import { Collection } from "mongodb";
 import { omit } from "ramda";
 
-import { IPhoto, IPhotoMetadata, IPhotoMetadataDb } from "@business-logic";
+import {
+  IPhoto,
+  IPhotoMetadata,
+  IPhotoMetadataDb,
+  IRendering,
+} from "@business-logic";
 
 import { MongoBase, MongoCollection, MongoStore } from "../../mongo";
 
@@ -13,6 +18,7 @@ export class PhotoMetadataDbMongo implements IPhotoMetadataDb {
       MongoCollection.PhotoMetadata,
     );
   }
+  find: (rendering?: IRendering) => Promise<IPhoto[]>;
 
   async getById(id: IPhoto["_id"]): Promise<IPhotoMetadata> {
     const storePhotoMetadata = await this.collection.findOne({

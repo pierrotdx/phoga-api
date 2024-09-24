@@ -1,5 +1,6 @@
 import { clone } from "ramda";
 
+import { LoremIpsumGenerator, UuidGenerator } from "@adapters";
 import { IPhoto, Photo } from "@business-logic";
 import { assertPhoto } from "@utils/is-photo/is-photo";
 
@@ -9,7 +10,6 @@ import {
   ILoremIpsumGenerator,
   IUuidGenerator,
 } from "../models";
-import { LoremIpsumGenerator, UuidGenerator } from "@adapters";
 
 export class DumbPhotoGenerator implements IDumbPhotoGenerator {
   constructor(
@@ -35,7 +35,7 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
   private generateMetadata(
     options?: IDumbPhotoGeneratorOptions,
   ): IPhoto["metadata"] {
-    const date = clone(options?.date) || new Date();
+    const date = clone(options?.date) || this.randomDate();
     const titles = clone(options?.titles) || this.generateTitles();
     const location =
       clone(options?.location) ||
@@ -43,6 +43,16 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     const description =
       clone(options?.description) || this.generateDescription();
     return { date, titles, location, description };
+  }
+
+  // https://stackoverflow.com/a/9035732/6281776
+  private randomDate(
+    start: Date = new Date("1900-01-01"),
+    end: Date = new Date(),
+  ) {
+    return new Date(
+      start.getTime() + Math.random() * (end.getTime() - start.getTime()),
+    );
   }
 
   private generateTitles(): IPhoto["metadata"]["titles"] {
@@ -67,4 +77,7 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
 
 const uuidGenerator: IUuidGenerator = new UuidGenerator();
 const loremIpsumGenerator: ILoremIpsumGenerator = new LoremIpsumGenerator();
-export const dumbPhotoGenerator = new DumbPhotoGenerator(uuidGenerator, loremIpsumGenerator);
+export const dumbPhotoGenerator = new DumbPhotoGenerator(
+  uuidGenerator,
+  loremIpsumGenerator,
+);

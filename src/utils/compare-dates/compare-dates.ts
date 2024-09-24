@@ -1,3 +1,11 @@
+import { IPhoto } from "@business-logic";
+
+export function comparePhotoDates(a: IPhoto, b: IPhoto) {
+    const aDate = a?.metadata?.date;
+    const bDate = b?.metadata?.date;
+    return compareDates(aDate, bDate);
+  }
+
 export function compareDates(a: Date, b: Date): number {
   if (!isDate(a) || !isDate(b)) {
     throw new Error("both parameters should be of type Date");

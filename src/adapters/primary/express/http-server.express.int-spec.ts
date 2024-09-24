@@ -21,6 +21,7 @@ import {
   IPhotoMetadataDb,
   IUseCases,
   ReplacePhoto,
+  SearchPhoto,
 } from "@business-logic";
 import { Storage } from "@google-cloud/storage";
 import { EntryPointId, IValidators, entryPoints } from "@http-server";
@@ -88,6 +89,7 @@ describe("ExpressHttpServer", () => {
       addPhoto: new AddPhoto(metadataDb, imageDb),
       replacePhoto: new ReplacePhoto(metadataDb, imageDb),
       deletePhoto: new DeletePhoto(metadataDb, imageDb),
+      searchPhoto: new SearchPhoto(metadataDb, imageDb),
     };
 
     validators = {
