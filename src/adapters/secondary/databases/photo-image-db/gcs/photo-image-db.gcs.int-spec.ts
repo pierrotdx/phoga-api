@@ -1,7 +1,10 @@
+import { randomInt } from "node:crypto";
+
 import { IPhoto } from "@business-logic";
 import { Storage } from "@google-cloud/storage";
+import { dumbPhotoGenerator } from "@utils";
 
-import { getTestStorage } from "../../gcs";
+import { gcsTestUtils } from "../../gcs";
 import { PhotoImageDbGcs } from "./photo-image-db.gcs";
 import {
   deletePhotoImage,
@@ -15,7 +18,7 @@ describe("PhotoImageDbGcs", () => {
   let storage: Storage;
 
   beforeAll(async () => {
-    storage = await getTestStorage();
+    storage = await gcsTestUtils.getStorage();
   });
 
   beforeEach(async () => {
@@ -70,6 +73,40 @@ describe("PhotoImageDbGcs", () => {
     });
   });
 
+  describe("getByIds", () => {
+    const nbPhotos = 6;
+    const storedPhotos = generatePhotos(nbPhotos);
+
+    beforeEach(async () => {
+      const insertPhoto$ = storedPhotos.map(async (p) => {
+        await photoImageDbGcs.insert(p);
+      });
+      await Promise.all(insertPhoto$);
+    });
+
+    afterEach(async () => {
+      const deletePhoto$ = storedPhotos.map(async (p) => {
+        await photoImageDbGcs.delete(p._id);
+      });
+      await Promise.all(deletePhoto$);
+    });
+
+    it.each`
+      photoIndices
+      ${generateRandomIndices(nbPhotos)}
+      ${generateRandomIndices(nbPhotos)}
+      ${generateRandomIndices(nbPhotos)}
+      ${generateRandomIndices(nbPhotos)}
+    `(
+      "should return the images whose names match input ids",
+      async ({ photoIndices }: { photoIndices: number[] }) => {
+        const ids = getPhotoIdsFromIndices(storedPhotos, photoIndices);
+        const result = await photoImageDbGcs.getByIds(ids);
+        shouldReturnPhotoImagesMatchingInputIds(result, storedPhotos);
+      },
+    );
+  });
+
   describe("replace", () => {
     let initPhoto: IPhoto;
     let replacingPhoto: IPhoto;
@@ -115,3 +152,54 @@ describe("PhotoImageDbGcs", () => {
     });
   });
 });
+
+function shouldReturnPhotoImagesMatchingInputIds(
+  result: Record<IPhoto["_id"], Buffer>,
+  storedPhotos: IPhoto[],
+) {
+  const idBufferPairs = Object.entries(result);
+  expect(idBufferPairs.length).toBeGreaterThan(0);
+  idBufferPairs.forEach(([id, buffer]) => {
+    expect(buffer).toBeDefined();
+    const storedPhoto = storedPhotos.find((p) => p._id === id);
+    expect(buffer).toEqual(storedPhoto.imageBuffer);
+  });
+  expect.assertions(2 * idBufferPairs.length + 1);
+}
+
+function generatePhotos(nbPhotos: number): IPhoto[] {
+  const photos: IPhoto[] = [];
+  for (let index = 0; index < nbPhotos; index++) {
+    photos.push(
+      dumbPhotoGenerator.generate({
+        imageBuffer: Buffer.from("dumb image buffer"),
+      }),
+    );
+  }
+  return photos;
+}
+
+function generateRandomIndices(nbPhotos: number): number[] {
+  const nbIndices = randomInt(1, nbPhotos + 1);
+  const indices: number[] = [];
+  while (indices.length < nbIndices - 1) {
+    const index = randomInt(0, nbPhotos - 1);
+    if (!indices.includes(index)) {
+      indices.push(index);
+    }
+  }
+  return indices;
+}
+
+function getPhotoIdsFromIndices(
+  photos: IPhoto[],
+  indices: number[],
+): IPhoto["_id"][] {
+  return indices.reduce<IPhoto["_id"][]>((acc, index) => {
+    const photo = photos[index];
+    if (photo) {
+      acc.push(photo._id);
+    }
+    return acc;
+  }, []);
+}

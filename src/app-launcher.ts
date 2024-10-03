@@ -8,7 +8,7 @@ import {
   MongoBase,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
-  getTestStorage,
+  gcsTestUtils,
 } from "@adapters";
 import { LoggerWinston } from "@adapters/loggers";
 import {
@@ -55,7 +55,7 @@ export class AppLauncher {
   }
 
   private async startPhotoImageDb() {
-    const storage = await getTestStorage();
+    const storage = await gcsTestUtils.getStorage();
     this.imageDb = new PhotoImageDbGcs(storage);
   }
 

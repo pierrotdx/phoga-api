@@ -5,7 +5,7 @@ import {
   MongoBase,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
-  getTestStorage,
+  gcsTestUtils,
 } from "@adapters/databases";
 import { LoggerWinston } from "@adapters/loggers";
 import {
@@ -76,7 +76,7 @@ describe("ExpressHttpServer", () => {
     await mongoBase.open();
     metadataDb = new PhotoMetadataDbMongo(mongoBase);
 
-    storage = await getTestStorage();
+    storage = await gcsTestUtils.getStorage();
     imageDb = new PhotoImageDbGcs(storage);
 
     oauth2Server = new OAuth2ServerMock(issuerHost, issuerPort);
