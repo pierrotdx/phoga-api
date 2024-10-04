@@ -1,25 +1,27 @@
-import express, {
-  type Express,
-  NextFunction,
-  type Request,
-  type Response,
-} from "express";
+import { type Express } from "express";
 import request from "supertest";
 
 import { IPhoto } from "@business-logic";
 import { DeletePhotoSchema } from "@http-server";
 
+import { AjvTestUtils } from "./ajv.test-utils";
 import { DeletePhotoAjvValidator } from "./delete-photo.ajv-validator";
 
 describe("DeletePhotoAjvValidator", () => {
+  const ajvTestUtils = new AjvTestUtils();
+  const spy = jest.fn((id: IPhoto["_id"]) => {});
+  const id = "1789f4f5-1f00-4c1c-b871-c7ebe5a8f721";
+
   let deletePhotoAjvValidator: DeletePhotoAjvValidator;
   let dumbApp: Express;
-  const spy = jest.fn((id: IPhoto["_id"]) => {});
-
   beforeEach(() => {
-    dumbApp = express();
+    dumbApp = ajvTestUtils.getDumbApp();
     deletePhotoAjvValidator = new DeletePhotoAjvValidator();
-    const reqHandler = getReqHandler(deletePhotoAjvValidator, spy);
+    const reqHandler = ajvTestUtils.getReqHandler(
+      DeletePhotoSchema,
+      deletePhotoAjvValidator,
+      spy,
+    );
     dumbApp.delete("/:id", reqHandler);
   });
 
@@ -43,18 +45,3 @@ describe("DeletePhotoAjvValidator", () => {
     });
   });
 });
-
-const id = "1789f4f5-1f00-4c1c-b871-c7ebe5a8f721";
-
-const getReqHandler =
-  (validator: DeletePhotoAjvValidator, spy: jest.Func) =>
-  (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const id = validator.validateAndParse(DeletePhotoSchema, req.params);
-      spy(id);
-      next();
-    } catch (err) {
-      res.status(400).send(err);
-      next(err);
-    }
-  };
