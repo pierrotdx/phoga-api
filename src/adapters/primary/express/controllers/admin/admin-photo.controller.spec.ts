@@ -10,6 +10,7 @@ import {
   FakePhotoMetadataDb,
   GetPhotoFakeValidator,
   ReplacePhotoFakeValidator,
+  SearchPhotoFakeValidator,
 } from "@adapters";
 import {
   AddPhoto,
@@ -68,6 +69,7 @@ describe("adminPhotoController", () => {
       addPhoto: new AddPhotoFakeValidator(),
       replacePhoto: new ReplacePhotoFakeValidator(),
       deletePhoto: new DeletePhotoFakeValidator(),
+      searchPhoto: new SearchPhotoFakeValidator(),
     };
 
     adminPhotoController = new AdminPhotoController(useCases, validators);

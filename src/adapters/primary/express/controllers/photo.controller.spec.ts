@@ -9,6 +9,7 @@ import {
   FakePhotoMetadataDb,
   GetPhotoFakeValidator,
   ReplacePhotoFakeValidator,
+  SearchPhotoFakeValidator,
 } from "@adapters";
 import {
   AddPhoto,
@@ -17,8 +18,8 @@ import {
   GetPhotoField,
   IPhotoImageDb,
   IPhotoMetadataDb,
+  ISearchPhotoOptions,
   IUseCases,
-  Photo,
   ReplacePhoto,
   SearchPhoto,
 } from "@business-logic";
@@ -64,6 +65,7 @@ describe("photo controller", () => {
       addPhoto: new AddPhotoFakeValidator(),
       replacePhoto: new ReplacePhotoFakeValidator(),
       deletePhoto: new DeletePhotoFakeValidator(),
+      searchPhoto: new SearchPhotoFakeValidator(),
     };
 
     photoController = new PhotoController(useCases, validators);
@@ -131,6 +133,44 @@ describe("photo controller", () => {
 
       const contentTypeHeader = response.get("Content-Type");
       expect(contentTypeHeader).toContain("image/jpeg");
+      expect(response.statusCode).toBe(200);
+      expect.assertions(2);
+    });
+  });
+
+  describe("search", () => {
+    let searchPhotoUseCaseSpy: jest.SpyInstance;
+    const entryPoint = entryPoints.get(EntryPointId.SearchPhoto);
+    const path = entryPoint.getFullPath();
+    const searchOptions: ISearchPhotoOptions = {
+      rendering: { size: 10 },
+      excludeImages: true,
+    };
+
+    beforeEach(() => {
+      searchPhotoUseCaseSpy = jest.spyOn(useCases.searchPhoto, "execute");
+      dumbApp.get(path, photoController.search);
+
+      const queryParams = {
+        excludeImages: searchOptions.excludeImages,
+        ...searchOptions.rendering,
+      };
+      res$ = req.get(path).query(queryParams);
+    });
+
+    it("should call the search-photo use case with the parsed query params", async () => {
+      await res$;
+
+      expect(searchPhotoUseCaseSpy).toHaveBeenCalledTimes(1);
+      expect(searchPhotoUseCaseSpy).toHaveBeenLastCalledWith(searchOptions);
+      expect.assertions(2);
+    });
+
+    it("should respond with status 200 and have a header property 'Content-Type: application/json'", async () => {
+      const response = await res$;
+
+      const contentTypeHeader = response.get("Content-Type");
+      expect(contentTypeHeader).toContain("application/json");
       expect(response.statusCode).toBe(200);
       expect.assertions(2);
     });
