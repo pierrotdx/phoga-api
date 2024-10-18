@@ -8,6 +8,7 @@ import {
   MongoBase,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
+  SearchPhotoAjvValidator,
   gcsTestUtils,
 } from "@adapters";
 import { LoggerWinston } from "@adapters/loggers";
@@ -19,6 +20,7 @@ import {
   IPhotoMetadataDb,
   IUseCases,
   ReplacePhoto,
+  SearchPhoto,
 } from "@business-logic";
 import { IValidators } from "@http-server";
 
@@ -65,6 +67,7 @@ export class AppLauncher {
       addPhoto: new AddPhoto(this.metadataDb, this.imageDb),
       replacePhoto: new ReplacePhoto(this.metadataDb, this.imageDb),
       deletePhoto: new DeletePhoto(this.metadataDb, this.imageDb),
+      searchPhoto: new SearchPhoto(this.metadataDb, this.imageDb),
     };
   }
 
@@ -74,6 +77,7 @@ export class AppLauncher {
       addPhoto: new AddPhotoAjvValidator(),
       replacePhoto: new AddPhotoAjvValidator(),
       deletePhoto: new DeletePhotoAjvValidator(),
+      searchPhoto: new SearchPhotoAjvValidator(),
     };
   }
 
