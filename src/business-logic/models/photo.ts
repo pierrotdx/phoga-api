@@ -17,7 +17,11 @@ export class Photo implements IPhoto {
       imageBuffer?: IPhoto["imageBuffer"];
     },
   ) {
-    this.metadata = data?.metadata;
-    this.imageBuffer = data?.imageBuffer;
+    if (data?.metadata) {
+      this.metadata = data.metadata;
+    }
+    if (data?.imageBuffer) {
+      this.imageBuffer = data.imageBuffer;
+    }
   }
 }

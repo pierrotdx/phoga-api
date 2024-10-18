@@ -16,6 +16,7 @@ export const replacePhotoPath = entryPoints.getFullPath(
 export const deletePhotoPath = entryPoints.getFullPath(
   EntryPointId.DeletePhoto,
 );
+export const searchPhotoPath = entryPoints.getFullPath(EntryPointId.SearchPhoto);
 
 export function getUrlWithReplacedId(id: string, entryPointId: EntryPointId) {
   return entryPoints.getFullPath(entryPointId).replace(":id", id);

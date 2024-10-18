@@ -18,6 +18,7 @@ class EntryPoints implements IEntryPoints {
     this.photoBase,
     [Scope.PhotosRead],
   );
+  private readonly searchPhoto = new EntryPoint("/", this.photoBase);
 
   private readonly adminBase = new EntryPoint("/admin", this.base, [
     Scope.RestrictedRead,
@@ -44,6 +45,7 @@ class EntryPoints implements IEntryPoints {
     [EntryPointId.GetPhotoMetadata]: this.getPhotoMetadata,
     [EntryPointId.PhotoBase]: this.photoBase,
     [EntryPointId.ReplacePhoto]: this.replacePhoto,
+    [EntryPointId.SearchPhoto]: this.searchPhoto,
   };
 
   get(id: EntryPointId) {

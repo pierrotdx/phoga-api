@@ -7,7 +7,7 @@ describe("MongoBase", () => {
   let mongoBase: MongoBase;
 
   beforeEach(async () => {
-    mongoBase = new MongoBase(global.__MONGO_URL__, global.__MONGO_DB_NAME);
+    mongoBase = new MongoBase(global.__MONGO_URL__, global.__MONGO_DB_NAME__);
     await mongoBase.open();
   });
 

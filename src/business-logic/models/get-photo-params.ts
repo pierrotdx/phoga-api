@@ -3,6 +3,6 @@ export enum GetPhotoField {
   ImageBuffer = "imageBuffer",
 }
 
-export interface GetPhotoOptions {
+export interface IGetPhotoOptions {
   fields?: GetPhotoField[];
 }

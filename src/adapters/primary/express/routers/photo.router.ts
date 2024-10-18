@@ -15,5 +15,9 @@ export class PhotoRouter extends ExpressRouter {
       entryPoints.getRelativePath(EntryPointId.GetPhotoMetadata),
       wrapWithErrorCatcher(this.photoController.getPhotoMetadataHandler),
     );
+    this.router.get(
+      entryPoints.getRelativePath(EntryPointId.SearchPhoto),
+      wrapWithErrorCatcher(this.photoController.search),
+    );
   }
 }

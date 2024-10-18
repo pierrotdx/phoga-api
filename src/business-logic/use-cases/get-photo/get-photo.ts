@@ -1,5 +1,5 @@
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
-import { GetPhotoField, GetPhotoOptions, IPhoto, Photo } from "../../models";
+import { GetPhotoField, IGetPhotoOptions, IPhoto, Photo } from "../../models";
 
 export class GetPhoto {
   constructor(
@@ -9,7 +9,7 @@ export class GetPhoto {
 
   async execute(
     id: IPhoto["_id"],
-    options: GetPhotoOptions = {
+    options: IGetPhotoOptions = {
       fields: [GetPhotoField.ImageBuffer, GetPhotoField.Metadata],
     },
   ): Promise<IPhoto> {
