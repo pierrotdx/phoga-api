@@ -1,25 +1,28 @@
-import express, {
-  type Express,
-  NextFunction,
-  Request,
-  Response,
-} from "express";
+import { type Express } from "express";
 import request from "supertest";
 
 import { IPhoto } from "@business-logic";
 import { GetPhotoSchema } from "@http-server";
 
+import { AjvTestUtils } from "./ajv.test-utils";
 import { GetPhotoAjvValidator } from "./get-photo.ajv-validator";
 
 describe("GetPhotoAjvValidator", () => {
-  let getPhotoAjvValidator: GetPhotoAjvValidator;
-  let dumbApp: Express;
+  const ajvTestUtils = new AjvTestUtils();
+  const id = "1789f4f5-1f00-4c1c-b871-c7ebe5a8f721";
   const spy = jest.fn((id: IPhoto["_id"]) => {});
 
+  let getPhotoAjvValidator: GetPhotoAjvValidator;
+  let dumbApp: Express;
+
   beforeEach(() => {
-    dumbApp = express();
+    dumbApp = ajvTestUtils.getDumbApp();
     getPhotoAjvValidator = new GetPhotoAjvValidator();
-    const reqHandler = getReqHandler(getPhotoAjvValidator, spy);
+    const reqHandler = ajvTestUtils.getReqHandler(
+      GetPhotoSchema,
+      getPhotoAjvValidator,
+      spy,
+    );
     dumbApp.get("/:id", reqHandler);
   });
 
@@ -43,18 +46,3 @@ describe("GetPhotoAjvValidator", () => {
     });
   });
 });
-
-const id = "1789f4f5-1f00-4c1c-b871-c7ebe5a8f721";
-
-const getReqHandler =
-  (validator: GetPhotoAjvValidator, spy: jest.Func) =>
-  (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const id = validator.validateAndParse(GetPhotoSchema, req.params);
-      spy(id);
-      next();
-    } catch (err) {
-      res.status(400).send(err);
-      next(err);
-    }
-  };

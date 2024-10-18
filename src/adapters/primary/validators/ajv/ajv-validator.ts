@@ -12,7 +12,7 @@ export class AjvValidator {
     this.ajvValidate = this.ajv.compile(schema);
   }
 
-  readonly validate = (schema: TSchema, data: TValidatorData): void => {
+  readonly validate = <T = TValidatorData>(schema: TSchema, data: T): void => {
     if (!this.ajvValidate) {
       this.init(schema);
     }

@@ -1,7 +1,10 @@
+import { buffer } from "node:stream/consumers";
+
 import { IPhoto, IPhotoImageDb } from "@business-logic";
 import { Bucket, Storage } from "@google-cloud/storage";
 
 import { GcsBucket } from "../../gcs/models/gcs-buckets";
+import { GetByIds } from "./get-by-ids";
 
 export class PhotoImageDbGcs implements IPhotoImageDb {
   private readonly bucket: Bucket;
@@ -31,9 +34,8 @@ export class PhotoImageDbGcs implements IPhotoImageDb {
 
   async getById(id: IPhoto["_id"]): Promise<Buffer> {
     try {
-      const file = this.bucket.file(id);
-      const buffer = (await file.download())[0];
-      return buffer;
+      const fileStream = this.bucket.file(id).createReadStream();
+      return await buffer(fileStream);
     } catch (err) {
       return undefined;
     }
@@ -42,5 +44,9 @@ export class PhotoImageDbGcs implements IPhotoImageDb {
   async delete(id: IPhoto["_id"]): Promise<void> {
     const file = this.bucket.file(id);
     await file.delete();
+  }
+
+  async getByIds(ids: IPhoto["_id"][]): Promise<Record<IPhoto["_id"], Buffer>> {
+    return new GetByIds(this.bucket).execute(ids);
   }
 }

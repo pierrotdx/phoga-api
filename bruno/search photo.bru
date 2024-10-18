@@ -1,0 +1,16 @@
+meta {
+  name: search photo
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/photo?size=1&date=desc
+  body: none
+  auth: none
+}
+
+query {
+  size: 1
+  date: desc
+}

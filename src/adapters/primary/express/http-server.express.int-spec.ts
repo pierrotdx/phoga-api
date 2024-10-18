@@ -5,27 +5,31 @@ import {
   MongoBase,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
-  getTestStorage,
+  gcsTestUtils,
 } from "@adapters/databases";
 import { LoggerWinston } from "@adapters/loggers";
 import {
   AddPhotoAjvValidator,
   DeletePhotoAjvValidator,
   GetPhotoAjvValidator,
+  SearchPhotoAjvValidator,
 } from "@adapters/validators";
 import {
   AddPhoto,
   DeletePhoto,
   GetPhoto,
+  IPhoto,
   IPhotoImageDb,
   IPhotoMetadataDb,
   IUseCases,
   ReplacePhoto,
+  SearchPhoto,
+  SortDirection,
 } from "@business-logic";
 import { Storage } from "@google-cloud/storage";
 import { EntryPointId, IValidators, entryPoints } from "@http-server";
 import { Logger } from "@logger/models";
-import { dumbPhotoGenerator } from "@utils";
+import { compareDates, dumbPhotoGenerator } from "@utils";
 
 import { ExpressAuthHandler } from "../oauth2-jwt-bearer";
 import {
@@ -44,6 +48,7 @@ import {
   getPayloadFromPhoto,
   getUrlWithReplacedId,
   replacePhotoPath,
+  searchPhotoPath,
 } from "./services/test-utils.service";
 
 describe("ExpressHttpServer", () => {
@@ -75,7 +80,7 @@ describe("ExpressHttpServer", () => {
     await mongoBase.open();
     metadataDb = new PhotoMetadataDbMongo(mongoBase);
 
-    storage = await getTestStorage();
+    storage = await gcsTestUtils.getStorage();
     imageDb = new PhotoImageDbGcs(storage);
 
     oauth2Server = new OAuth2ServerMock(issuerHost, issuerPort);
@@ -88,6 +93,7 @@ describe("ExpressHttpServer", () => {
       addPhoto: new AddPhoto(metadataDb, imageDb),
       replacePhoto: new ReplacePhoto(metadataDb, imageDb),
       deletePhoto: new DeletePhoto(metadataDb, imageDb),
+      searchPhoto: new SearchPhoto(metadataDb, imageDb),
     };
 
     validators = {
@@ -95,6 +101,7 @@ describe("ExpressHttpServer", () => {
       addPhoto: new AddPhotoAjvValidator(),
       replacePhoto: new AddPhotoAjvValidator(),
       deletePhoto: new DeletePhotoAjvValidator(),
+      searchPhoto: new SearchPhotoAjvValidator(),
     };
 
     const silentLogger = true;
@@ -191,6 +198,40 @@ describe("ExpressHttpServer", () => {
       expect(imageFromDb).toEqual(photoInDbFromStart.imageBuffer);
       expect.assertions(1);
     });
+  });
+
+  describe(`GET ${searchPhotoPath}`, () => {
+    it.each`
+      queryParams
+      ${{ size: 1 }}
+      ${{ size: 2, date: SortDirection.Ascending }}
+      ${{ size: 2, date: SortDirection.Descending }}
+    `(
+      "should return the photos matching the query params: $queryParams",
+      async ({ queryParams }) => {
+        const response = await request(app)
+          .get(searchPhotoPath)
+          .query(queryParams);
+        const searchResult = response.body as IPhoto[];
+
+        let assertionsCount = 0;
+
+        if (queryParams.size) {
+          expectSearchResultMatchingSize(searchResult, queryParams.size);
+          assertionsCount++;
+        }
+
+        if (queryParams.date) {
+          expectSearchResultMatchingDateOrdering(
+            searchResult,
+            queryParams.date,
+          );
+          assertionsCount++;
+        }
+
+        expect.assertions(assertionsCount);
+      },
+    );
   });
 
   describe(`PUT ${replacePhotoPath}`, () => {
@@ -295,3 +336,24 @@ describe("ExpressHttpServer", () => {
     });
   });
 });
+
+function expectSearchResultMatchingSize(searchResult: any[], size: number) {
+  expect(searchResult.length).toBeLessThanOrEqual(size);
+}
+
+function expectSearchResultMatchingDateOrdering(
+  searchResult: any[],
+  dateOrdering: SortDirection,
+) {
+  const searchResultDates = searchResult.map((data) => {
+    const stringDate = data.metadata?.date;
+    if (stringDate) {
+      return new Date(stringDate);
+    }
+  });
+  const orderedDates = [...searchResultDates].sort(compareDates);
+  if (dateOrdering === SortDirection.Descending) {
+    orderedDates.reverse();
+  }
+  expect(searchResultDates).toEqual(orderedDates);
+}

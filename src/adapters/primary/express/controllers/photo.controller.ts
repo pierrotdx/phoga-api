@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { Readable } from "node:stream";
 
 import { GetPhotoField, IUseCases } from "@business-logic";
-import { GetPhotoSchema, IValidators } from "@http-server";
+import { GetPhotoSchema, IValidators, SearchPhotoSchema } from "@http-server";
 
 export class PhotoController {
   constructor(
@@ -35,5 +35,14 @@ export class PhotoController {
     imageStream.on("end", () => {
       res.end();
     });
+  };
+
+  search = async (req: Request, res: Response) => {
+    const searchOptions = this.validators.searchPhoto.validateAndParse(
+      SearchPhotoSchema,
+      req.query,
+    );
+    const result = await this.useCases.searchPhoto.execute(searchOptions);
+    res.json(result);
   };
 }
