@@ -1,6 +1,6 @@
 import bodyParser from "body-parser";
 import express, { Express, NextFunction, Request, Response } from "express";
-import request from "supertest";
+import { Test } from "supertest";
 
 import { IValidator, TSchema } from "@http-server";
 
@@ -19,21 +19,22 @@ export class AjvTestUtils {
     return (req: Request, res: Response, next: NextFunction) => {
       try {
         const result = validator.validateAndParse(schema, {
+          ...req.query,
           ...req.params,
           ...req.body,
         });
         spy(result);
-        next();
+        res.sendStatus(200);
       } catch (err) {
+        console.error(err);
         res.status(400).send(err);
-        next(err);
       }
     };
   }
 
-  public async expectErrorResponse(app: Express, payload: string | object) {
-    const response = await request(app).post("/").send(payload);
-    expect(response.statusCode).toBe(400);
+  public async expectErrorResponse(req: Test, expectedStatusCode = 400) {
+    const response = await req;
+    expect(response.statusCode).toBe(expectedStatusCode);
     expect.assertions(1);
   }
 }

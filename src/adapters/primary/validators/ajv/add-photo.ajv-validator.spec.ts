@@ -44,17 +44,20 @@ describe("AddPhotoAjvValidator", () => {
       "should throw if the required field `$field` is missing",
       async ({ field }) => {
         const payloadWithoutId = omit([field], payload);
-        await ajvTestUtils.expectErrorResponse(dumbApp, payloadWithoutId);
+        const req = request(dumbApp).post("/").send(payloadWithoutId);
+        await ajvTestUtils.expectErrorResponse(req);
       },
     );
 
     it("should throw if the required date format is not respected", async () => {
       const payloadWithIncorrectDateFormat = clone(payload);
       payloadWithIncorrectDateFormat.date = new Date().toUTCString();
-      await ajvTestUtils.expectErrorResponse(
-        dumbApp,
-        payloadWithIncorrectDateFormat,
-      );
+
+      const req = request(dumbApp)
+        .post("/")
+        .send(payloadWithIncorrectDateFormat);
+
+      await ajvTestUtils.expectErrorResponse(req);
     });
   });
 });
