@@ -1,4 +1,4 @@
-import { dumbPhotoGenerator } from "@utils";
+import { dumbPhotoGenerator } from "@adapters";
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
 import { IPhoto } from "../../models";

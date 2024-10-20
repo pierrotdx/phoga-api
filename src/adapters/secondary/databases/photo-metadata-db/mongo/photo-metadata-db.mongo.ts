@@ -65,8 +65,8 @@ export class PhotoMetadataDbMongo implements IPhotoMetadataDb {
     cursor.limit(rendering?.size || this.defaultSize);
 
     const sort: Sort = {};
-    if (rendering?.date) {
-      sort.date = rendering.date;
+    if (rendering?.dateOrder) {
+      sort.date = rendering.dateOrder;
     }
     if (!isEmpty(sort)) {
       cursor.sort(sort);

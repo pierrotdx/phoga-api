@@ -1,12 +1,9 @@
-import { dumbPhotoGenerator } from "@utils";
-
-
+import { dumbPhotoGenerator } from "@adapters";
 
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
 import { Photo } from "../../models";
 import { ReplacePhoto } from "./replace-photo";
-
 
 describe("replace-photo use case", () => {
   let replacePhoto: ReplacePhoto;

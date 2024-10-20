@@ -4,13 +4,17 @@ import TestAgent from "supertest/lib/agent";
 
 import {
   AddPhotoFakeValidator,
+  AddPhotoParser,
   AdminPhotoController,
   DeletePhotoFakeValidator,
   FakePhotoImageDb,
   FakePhotoMetadataDb,
   GetPhotoFakeValidator,
+  GetPhotoParser,
   ReplacePhotoFakeValidator,
   SearchPhotoFakeValidator,
+  SearchPhotoParser,
+  dumbPhotoGenerator,
 } from "@adapters";
 import {
   AddPhoto,
@@ -19,17 +23,10 @@ import {
   IPhotoImageDb,
   IPhotoMetadataDb,
   IUseCases,
-  Photo,
   ReplacePhoto,
   SearchPhoto,
 } from "@business-logic";
-import {
-  EntryPointId,
-  IValidators,
-  entryPoints,
-  imageBufferEncoding,
-} from "@http-server";
-import { dumbPhotoGenerator } from "@utils";
+import { EntryPointId, IParsers, IValidators, entryPoints } from "@http-server";
 
 import {
   getDumbApp,
@@ -45,6 +42,7 @@ describe("adminPhotoController", () => {
 
   let useCases: IUseCases;
   let validators: IValidators;
+  let parsers: IParsers;
 
   let dumbApp: Express;
   let req: TestAgent;
@@ -72,7 +70,19 @@ describe("adminPhotoController", () => {
       searchPhoto: new SearchPhotoFakeValidator(),
     };
 
-    adminPhotoController = new AdminPhotoController(useCases, validators);
+    parsers = {
+      getPhoto: new GetPhotoParser(),
+      addPhoto: new AddPhotoParser(),
+      replacePhoto: new AddPhotoParser(),
+      deletePhoto: new GetPhotoParser(),
+      searchPhoto: new SearchPhotoParser(),
+    };
+
+    adminPhotoController = new AdminPhotoController(
+      useCases,
+      validators,
+      parsers,
+    );
     dumbApp = getDumbApp();
     req = request(dumbApp);
   });

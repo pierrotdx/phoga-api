@@ -1,9 +1,6 @@
 import { IPhoto, Photo } from "@business-logic";
 
-
-
 import { isPhoto } from "./is-photo";
-
 
 describe("isPhoto", () => {
   const imageBuffer = Buffer.from("dumb buffer");

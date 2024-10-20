@@ -37,9 +37,9 @@ describe("SearchPhoto", () => {
       const descendingPhotos = clone(ascendingPhotos).reverse();
 
       it.each`
-        case            | rendering                             | expectedSortedList
-        ${"ascending"}  | ${{ date: SortDirection.Ascending }}  | ${ascendingPhotos}
-        ${"descending"} | ${{ date: SortDirection.Descending }} | ${descendingPhotos}
+        case            | rendering                                  | expectedSortedList
+        ${"ascending"}  | ${{ dateOrder: SortDirection.Ascending }}  | ${ascendingPhotos}
+        ${"descending"} | ${{ dateOrder: SortDirection.Descending }} | ${descendingPhotos}
       `(
         "should sort them by $case date when required",
         async ({ expectedSortedList, rendering }) => {
