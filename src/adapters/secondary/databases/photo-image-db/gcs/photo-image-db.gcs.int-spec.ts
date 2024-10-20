@@ -1,8 +1,8 @@
 import { randomInt } from "node:crypto";
 
+import { dumbPhotoGenerator } from "@adapters";
 import { IPhoto } from "@business-logic";
 import { Storage } from "@google-cloud/storage";
-import { dumbPhotoGenerator } from "@utils";
 
 import { gcsTestUtils } from "../../gcs";
 import { PhotoImageDbGcs } from "./photo-image-db.gcs";

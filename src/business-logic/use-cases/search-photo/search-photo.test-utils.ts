@@ -1,5 +1,5 @@
+import { dumbPhotoGenerator } from "@adapters";
 import { IPhoto } from "@business-logic";
-import { dumbPhotoGenerator } from "@utils";
 
 export class SearchPhotoTestUtils {
   public readonly storedPhotos = this.generateStoredPhotos();

@@ -10,7 +10,7 @@ import { Server } from "http";
 
 import { LoggerWinston } from "@adapters/loggers";
 import { IUseCases } from "@business-logic";
-import { AppHttpServer, IValidators } from "@http-server";
+import { AppHttpServer, IParser, IParsers, IValidators } from "@http-server";
 import { Logger } from "@logger";
 
 import {
@@ -33,6 +33,7 @@ export class ExpressHttpServer implements AppHttpServer {
   constructor(
     private readonly useCases: IUseCases,
     private readonly validators: IValidators,
+    private readonly parsers: IParsers,
     private readonly logger: Logger,
     private readonly authHandler: IAuthHandler,
   ) {
@@ -77,7 +78,11 @@ export class ExpressHttpServer implements AppHttpServer {
   }
 
   private getPhotoRouter(): PhotoRouter {
-    const photoController = new PhotoController(this.useCases, this.validators);
+    const photoController = new PhotoController(
+      this.useCases,
+      this.validators,
+      this.parsers,
+    );
     return new PhotoRouter(photoController);
   }
 
@@ -90,6 +95,7 @@ export class ExpressHttpServer implements AppHttpServer {
     const adminPhotoController = new AdminPhotoController(
       this.useCases,
       this.validators,
+      this.parsers,
     );
     return new AdminPhotoRouter(adminPhotoController, this.authHandler);
   }

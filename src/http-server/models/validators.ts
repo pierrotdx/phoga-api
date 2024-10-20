@@ -1,13 +1,9 @@
-import { IAddPhotoValidator } from "./add-photo-validator";
-import { IDeletePhotoValidator } from "./delete-photo-validator";
-import { IGetPhotoValidator } from "./get-photo-validator";
-import { IReplacePhotoValidator } from "./replace-photo-validator";
-import { ISearchPhotoValidator } from "./search-photo-validator";
+import { IValidator } from "./validator";
 
 export interface IValidators {
-  addPhoto: IAddPhotoValidator;
-  deletePhoto: IDeletePhotoValidator;
-  getPhoto: IGetPhotoValidator;
-  replacePhoto: IReplacePhotoValidator;
-  searchPhoto: ISearchPhotoValidator;
+  addPhoto: IValidator;
+  deletePhoto: IValidator;
+  getPhoto: IValidator;
+  replacePhoto: IValidator;
+  searchPhoto: IValidator;
 }

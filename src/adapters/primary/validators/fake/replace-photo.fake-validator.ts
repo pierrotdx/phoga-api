@@ -1,7 +1,5 @@
-import { IReplacePhotoValidator } from "@http-server";
+import { IValidator } from "@http-server";
 
-import { AddPhotoFakeValidator } from "./add-photo.fake-validator";
-
-export class ReplacePhotoFakeValidator
-  extends AddPhotoFakeValidator
-  implements IReplacePhotoValidator {}
+export class ReplacePhotoFakeValidator implements IValidator {
+  validate = (data: unknown) => {};
+}

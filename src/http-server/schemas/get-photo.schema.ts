@@ -1,12 +1,10 @@
 import { TSchema } from "../schema";
+import { UuidSchema } from "./uuid.schema";
 
 export const GetPhotoSchema: TSchema = {
   type: "object",
   required: ["id"],
   properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
+    id: UuidSchema,
   },
 };

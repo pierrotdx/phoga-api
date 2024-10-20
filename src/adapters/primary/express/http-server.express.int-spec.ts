@@ -2,18 +2,19 @@ import { type Express } from "express";
 import request from "supertest";
 
 import {
+  AddPhotoParser,
+  AjvValidator,
+  GetPhotoParser,
+  SearchPhotoParser,
+  dumbPhotoGenerator,
+} from "@adapters";
+import {
   MongoBase,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
   gcsTestUtils,
 } from "@adapters/databases";
 import { LoggerWinston } from "@adapters/loggers";
-import {
-  AddPhotoAjvValidator,
-  DeletePhotoAjvValidator,
-  GetPhotoAjvValidator,
-  SearchPhotoAjvValidator,
-} from "@adapters/validators";
 import {
   AddPhoto,
   DeletePhoto,
@@ -27,9 +28,19 @@ import {
   SortDirection,
 } from "@business-logic";
 import { Storage } from "@google-cloud/storage";
-import { EntryPointId, IValidators, entryPoints } from "@http-server";
+import {
+  AddPhotoSchema,
+  DeletePhotoSchema,
+  EntryPointId,
+  GetPhotoSchema,
+  IParsers,
+  IValidators,
+  ReplacePhotoSchema,
+  SearchPhotoSchema,
+  entryPoints,
+} from "@http-server";
 import { Logger } from "@logger/models";
-import { compareDates, dumbPhotoGenerator } from "@utils";
+import { compareDates } from "@utils";
 
 import { ExpressAuthHandler } from "../oauth2-jwt-bearer";
 import {
@@ -72,6 +83,7 @@ describe("ExpressHttpServer", () => {
 
   let useCases: IUseCases;
   let validators: IValidators;
+  let parsers: IParsers;
 
   let oauth2Server: OAuth2ServerMock;
 
@@ -97,11 +109,19 @@ describe("ExpressHttpServer", () => {
     };
 
     validators = {
-      getPhoto: new GetPhotoAjvValidator(),
-      addPhoto: new AddPhotoAjvValidator(),
-      replacePhoto: new AddPhotoAjvValidator(),
-      deletePhoto: new DeletePhotoAjvValidator(),
-      searchPhoto: new SearchPhotoAjvValidator(),
+      getPhoto: new AjvValidator(GetPhotoSchema),
+      addPhoto: new AjvValidator(AddPhotoSchema),
+      replacePhoto: new AjvValidator(ReplacePhotoSchema),
+      deletePhoto: new AjvValidator(DeletePhotoSchema),
+      searchPhoto: new AjvValidator(SearchPhotoSchema),
+    };
+
+    parsers = {
+      getPhoto: new GetPhotoParser(),
+      addPhoto: new AddPhotoParser(),
+      replacePhoto: new AddPhotoParser(),
+      deletePhoto: new GetPhotoParser(),
+      searchPhoto: new SearchPhotoParser(),
     };
 
     const silentLogger = true;
@@ -112,6 +132,7 @@ describe("ExpressHttpServer", () => {
     expressHttpServer = new ExpressHttpServer(
       useCases,
       validators,
+      parsers,
       logger,
       authHandler,
     );
@@ -204,8 +225,8 @@ describe("ExpressHttpServer", () => {
     it.each`
       queryParams
       ${{ size: 1 }}
-      ${{ size: 2, date: SortDirection.Ascending }}
-      ${{ size: 2, date: SortDirection.Descending }}
+      ${{ size: 2, dateOrder: SortDirection.Ascending }}
+      ${{ size: 2, dateOrder: SortDirection.Descending }}
     `(
       "should return the photos matching the query params: $queryParams",
       async ({ queryParams }) => {

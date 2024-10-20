@@ -11,7 +11,7 @@ export const RenderingSchema: TSchema = {
     size: {
       type: "number",
     },
-    date: {
+    dateOrder: {
       enum: Object.values(SortDirection),
     },
   },

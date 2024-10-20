@@ -1,10 +1,10 @@
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "@adapters";
+import { dumbPhotoGenerator } from "@adapters";
 
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
 import { GetPhotoField, Photo } from "../../models";
 import { AddPhoto } from "../add-photo/add-photo";
 import { GetPhoto } from "./get-photo";
-import { dumbPhotoGenerator } from "@utils";
 
 describe("get-photo use case", () => {
   const photo = dumbPhotoGenerator.generate();

@@ -1,24 +1,25 @@
 import Ajv, { ValidateFunction } from "ajv";
 import addFormat from "ajv-formats";
 
-import { TSchema, TValidatorData } from "@http-server";
+import { TSchema } from "@http-server";
 
 export class AjvValidator {
   private readonly ajv = new Ajv();
   private ajvValidate: ValidateFunction;
+
+  constructor(schema: TSchema) {
+    this.init(schema);
+  }
 
   private init(schema: TSchema) {
     addFormat(this.ajv);
     this.ajvValidate = this.ajv.compile(schema);
   }
 
-  readonly validate = <T = TValidatorData>(schema: TSchema, data: T): void => {
-    if (!this.ajvValidate) {
-      this.init(schema);
-    }
+  validate<T>(data: T): void {
     this.ajvValidate(data);
     if (this.ajvValidate.errors?.length) {
-      throw this.ajvValidate.errors[0];
+      throw this.ajvValidate.errors;
     }
-  };
+  }
 }

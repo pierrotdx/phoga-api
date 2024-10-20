@@ -2,7 +2,7 @@ import assert from "assert";
 
 import { IPhoto } from "@business-logic";
 
-import { isUuid } from "../is-uuid";
+import { isUuid } from "../is-uuid/is-uuid";
 
 export function isPhoto(candidate: any): candidate is IPhoto {
   if (!candidate) {
