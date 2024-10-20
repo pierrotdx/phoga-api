@@ -1,8 +1,7 @@
 import { clone } from "ramda";
 
-import { LoremIpsumGenerator, UuidGenerator } from "@adapters";
 import { IPhoto, Photo } from "@business-logic";
-import { assertPhoto } from "@utils/is-photo/is-photo";
+import { assertPhoto } from "@utils";
 
 import {
   IDumbPhotoGenerator,
@@ -74,10 +73,3 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     return description;
   }
 }
-
-const uuidGenerator: IUuidGenerator = new UuidGenerator();
-const loremIpsumGenerator: ILoremIpsumGenerator = new LoremIpsumGenerator();
-export const dumbPhotoGenerator = new DumbPhotoGenerator(
-  uuidGenerator,
-  loremIpsumGenerator,
-);

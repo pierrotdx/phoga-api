@@ -1,7 +1,8 @@
+import { dumbPhotoGenerator } from "@adapters";
+
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
 import { DeletePhoto } from "./delete-photo";
-import { dumbPhotoGenerator } from "@utils";
 
 describe("delete-photo use case", () => {
   let deletePhoto: DeletePhoto;

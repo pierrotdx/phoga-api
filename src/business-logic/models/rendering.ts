@@ -1,5 +1,5 @@
 export interface IRendering {
-  date?: SortDirection;
+  dateOrder?: SortDirection;
   size?: number;
   from?: number;
 }

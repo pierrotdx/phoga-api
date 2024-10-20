@@ -1,11 +1,11 @@
 import { clone } from "ramda";
 
+import { dumbPhotoGenerator } from "@adapters";
 import { IPhoto, SortDirection } from "@business-logic";
 import {
   comparePhotoDates,
   deletePhotoInDbs,
   deletePhotosInDbs,
-  dumbPhotoGenerator,
   insertPhotosInDbs,
 } from "@utils";
 
@@ -137,9 +137,9 @@ describe("PhotoMetadataDbMongo", () => {
       const ascendingPhotos = clone(storedPhotos).sort(comparePhotoDates);
       const descendingPhotos = clone(ascendingPhotos).reverse();
       it.each`
-        case            | rendering                             | expectedResult
-        ${"ascending"}  | ${{ date: SortDirection.Ascending }}  | ${ascendingPhotos}
-        ${"descending"} | ${{ date: SortDirection.Descending }} | ${descendingPhotos}
+        case            | rendering                                  | expectedResult
+        ${"ascending"}  | ${{ dateOrder: SortDirection.Ascending }}  | ${ascendingPhotos}
+        ${"descending"} | ${{ dateOrder: SortDirection.Descending }} | ${descendingPhotos}
       `(
         "should sort the returned docs by date in $case order when required",
         async ({ expectedResult, rendering }) => {
@@ -170,10 +170,10 @@ describe("PhotoMetadataDbMongo", () => {
       const ascendingPhotos = clone(storedPhotos).sort(comparePhotoDates);
       // use `rendering.date` to make we are testing `rendering.from` on the same ordered list
       it.each`
-        rendering                                     | docIndex
-        ${{ from: 1, date: SortDirection.Ascending }} | ${0}
-        ${{ from: 2, date: SortDirection.Ascending }} | ${1}
-        ${{ from: 3, date: SortDirection.Ascending }} | ${2}
+        rendering                                          | docIndex
+        ${{ from: 1, dateOrder: SortDirection.Ascending }} | ${0}
+        ${{ from: 2, dateOrder: SortDirection.Ascending }} | ${1}
+        ${{ from: 3, dateOrder: SortDirection.Ascending }} | ${2}
       `(
         "should return results starting from the $docIndex-th stored photo",
         async ({ rendering, docIndex }) => {

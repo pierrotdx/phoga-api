@@ -33,8 +33,8 @@ export class FakePhotoMetadataDb implements IPhotoMetadataDb {
 
   async find(rendering?: IRendering): Promise<IPhoto[]> {
     let photos = this.getPhotosFromDocs();
-    if (rendering?.date) {
-      this.sortByDate(photos, rendering.date);
+    if (rendering?.dateOrder) {
+      this.sortByDate(photos, rendering.dateOrder);
     }
     if (typeof rendering?.size === "number") {
       const deleteCount =
