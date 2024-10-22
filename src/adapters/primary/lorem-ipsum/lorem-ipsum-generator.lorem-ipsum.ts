@@ -1,4 +1,5 @@
 import { LoremIpsum } from "lorem-ipsum";
+
 import { ILoremIpsumGenerator } from "@utils";
 
 export class LoremIpsumGenerator implements ILoremIpsumGenerator {

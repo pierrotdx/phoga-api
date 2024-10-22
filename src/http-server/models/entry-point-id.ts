@@ -8,5 +8,5 @@ export enum EntryPointId {
   GetPhotoMetadata = "getPhotoMetadata",
   PhotoBase = "photo",
   ReplacePhoto = "replacePhoto",
-  SearchPhoto = "searchPhoto"
+  SearchPhoto = "searchPhoto",
 }
