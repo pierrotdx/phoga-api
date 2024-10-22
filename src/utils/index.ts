@@ -4,3 +4,4 @@ export * from "./dumb-photo-generator/dumb-photo-generator";
 export * from "./assertions";
 export * from "./models";
 export * from "./test-utils";
+export * from "./shared-test-utils";

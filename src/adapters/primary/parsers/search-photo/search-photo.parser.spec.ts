@@ -1,4 +1,4 @@
-import { Counter } from "@utils";
+import { Counter, sharedTestUtils } from "@utils";
 
 import { SearchPhotoParser } from "./search-photo.parser";
 import { SearchPhotoParserTestUtils } from "./search-photo.parser.test-utils";
@@ -33,9 +33,7 @@ describe("SearchPhotoParser", () => {
           inputData,
           assertionCounter,
         );
-
-        const nbAssertions = assertionCounter.get();
-        expect.assertions(nbAssertions);
+        sharedTestUtils.checkAssertionsCount(assertionCounter);
       },
     );
   });

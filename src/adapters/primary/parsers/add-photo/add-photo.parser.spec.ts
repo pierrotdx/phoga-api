@@ -1,4 +1,4 @@
-import { Counter, ICounter } from "@utils";
+import { Counter, ICounter, sharedTestUtils } from "@utils";
 
 import { LoremIpsumGenerator } from "../../lorem-ipsum";
 import { UuidGenerator } from "../../uuid";
@@ -30,8 +30,7 @@ describe("AddPhotoParser", () => {
         parsedData,
         assertionCounter,
       );
-      const nbAssertions = assertionCounter.get();
-      expect.assertions(nbAssertions);
+      sharedTestUtils.checkAssertionsCount(assertionCounter);
     });
 
     it("should throw if the parsed data is not a photo", () => {

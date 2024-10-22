@@ -1,5 +1,5 @@
 import { GetPhotoSchema, IsoStringDateSchema } from "@http-server";
-import { Counter } from "@utils";
+import { Counter, sharedTestUtils } from "@utils";
 
 import { UuidGenerator } from "../../uuid";
 import { AjvValidator } from "./ajv-validator";
@@ -36,8 +36,7 @@ describe("AjvValidator", () => {
       });
       expect(validateSpy).toHaveReturned();
       assertionCounter.increase();
-      const nbAssertions = assertionCounter.get();
-      expect.assertions(nbAssertions);
+      sharedTestUtils.checkAssertionsCount(assertionCounter);
     });
 
     it.each`
@@ -59,8 +58,7 @@ describe("AjvValidator", () => {
         assertionCounter,
       });
 
-      const nbAssertions = assertionCounter.get();
-      expect.assertions(nbAssertions);
+      sharedTestUtils.checkAssertionsCount(assertionCounter);
     });
   });
 });
