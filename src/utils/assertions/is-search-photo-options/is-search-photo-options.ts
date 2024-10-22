@@ -18,7 +18,9 @@ export function isSearchPhotoOptions(
   }
 }
 
-export function assertSearchPhotoOptions(searchPhotoOptionsCandidate: any): boolean {
+export function assertSearchPhotoOptions(
+  searchPhotoOptionsCandidate: any,
+): boolean {
   assertExcludeImages(searchPhotoOptionsCandidate.excludeImages);
   assertRendering(searchPhotoOptionsCandidate.rendering);
   return true;

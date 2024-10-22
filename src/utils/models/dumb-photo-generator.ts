@@ -1,6 +1,5 @@
 import { IPhoto } from "@business-logic";
 
-
 export interface IDumbPhotoGenerator {
   generate(params?: IDumbPhotoGeneratorOptions): IPhoto;
 }

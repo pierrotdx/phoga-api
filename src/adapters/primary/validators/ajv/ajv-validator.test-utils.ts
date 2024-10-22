@@ -1,8 +1,9 @@
 import { Test } from "supertest";
 
-import { ICounter } from "@utils";
-import { AjvValidator } from "./ajv-validator";
 import { TSchema } from "@http-server";
+import { ICounter } from "@utils";
+
+import { AjvValidator } from "./ajv-validator";
 
 export class AjvTestUtils {
   public expectCorrectInvocation({
