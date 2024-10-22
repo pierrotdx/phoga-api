@@ -1,17 +1,17 @@
 import dotenv from "dotenv";
 
 import {
-  AddPhotoAjvValidator,
-  DeletePhotoAjvValidator,
+  AddPhotoParser,
+  AjvValidator,
   ExpressHttpServer,
-  GetPhotoAjvValidator,
+  GetPhotoParser,
+  LoggerWinston,
   MongoBase,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
-  SearchPhotoAjvValidator,
+  SearchPhotoParser,
   gcsTestUtils,
 } from "@adapters";
-import { LoggerWinston } from "@adapters/loggers";
 import {
   AddPhoto,
   DeletePhoto,
@@ -22,7 +22,15 @@ import {
   ReplacePhoto,
   SearchPhoto,
 } from "@business-logic";
-import { IValidators } from "@http-server";
+import {
+  AddPhotoSchema,
+  DeletePhotoSchema,
+  GetPhotoSchema,
+  IParsers,
+  IValidators,
+  ReplacePhotoSchema,
+  SearchPhotoSchema,
+} from "@http-server";
 
 import { ExpressAuthHandler } from "./adapters/primary/oauth2-jwt-bearer";
 
@@ -34,6 +42,7 @@ export class AppLauncher {
 
   private useCases: IUseCases;
   private validators: IValidators;
+  private parsers: IParsers;
 
   private logger = new LoggerWinston();
   private authHandler: ExpressAuthHandler;
@@ -43,6 +52,7 @@ export class AppLauncher {
     await this.startPhotoImageDb();
     this.setUseCases();
     this.setValidators();
+    this.setParsers();
     this.setAuthHandler();
     this.startHttpServer();
   }
@@ -73,11 +83,21 @@ export class AppLauncher {
 
   private setValidators() {
     this.validators = {
-      getPhoto: new GetPhotoAjvValidator(),
-      addPhoto: new AddPhotoAjvValidator(),
-      replacePhoto: new AddPhotoAjvValidator(),
-      deletePhoto: new DeletePhotoAjvValidator(),
-      searchPhoto: new SearchPhotoAjvValidator(),
+      getPhoto: new AjvValidator(GetPhotoSchema),
+      addPhoto: new AjvValidator(AddPhotoSchema),
+      replacePhoto: new AjvValidator(ReplacePhotoSchema),
+      deletePhoto: new AjvValidator(DeletePhotoSchema),
+      searchPhoto: new AjvValidator(SearchPhotoSchema),
+    };
+  }
+
+  private setParsers() {
+    this.parsers = {
+      getPhoto: new GetPhotoParser(),
+      addPhoto: new AddPhotoParser(),
+      replacePhoto: new AddPhotoParser(),
+      deletePhoto: new GetPhotoParser(),
+      searchPhoto: new SearchPhotoParser(),
     };
   }
 
@@ -91,6 +111,7 @@ export class AppLauncher {
     const expressHttpServer = new ExpressHttpServer(
       this.useCases,
       this.validators,
+      this.parsers,
       this.logger,
       this.authHandler,
     );
