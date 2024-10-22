@@ -41,7 +41,7 @@ services:
     image: fsouza/fake-gcs-server
     container_name: fake-gcs-server
     ports:
-      - '4443:4443'
+      - "4443:4443"
     command: -scheme http
     volumes:
       - storage_data:/storage
