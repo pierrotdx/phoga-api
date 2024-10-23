@@ -2,12 +2,7 @@ import { clone } from "ramda";
 
 import { dumbPhotoGenerator } from "@adapters";
 import { IPhoto, SortDirection } from "@business-logic";
-import {
-  comparePhotoDates,
-  deletePhotoInDbs,
-  deletePhotosInDbs,
-  insertPhotosInDbs,
-} from "@utils";
+import { DbsTestUtils, comparePhotoDates } from "@utils";
 
 import { MongoBase, MongoCollection } from "../../mongo";
 import { PhotoMetadataDbMongo } from "./photo-metadata-db.mongo";
@@ -26,27 +21,25 @@ describe("PhotoMetadataDbMongo", () => {
 
   let photoMetadataDbMongo: PhotoMetadataDbMongo;
   let mongoBase: MongoBase;
+  let dbsTestUtils: DbsTestUtils;
 
   beforeEach(async () => {
     mongoBase = new MongoBase(global.__MONGO_URL__, global.__MONGO_DB_NAME__);
     await mongoBase.open();
     photoMetadataDbMongo = new PhotoMetadataDbMongo(mongoBase);
-    await insertPhotosInDbs(storedPhotos, { metadataDb: photoMetadataDbMongo });
+    dbsTestUtils = new DbsTestUtils(photoMetadataDbMongo);
+    await dbsTestUtils.insertPhotosInDbs(storedPhotos);
   });
 
   afterEach(async () => {
     const storedPhotoIds = storedPhotos.map((photo) => photo._id);
-    await deletePhotosInDbs(storedPhotoIds, {
-      metadataDb: photoMetadataDbMongo,
-    });
+    await dbsTestUtils.deletePhotosInDbs(storedPhotoIds);
     await mongoBase.close();
   });
 
   describe("insert", () => {
     afterEach(async () => {
-      await deletePhotoInDbs(photoToInsert._id, {
-        metadataDb: photoMetadataDbMongo,
-      });
+      await dbsTestUtils.deletePhotoInDbs(photoToInsert._id);
     });
 
     it("should insert a doc with the photo metadata and photo id", async () => {

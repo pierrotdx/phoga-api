@@ -1,15 +1,12 @@
-import { clone } from "ramda";
-
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "@adapters";
 import { IPhotoImageDb, IPhotoMetadataDb } from "@business-logic/gateways";
-import { SortDirection } from "@business-logic/models";
-import { comparePhotoDates, insertPhotosInDbs } from "@utils";
+import { IRendering, SortDirection } from "@business-logic/models";
 
 import { SearchPhoto } from "./search-photo";
 import { SearchPhotoTestUtils } from "./search-photo.test-utils";
 
 describe("SearchPhoto", () => {
-  const searchPhotoTestUtils = new SearchPhotoTestUtils();
+  let searchPhotoTestUtils: SearchPhotoTestUtils;
   let searchPhotos: SearchPhoto;
   let metadataDb: IPhotoMetadataDb;
   let imageDb: IPhotoImageDb;
@@ -17,36 +14,29 @@ describe("SearchPhoto", () => {
   beforeEach(async () => {
     metadataDb = new FakePhotoMetadataDb();
     imageDb = new FakePhotoImageDb();
+    searchPhotoTestUtils = new SearchPhotoTestUtils(metadataDb, imageDb);
+    await searchPhotoTestUtils.init();
     searchPhotos = new SearchPhoto(metadataDb, imageDb);
-    await insertPhotosInDbs(searchPhotoTestUtils.storedPhotos, {
-      metadataDb,
-      imageDb,
-    });
   });
 
   describe("execute", () => {
     it("should return the photos stored in database", async () => {
-      const result = await searchPhotos.execute();
-      searchPhotoTestUtils.resultShouldMatchStoredPhotos(result);
+      const searchResult = await searchPhotos.execute();
+      searchPhotoTestUtils.expectSearchResultToMatchStoredPhotos(searchResult);
     });
 
     describe("+ options.rendering.date", () => {
-      const ascendingPhotos = clone(searchPhotoTestUtils.storedPhotos).sort(
-        comparePhotoDates,
-      );
-      const descendingPhotos = clone(ascendingPhotos).reverse();
-
       it.each`
-        case            | rendering                                  | expectedSortedList
-        ${"ascending"}  | ${{ dateOrder: SortDirection.Ascending }}  | ${ascendingPhotos}
-        ${"descending"} | ${{ dateOrder: SortDirection.Descending }} | ${descendingPhotos}
+        case            | rendering
+        ${"ascending"}  | ${{ dateOrder: SortDirection.Ascending }}
+        ${"descending"} | ${{ dateOrder: SortDirection.Descending }}
       `(
         "should sort them by $case date when required",
-        async ({ expectedSortedList, rendering }) => {
-          const result = await searchPhotos.execute({ rendering });
-          searchPhotoTestUtils.resultShouldBeSortedAsRequired(
-            result,
-            expectedSortedList,
+        async ({ rendering }: { rendering: IRendering }) => {
+          const searchResult = await searchPhotos.execute({ rendering });
+          searchPhotoTestUtils.expectSearchResultToBeSortedAsRequired(
+            searchResult,
+            rendering.dateOrder,
           );
         },
       );
@@ -62,9 +52,9 @@ describe("SearchPhoto", () => {
       `(
         "should return at most $requiredSize results when required",
         async ({ requiredSize, rendering }) => {
-          const result = await searchPhotos.execute({ rendering });
-          searchPhotoTestUtils.resultSizeShouldMatchRequiredSize(
-            result,
+          const searchResult = await searchPhotos.execute({ rendering });
+          searchPhotoTestUtils.expectSearchResultSizeToMatchRequiredSize(
+            searchResult,
             requiredSize,
           );
         },
@@ -81,9 +71,8 @@ describe("SearchPhoto", () => {
         "should return results starting from the $docIndex-th stored photo",
         async ({ rendering, docIndex }) => {
           const result = await searchPhotos.execute({ rendering });
-          searchPhotoTestUtils.resultShouldStartFromNthMatchingDocument(
+          searchPhotoTestUtils.expectSearchResultToStartFromRequiredIndex(
             result,
-            searchPhotoTestUtils.storedPhotos,
             docIndex,
           );
         },
@@ -96,10 +85,10 @@ describe("SearchPhoto", () => {
         ${"without images"} | ${true}
         ${"with images"}    | ${false}
       `(
-        "should return photos $case when excludeImages=$excludeImages",
+        "should return photos $case when excludeImages is `$excludeImages`",
         async ({ excludeImages }: { excludeImages: boolean }) => {
           const photos = await searchPhotos.execute({ excludeImages });
-          searchPhotoTestUtils.imagesPresenceShouldFollowRequirement(
+          searchPhotoTestUtils.expectImagesToBeInSearchResultIfRequired(
             photos,
             excludeImages,
           );
