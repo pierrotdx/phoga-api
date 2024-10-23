@@ -1,25 +1,27 @@
 import { dumbPhotoGenerator } from "@adapters";
+import { Counter, ICounter, sharedTestUtils } from "@utils";
 
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
-import { Photo } from "../../models";
 import { ReplacePhoto } from "./replace-photo";
+import { ReplacePhotoTestUtils } from "./replace-photo.test-utils";
 
 describe("replace-photo use case", () => {
+  let assertionsCounter: ICounter;
   let replacePhoto: ReplacePhoto;
   let imageDb: IPhotoImageDb;
   let metadataDb: IPhotoMetadataDb;
+  let replacePhotoTestUtils: ReplacePhotoTestUtils;
 
   const photo = dumbPhotoGenerator.generate();
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    assertionsCounter = new Counter();
     imageDb = new FakePhotoImageDb();
-    imageDb.insert(photo);
-
     metadataDb = new FakePhotoMetadataDb();
-    metadataDb.insert(photo);
-
+    replacePhotoTestUtils = new ReplacePhotoTestUtils(metadataDb, imageDb);
     replacePhoto = new ReplacePhoto(metadataDb, imageDb);
+    await replacePhotoTestUtils.insertPhotoInDbs(photo);
   });
 
   describe("photo image", () => {
@@ -31,41 +33,38 @@ describe("replace-photo use case", () => {
     `(
       "should throw an error if the image buffer is `$case`",
       async ({ imageBuffer }) => {
-        try {
-          photo.imageBuffer = imageBuffer;
-          await replacePhoto.execute(photo);
-        } catch (err) {
-          expect(err).toBeDefined();
-          expect(err).toBeInstanceOf(Error);
-        } finally {
-          expect.assertions(2);
-        }
+        photo.imageBuffer = imageBuffer;
+        await sharedTestUtils.expectRejection({
+          asyncFn: replacePhoto.execute,
+          fnParams: [photo],
+          assertionsCounter,
+        });
+        sharedTestUtils.checkAssertionsCount(assertionsCounter);
       },
     );
 
     it("should throw an error if the image to replace is not found", async () => {
-      try {
-        const newPhoto = dumbPhotoGenerator.generate();
-        await replacePhoto.execute(newPhoto);
-      } catch (err) {
-        expect(err).toBeDefined();
-        expect(err).toBeInstanceOf(Error);
-      } finally {
-        expect.assertions(2);
-      }
+      const newPhoto = dumbPhotoGenerator.generate();
+      await sharedTestUtils.expectRejection({
+        asyncFn: replacePhoto.execute,
+        fnParams: [newPhoto],
+        assertionsCounter,
+      });
+      sharedTestUtils.checkAssertionsCount(assertionsCounter);
     });
 
     it("should be replaced in image db", async () => {
-      const dbImageBufferBefore = await imageDb.getById(photo._id);
+      const dbImageBefore = await replacePhotoTestUtils.getPhotoImageFromDb(
+        photo._id,
+      );
       const newImageBuffer = Buffer.from("new image");
       photo.imageBuffer = newImageBuffer;
-
       await replacePhoto.execute(photo);
-
-      const dbImageBufferAfter = await imageDb.getById(photo._id);
-      expect(dbImageBufferAfter).toEqual(newImageBuffer);
-      expect(dbImageBufferAfter).not.toEqual(dbImageBufferBefore);
-      expect.assertions(2);
+      await replacePhotoTestUtils.expectImageToBeReplacedInDb(
+        dbImageBefore,
+        newImageBuffer,
+        photo._id,
+      );
     });
   });
 
@@ -73,20 +72,12 @@ describe("replace-photo use case", () => {
     it("should replace the data in the metadata db", async () => {
       const newPhoto = dumbPhotoGenerator.generate({ _id: photo._id });
       const dbMetadataBefore = await metadataDb.getById(photo._id);
-
       await replacePhoto.execute(newPhoto);
-      const dbMetadataAfter = await metadataDb.getById(newPhoto._id);
-
-      expect(dbMetadataAfter).toEqual(newPhoto.metadata);
-      expect(dbMetadataAfter).not.toEqual(dbMetadataBefore);
-
-      expect(dbMetadataBefore.location).toBeDefined();
-      expect(dbMetadataAfter.location).not.toEqual(dbMetadataBefore.location);
-
-      expect(dbMetadataBefore.titles).toBeDefined();
-      expect(dbMetadataAfter.titles).not.toEqual(dbMetadataBefore.titles);
-
-      expect.assertions(6);
+      await replacePhotoTestUtils.expectMetadataToBeReplacedInDb(
+        photo._id,
+        dbMetadataBefore,
+        newPhoto.metadata,
+      );
     });
 
     it.each`
@@ -98,15 +89,19 @@ describe("replace-photo use case", () => {
       "should not change if the image buffer is `$case`",
       async ({ imageBuffer }) => {
         const metadataBefore = await metadataDb.getById(photo._id);
-        try {
-          photo.imageBuffer = imageBuffer;
-          await replacePhoto.execute(photo);
-        } catch (err) {
-          const metadataAfter = await metadataDb.getById(photo._id);
-          expect(metadataAfter).toEqual(metadataBefore);
-        } finally {
-          expect.assertions(1);
-        }
+        photo.imageBuffer = imageBuffer;
+
+        await sharedTestUtils.expectRejection({
+          asyncFn: replacePhoto.execute,
+          fnParams: [photo],
+          assertionsCounter,
+        });
+        await replacePhotoTestUtils.expectToMatchPhotoMetadata(
+          photo._id,
+          metadataBefore,
+          assertionsCounter,
+        );
+        sharedTestUtils.checkAssertionsCount(assertionsCounter);
       },
     );
 
@@ -116,12 +111,17 @@ describe("replace-photo use case", () => {
 
       const newPhoto = dumbPhotoGenerator.generate({ _id: photo._id });
       await replacePhoto.execute(newPhoto);
-      const dbMetadataAfter = await metadataDb.getById(photo._id);
 
       expect(dbMetadataBefore).toBeUndefined();
-      expect(dbMetadataAfter).toBeDefined();
-      expect(dbMetadataAfter).toEqual(newPhoto.metadata);
-      expect.assertions(3);
+      assertionsCounter.increase();
+
+      await replacePhotoTestUtils.expectToMatchPhotoMetadata(
+        newPhoto._id,
+        newPhoto.metadata,
+        assertionsCounter,
+      );
+
+      sharedTestUtils.checkAssertionsCount(assertionsCounter);
     });
   });
 });

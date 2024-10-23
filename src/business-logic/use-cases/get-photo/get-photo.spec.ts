@@ -1,34 +1,40 @@
+import { pick } from "ramda";
+
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "@adapters";
 import { dumbPhotoGenerator } from "@adapters";
+import { Counter, ICounter, sharedTestUtils } from "@utils";
 
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
-import { GetPhotoField, Photo } from "../../models";
-import { AddPhoto } from "../add-photo/add-photo";
+import { GetPhotoField, IPhoto } from "../../models";
 import { GetPhoto } from "./get-photo";
+import { GetPhotoTestUtils } from "./get-photo.test-utils";
 
 describe("get-photo use case", () => {
   const photo = dumbPhotoGenerator.generate();
-
+  let assertionsCounter: ICounter;
   let getPhoto: GetPhoto;
-  let addPhoto: AddPhoto;
   let metadataDb: IPhotoMetadataDb;
   let imageDb: IPhotoImageDb;
+  let getPhotoTestUtils: GetPhotoTestUtils;
 
   beforeEach(async () => {
+    assertionsCounter = new Counter();
     metadataDb = new FakePhotoMetadataDb();
     imageDb = new FakePhotoImageDb();
     getPhoto = new GetPhoto(metadataDb, imageDb);
-    addPhoto = new AddPhoto(metadataDb, imageDb);
+    getPhotoTestUtils = new GetPhotoTestUtils(metadataDb, imageDb);
 
-    await addPhoto.execute(photo);
+    await getPhotoTestUtils.insertPhotoInDbs(photo);
   });
 
   it("should return the photo with matching id", async () => {
     const result = await getPhoto.execute(photo._id);
-    expect(result).toBeDefined();
-    expect(result._id).toBe(photo._id);
-    expect(result).toEqual(photo);
-    expect.assertions(3);
+    getPhotoTestUtils.expectResultToMatchPhoto(
+      photo,
+      result,
+      assertionsCounter,
+    );
+    sharedTestUtils.checkAssertionsCount(assertionsCounter);
   });
 
   it.each`
@@ -38,19 +44,23 @@ describe("get-photo use case", () => {
   `(
     "should return the requested photo only with the `$fieldName` property when using the option `fields: [$fieldValue]`",
     async ({ fieldValue }) => {
+      const expectedPhoto = pick(["_id", fieldValue], photo);
+
       const result = await getPhoto.execute(photo._id, {
         fields: [fieldValue],
       });
-      expect(result._id).toEqual(photo._id);
-      if (fieldValue === GetPhotoField.Metadata) {
-        expect(result.metadata).toEqual(photo.metadata);
-        expect(result.imageBuffer).toBeUndefined();
-      }
-      if (fieldValue === GetPhotoField.ImageBuffer) {
-        expect(result.imageBuffer).toEqual(photo.imageBuffer);
-        expect(result.metadata).toBeUndefined();
-      }
-      expect.assertions(3);
+
+      getPhotoTestUtils.expectResultToMatchPhoto(
+        result,
+        expectedPhoto as IPhoto,
+        assertionsCounter,
+      );
+      getPhotoTestUtils.expectResultToHaveOnlyRequiredField(
+        fieldValue,
+        result,
+        assertionsCounter,
+      );
+      sharedTestUtils.checkAssertionsCount(assertionsCounter);
     },
   );
 });
