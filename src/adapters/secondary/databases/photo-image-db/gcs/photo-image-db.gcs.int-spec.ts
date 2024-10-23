@@ -3,6 +3,7 @@ import { randomInt } from "node:crypto";
 import { dumbPhotoGenerator } from "@adapters";
 import { IPhoto } from "@business-logic";
 import { Storage } from "@google-cloud/storage";
+import { DbsTestUtils } from "@utils";
 
 import { gcsTestUtils } from "../../gcs";
 import { PhotoImageDbGcs } from "./photo-image-db.gcs";
@@ -14,6 +15,7 @@ import {
 } from "./test-utils.photo-image-db";
 
 describe("PhotoImageDbGcs", () => {
+  let dbsTestUtils: DbsTestUtils;
   let photoImageDbGcs: PhotoImageDbGcs;
   let storage: Storage;
 
@@ -23,6 +25,7 @@ describe("PhotoImageDbGcs", () => {
 
   beforeEach(async () => {
     photoImageDbGcs = new PhotoImageDbGcs(storage);
+    dbsTestUtils = new DbsTestUtils(undefined, photoImageDbGcs);
   });
 
   afterEach(async () => {
@@ -32,7 +35,7 @@ describe("PhotoImageDbGcs", () => {
   describe("insert", () => {
     it("should upload the photo image to the cloud", async () => {
       const photo = await generatePhoto(photoParams);
-      await photoImageDbGcs.insert(photo);
+      await dbsTestUtils.insertPhotoInDbs(photo);
       const cloudFileBuffer = await getPhotoImageBuffer(storage, photo._id);
       expect(cloudFileBuffer).toBeDefined();
       expect(cloudFileBuffer).toEqual(photo.imageBuffer);
@@ -44,7 +47,7 @@ describe("PhotoImageDbGcs", () => {
     it("should return `true`(`false`) if the image does (not) exist in the cloud", async () => {
       const photo = await generatePhoto(photoParams);
       const checkExistsBefore = await photoImageDbGcs.checkExists(photo._id);
-      await photoImageDbGcs.insert(photo);
+      await dbsTestUtils.insertPhotoInDbs(photo);
       const checkExistsAfter = await photoImageDbGcs.checkExists(photo._id);
       expect(checkExistsBefore).toBe(false);
       expect(checkExistsAfter).toBe(true);
@@ -57,7 +60,7 @@ describe("PhotoImageDbGcs", () => {
 
     beforeEach(async () => {
       photo = await generatePhoto(photoParams);
-      await photoImageDbGcs.insert(photo);
+      await dbsTestUtils.insertPhotoInDbs(photo);
     });
 
     it("should return the image buffer of the requested photo", async () => {
@@ -78,17 +81,12 @@ describe("PhotoImageDbGcs", () => {
     const storedPhotos = generatePhotos(nbPhotos);
 
     beforeEach(async () => {
-      const insertPhoto$ = storedPhotos.map(async (p) => {
-        await photoImageDbGcs.insert(p);
-      });
-      await Promise.all(insertPhoto$);
+      await dbsTestUtils.insertPhotosInDbs(storedPhotos);
     });
 
     afterEach(async () => {
-      const deletePhoto$ = storedPhotos.map(async (p) => {
-        await photoImageDbGcs.delete(p._id);
-      });
-      await Promise.all(deletePhoto$);
+      const photoIds = storedPhotos.map((p) => p._id);
+      await dbsTestUtils.deletePhotosInDbs(photoIds);
     });
 
     it.each`
@@ -113,7 +111,7 @@ describe("PhotoImageDbGcs", () => {
 
     beforeEach(async () => {
       initPhoto = await generatePhoto(photoParams);
-      await photoImageDbGcs.insert(initPhoto);
+      await dbsTestUtils.insertPhotoInDbs(initPhoto);
       replacingPhoto = await generatePhoto({
         id: initPhoto._id,
         imagePath: "assets/test-img-2.jpg",
@@ -121,9 +119,11 @@ describe("PhotoImageDbGcs", () => {
     });
 
     it("should replace the image of the targeted photo", async () => {
-      const cloudBufferBefore = await photoImageDbGcs.getById(initPhoto._id);
+      const cloudBufferBefore = await dbsTestUtils.getPhotoImageFromDb(
+        initPhoto._id,
+      );
       await photoImageDbGcs.replace(replacingPhoto);
-      const cloudBufferAfter = await photoImageDbGcs.getById(
+      const cloudBufferAfter = await dbsTestUtils.getPhotoImageFromDb(
         replacingPhoto._id,
       );
       expect(cloudBufferBefore).toEqual(initPhoto.imageBuffer);
@@ -137,13 +137,17 @@ describe("PhotoImageDbGcs", () => {
       let photo: IPhoto;
       beforeEach(async () => {
         photo = await generatePhoto(photoParams);
-        await photoImageDbGcs.insert(photo);
+        await dbsTestUtils.insertPhotoInDbs(photo);
       });
 
       it("should delete the targeted photo", async () => {
-        const cloudBufferBefore = await photoImageDbGcs.getById(photo._id);
+        const cloudBufferBefore = await dbsTestUtils.getPhotoImageFromDb(
+          photo._id,
+        );
         await photoImageDbGcs.delete(photo._id);
-        const cloudBufferAfter = await photoImageDbGcs.getById(photo._id);
+        const cloudBufferAfter = await dbsTestUtils.getPhotoImageFromDb(
+          photo._id,
+        );
         expect(cloudBufferBefore).toBeDefined();
         expect(cloudBufferBefore).toEqual(photo.imageBuffer);
         expect(cloudBufferAfter).toBeUndefined();
