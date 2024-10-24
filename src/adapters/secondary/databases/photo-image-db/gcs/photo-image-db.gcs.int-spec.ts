@@ -1,71 +1,79 @@
-import { randomInt } from "node:crypto";
-
-import { dumbPhotoGenerator } from "@adapters";
-import { IPhoto } from "@business-logic";
+import { IPhoto, IPhotoImageDb } from "@business-logic";
 import { Storage } from "@google-cloud/storage";
-import { DbsTestUtils } from "@utils";
+import { Counter, ICounter, sharedTestUtils } from "@utils";
 
+import { dumbPhotoGenerator } from "../../../../primary";
 import { gcsTestUtils } from "../../gcs";
 import { PhotoImageDbGcs } from "./photo-image-db.gcs";
-import {
-  deletePhotoImage,
-  generatePhoto,
-  getPhotoImageBuffer,
-  photoParams,
-} from "./test-utils.photo-image-db";
+import { PhotoImageDbGcsTestUtils } from "./photo-image-db.test-utils";
+
+const assetImagesPaths = ["assets/test-img-1.jpg", "assets/test-img-2.jpg"];
 
 describe("PhotoImageDbGcs", () => {
-  let dbsTestUtils: DbsTestUtils;
-  let photoImageDbGcs: PhotoImageDbGcs;
+  let assertionsCounter: ICounter;
+  let photoImageDbGcsTestUtils: PhotoImageDbGcsTestUtils;
+  let photoImageDbGcs: IPhotoImageDb;
   let storage: Storage;
+
+  let storedPhoto: IPhoto;
 
   beforeAll(async () => {
     storage = await gcsTestUtils.getStorage();
   });
 
   beforeEach(async () => {
+    assertionsCounter = new Counter();
     photoImageDbGcs = new PhotoImageDbGcs(storage);
-    dbsTestUtils = new DbsTestUtils(undefined, photoImageDbGcs);
+    photoImageDbGcsTestUtils = new PhotoImageDbGcsTestUtils(
+      undefined,
+      photoImageDbGcs,
+    );
+    storedPhoto = await photoImageDbGcsTestUtils.generatePhotoFromAssets(
+      assetImagesPaths[0],
+    );
+    await photoImageDbGcsTestUtils.insertPhotoInDbs(storedPhoto);
   });
 
   afterEach(async () => {
-    await deletePhotoImage(storage, photoParams.id);
+    await photoImageDbGcsTestUtils.deletePhotoIfNecessary(storedPhoto._id);
   });
 
   describe("insert", () => {
     it("should upload the photo image to the cloud", async () => {
-      const photo = await generatePhoto(photoParams);
-      await dbsTestUtils.insertPhotoInDbs(photo);
-      const cloudFileBuffer = await getPhotoImageBuffer(storage, photo._id);
-      expect(cloudFileBuffer).toBeDefined();
-      expect(cloudFileBuffer).toEqual(photo.imageBuffer);
-      expect.assertions(2);
+      const photo = dumbPhotoGenerator.generate();
+      await photoImageDbGcs.insert(photo);
+      await photoImageDbGcsTestUtils.expectImageToBeUploaded(photo);
     });
   });
 
   describe("checkExists", () => {
-    it("should return `true`(`false`) if the image does (not) exist in the cloud", async () => {
-      const photo = await generatePhoto(photoParams);
-      const checkExistsBefore = await photoImageDbGcs.checkExists(photo._id);
-      await dbsTestUtils.insertPhotoInDbs(photo);
-      const checkExistsAfter = await photoImageDbGcs.checkExists(photo._id);
-      expect(checkExistsBefore).toBe(false);
-      expect(checkExistsAfter).toBe(true);
-      expect.assertions(2);
+    it("should return `true` if the photo image exists in db", async () => {
+      const expectedValue = true;
+      const exists = await photoImageDbGcs.checkExists(storedPhoto._id);
+      await photoImageDbGcsTestUtils.expectCheckExistValue({
+        receivedValue: exists,
+        expectedValue,
+        assertionsCounter,
+      });
+      sharedTestUtils.checkAssertionsCount(assertionsCounter);
+    });
+
+    it("should return `false` if the photo image does not exist in db", async () => {
+      const expectedValue = false;
+      const exists = await photoImageDbGcs.checkExists("dumb id");
+      await photoImageDbGcsTestUtils.expectCheckExistValue({
+        receivedValue: exists,
+        expectedValue,
+        assertionsCounter,
+      });
+      sharedTestUtils.checkAssertionsCount(assertionsCounter);
     });
   });
 
   describe("getById", () => {
-    let photo: IPhoto;
-
-    beforeEach(async () => {
-      photo = await generatePhoto(photoParams);
-      await dbsTestUtils.insertPhotoInDbs(photo);
-    });
-
     it("should return the image buffer of the requested photo", async () => {
-      const result = await photoImageDbGcs.getById(photo._id);
-      expect(result).toEqual(photo.imageBuffer);
+      const result = await photoImageDbGcs.getById(storedPhoto._id);
+      expect(result).toEqual(storedPhoto.imageBuffer);
       expect.assertions(1);
     });
 
@@ -78,132 +86,74 @@ describe("PhotoImageDbGcs", () => {
 
   describe("getByIds", () => {
     const nbPhotos = 6;
-    const storedPhotos = generatePhotos(nbPhotos);
+    let storedPhotos: IPhoto[];
 
     beforeEach(async () => {
-      await dbsTestUtils.insertPhotosInDbs(storedPhotos);
+      storedPhotos = photoImageDbGcsTestUtils.generatePhotos(nbPhotos);
+      await photoImageDbGcsTestUtils.insertPhotosInDbs(storedPhotos);
     });
 
     afterEach(async () => {
       const photoIds = storedPhotos.map((p) => p._id);
-      await dbsTestUtils.deletePhotosInDbs(photoIds);
+      await photoImageDbGcsTestUtils.deletePhotosInDbs(photoIds);
     });
 
-    it.each`
-      photoIndices
-      ${generateRandomIndices(nbPhotos)}
-      ${generateRandomIndices(nbPhotos)}
-      ${generateRandomIndices(nbPhotos)}
-      ${generateRandomIndices(nbPhotos)}
-    `(
-      "should return the images whose names match input ids",
-      async ({ photoIndices }: { photoIndices: number[] }) => {
-        const ids = getPhotoIdsFromIndices(storedPhotos, photoIndices);
+    const nbTests = 3;
+    for (let i = 0; i < nbTests; i++) {
+      it("should return the images required by ids", async () => {
+        const ids = photoImageDbGcsTestUtils.pickRandomPhotoIds(storedPhotos);
+        const expectedPhotos = storedPhotos.filter((p) => ids.includes(p._id));
+
         const result = await photoImageDbGcs.getByIds(ids);
-        shouldReturnPhotoImagesMatchingInputIds(result, storedPhotos);
-      },
-    );
+
+        photoImageDbGcsTestUtils.expectResultToMatchPhotos(
+          result,
+          expectedPhotos,
+          assertionsCounter,
+        );
+        sharedTestUtils.checkAssertionsCount(assertionsCounter);
+      });
+    }
   });
 
   describe("replace", () => {
-    let initPhoto: IPhoto;
     let replacingPhoto: IPhoto;
 
     beforeEach(async () => {
-      initPhoto = await generatePhoto(photoParams);
-      await dbsTestUtils.insertPhotoInDbs(initPhoto);
-      replacingPhoto = await generatePhoto({
-        id: initPhoto._id,
-        imagePath: "assets/test-img-2.jpg",
-      });
+      replacingPhoto = await photoImageDbGcsTestUtils.generatePhotoFromAssets(
+        assetImagesPaths[1],
+        storedPhoto._id,
+      );
     });
 
     it("should replace the image of the targeted photo", async () => {
-      const cloudBufferBefore = await dbsTestUtils.getPhotoImageFromDb(
-        initPhoto._id,
+      const dbImageBefore = await photoImageDbGcsTestUtils.getPhotoImageFromDb(
+        storedPhoto._id,
       );
+
       await photoImageDbGcs.replace(replacingPhoto);
-      const cloudBufferAfter = await dbsTestUtils.getPhotoImageFromDb(
-        replacingPhoto._id,
-      );
-      expect(cloudBufferBefore).toEqual(initPhoto.imageBuffer);
-      expect(cloudBufferAfter).not.toEqual(cloudBufferBefore);
-      expect(cloudBufferAfter).toEqual(replacingPhoto.imageBuffer);
-      expect(initPhoto._id).toBe(replacingPhoto._id);
-      expect.assertions(4);
+
+      await photoImageDbGcsTestUtils.expectDbImageToBeReplaced({
+        initPhoto: storedPhoto,
+        dbImageBefore,
+        replacingPhoto,
+        assertionsCounter,
+      });
+      sharedTestUtils.checkAssertionsCount(assertionsCounter);
     });
 
     describe("delete", () => {
-      let photo: IPhoto;
-      beforeEach(async () => {
-        photo = await generatePhoto(photoParams);
-        await dbsTestUtils.insertPhotoInDbs(photo);
-      });
-
       it("should delete the targeted photo", async () => {
-        const cloudBufferBefore = await dbsTestUtils.getPhotoImageFromDb(
-          photo._id,
-        );
-        await photoImageDbGcs.delete(photo._id);
-        const cloudBufferAfter = await dbsTestUtils.getPhotoImageFromDb(
-          photo._id,
-        );
-        expect(cloudBufferBefore).toBeDefined();
-        expect(cloudBufferBefore).toEqual(photo.imageBuffer);
-        expect(cloudBufferAfter).toBeUndefined();
-        expect.assertions(3);
+        const dbImageBefore =
+          await photoImageDbGcsTestUtils.getPhotoImageFromDb(storedPhoto._id);
+        await photoImageDbGcs.delete(storedPhoto._id);
+        await photoImageDbGcsTestUtils.expectDbImageToBeDeleted({
+          photo: storedPhoto,
+          dbImageBefore,
+          assertionsCounter,
+        });
+        sharedTestUtils.checkAssertionsCount(assertionsCounter);
       });
     });
   });
 });
-
-function shouldReturnPhotoImagesMatchingInputIds(
-  result: Record<IPhoto["_id"], Buffer>,
-  storedPhotos: IPhoto[],
-) {
-  const idBufferPairs = Object.entries(result);
-  expect(idBufferPairs.length).toBeGreaterThan(0);
-  idBufferPairs.forEach(([id, buffer]) => {
-    expect(buffer).toBeDefined();
-    const storedPhoto = storedPhotos.find((p) => p._id === id);
-    expect(buffer).toEqual(storedPhoto.imageBuffer);
-  });
-  expect.assertions(2 * idBufferPairs.length + 1);
-}
-
-function generatePhotos(nbPhotos: number): IPhoto[] {
-  const photos: IPhoto[] = [];
-  for (let index = 0; index < nbPhotos; index++) {
-    photos.push(
-      dumbPhotoGenerator.generate({
-        imageBuffer: Buffer.from("dumb image buffer"),
-      }),
-    );
-  }
-  return photos;
-}
-
-function generateRandomIndices(nbPhotos: number): number[] {
-  const nbIndices = randomInt(1, nbPhotos + 1);
-  const indices: number[] = [];
-  while (indices.length < nbIndices - 1) {
-    const index = randomInt(0, nbPhotos - 1);
-    if (!indices.includes(index)) {
-      indices.push(index);
-    }
-  }
-  return indices;
-}
-
-function getPhotoIdsFromIndices(
-  photos: IPhoto[],
-  indices: number[],
-): IPhoto["_id"][] {
-  return indices.reduce<IPhoto["_id"][]>((acc, index) => {
-    const photo = photos[index];
-    if (photo) {
-      acc.push(photo._id);
-    }
-    return acc;
-  }, []);
-}

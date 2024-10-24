@@ -8,12 +8,6 @@ export class DeletePhotoTestUtils extends DbsTestUtils {
     super(metadataDb, imageDb);
   }
 
-  async deletePhotoIfNecessary(id: IPhoto["_id"]): Promise<void> {
-    try {
-      await this.deletePhotoInDbs(id);
-    } catch (err) {}
-  }
-
   async expectMetadataToBeDeletedFromDb(
     dbMetadataBeforeDelete: IPhoto["metadata"],
     photo: IPhoto,

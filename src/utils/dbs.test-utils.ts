@@ -3,8 +3,8 @@ import { IPhoto } from "@business-logic/models";
 
 export class DbsTestUtils {
   constructor(
-    private readonly metadataDb?: IPhotoMetadataDb,
-    private readonly imageDb?: IPhotoImageDb,
+    protected readonly metadataDb?: IPhotoMetadataDb,
+    protected readonly imageDb?: IPhotoImageDb,
   ) {}
 
   async insertPhotosInDbs(photos: IPhoto[]): Promise<void> {
@@ -22,17 +22,19 @@ export class DbsTestUtils {
   }
 
   async deletePhotosInDbs(photoIds: IPhoto["_id"][]): Promise<void> {
-    const deletePromises = photoIds.map(this.deletePhotoInDbs.bind(this));
+    const deletePromises = photoIds.map(this.deletePhotoIfNecessary.bind(this));
     await Promise.all(deletePromises);
   }
 
-  async deletePhotoInDbs(photoId: IPhoto["_id"]): Promise<void> {
-    if (this.metadataDb) {
-      await this.metadataDb.delete(photoId);
-    }
-    if (this.imageDb) {
-      await this.imageDb.delete(photoId);
-    }
+  async deletePhotoIfNecessary(photoId: IPhoto["_id"]): Promise<void> {
+    try {
+      if (this.metadataDb) {
+        await this.metadataDb.delete(photoId);
+      }
+      if (this.imageDb) {
+        await this.imageDb.delete(photoId);
+      }
+    } catch (err) {}
   }
 
   async getPhotoImageFromDb(id: IPhoto["_id"]): Promise<IPhoto["imageBuffer"]> {
