@@ -39,7 +39,7 @@ describe("PhotoMetadataDbMongo", () => {
 
   describe("insert", () => {
     afterEach(async () => {
-      await dbsTestUtils.deletePhotoInDbs(photoToInsert._id);
+      await dbsTestUtils.deletePhotoIfNecessary(photoToInsert._id);
     });
 
     it("should insert a doc with the photo metadata and photo id", async () => {

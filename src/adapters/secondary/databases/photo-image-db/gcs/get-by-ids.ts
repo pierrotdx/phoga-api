@@ -16,9 +16,7 @@ export class GetByIds {
   }
 
   private getFiles(ids: IPhoto["_id"][]): Promise<File[]> {
-    const filesStream = this.bucket.getFilesStream({
-      matchGlob: ids.join(" | "),
-    });
+    const filesStream = this.bucket.getFilesStream();
     return new Promise<File[]>((resole, reject) => {
       const files: File[] = [];
       filesStream
@@ -26,7 +24,9 @@ export class GetByIds {
           reject(err);
         })
         .on("data", (chunk: File) => {
-          files.push(chunk);
+          if (ids.includes(chunk.name)) {
+            files.push(chunk);
+          }
         })
         .on("end", () => {
           resole(files);
