@@ -1,7 +1,7 @@
 import { omit } from "ramda";
 
 import { dumbPhotoGenerator } from "@adapters";
-import { Counter, ICounter, sharedTestUtils } from "@utils";
+import { AssertionsCounter, sharedTestUtils } from "@utils";
 
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
@@ -45,7 +45,7 @@ describe("add-photo use case", () => {
     `(
       "should throw if image buffer is `$case` and not upload metadata",
       async ({ imageBuffer }) => {
-        const assertionsCounter = new Counter();
+        const assertionsCounter = new AssertionsCounter();
         const photoWithInvalidImage = omit(["imageBuffer"], photo) as IPhoto;
         photoWithInvalidImage.imageBuffer = imageBuffer;
 
@@ -58,7 +58,7 @@ describe("add-photo use case", () => {
           photo._id,
           assertionsCounter,
         );
-        sharedTestUtils.checkAssertionsCount(assertionsCounter);
+        assertionsCounter.checkAssertions();
       },
     );
   });

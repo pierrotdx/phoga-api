@@ -2,7 +2,7 @@ import { pick } from "ramda";
 
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "@adapters";
 import { dumbPhotoGenerator } from "@adapters";
-import { Counter, ICounter, sharedTestUtils } from "@utils";
+import { AssertionsCounter, IAssertionsCounter } from "@utils";
 
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
 import { GetPhotoField, IPhoto } from "../../models";
@@ -11,14 +11,14 @@ import { GetPhotoTestUtils } from "./get-photo.test-utils";
 
 describe("get-photo use case", () => {
   const photo = dumbPhotoGenerator.generate();
-  let assertionsCounter: ICounter;
+  let assertionsCounter: IAssertionsCounter;
   let getPhoto: GetPhoto;
   let metadataDb: IPhotoMetadataDb;
   let imageDb: IPhotoImageDb;
   let getPhotoTestUtils: GetPhotoTestUtils;
 
   beforeEach(async () => {
-    assertionsCounter = new Counter();
+    assertionsCounter = new AssertionsCounter();
     metadataDb = new FakePhotoMetadataDb();
     imageDb = new FakePhotoImageDb();
     getPhoto = new GetPhoto(metadataDb, imageDb);
@@ -34,7 +34,7 @@ describe("get-photo use case", () => {
       result,
       assertionsCounter,
     );
-    sharedTestUtils.checkAssertionsCount(assertionsCounter);
+    assertionsCounter.checkAssertions();
   });
 
   it.each`
@@ -60,7 +60,7 @@ describe("get-photo use case", () => {
         result,
         assertionsCounter,
       );
-      sharedTestUtils.checkAssertionsCount(assertionsCounter);
+      assertionsCounter.checkAssertions();
     },
   );
 });

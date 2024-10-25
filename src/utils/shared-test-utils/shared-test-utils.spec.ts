@@ -1,45 +1,14 @@
-import { Counter } from "../counter";
-import { ICounter } from "../models";
+import { AssertionsCounter } from "../assertions-counter";
+import { IAssertionsCounter, ICounter } from "../models";
 import { SharedTestUtils } from "./shared-test-utils";
 
 describe("SharedTestUtils", () => {
   let sharedTestUtils: SharedTestUtils;
-  let assertionsCounter: ICounter;
+  let assertionsCounter: IAssertionsCounter;
 
   beforeEach(() => {
     sharedTestUtils = new SharedTestUtils();
-    assertionsCounter = new Counter();
-  });
-
-  describe("checkAssertionsCount", () => {
-    const expectAssertionsSpy = jest.spyOn(expect, "assertions");
-
-    beforeEach(() => {
-      expectAssertionsSpy.mockReset();
-    });
-
-    it.each`
-      expectedAssertionsNb
-      ${0}
-      ${1}
-      ${2}
-      ${18}
-      ${188}
-    `(
-      "should call `expect.assertions` with the expected assertions nb ($expectedAssertionsNb)",
-      ({ expectedAssertionsNb }) => {
-        const counter = new Counter();
-        counter.increase(expectedAssertionsNb);
-
-        sharedTestUtils.checkAssertionsCount(counter);
-
-        expect(expectAssertionsSpy).toHaveBeenCalledTimes(1);
-        expect(expectAssertionsSpy).toHaveBeenLastCalledWith(
-          expectedAssertionsNb,
-        );
-        expect.assertions(2);
-      },
-    );
+    assertionsCounter = new AssertionsCounter();
   });
 
   describe("expectRejection", () => {
@@ -60,7 +29,7 @@ describe("SharedTestUtils", () => {
         params,
         assertionsCounter,
       );
-      sharedTestUtils.checkAssertionsCount(assertionsCounter);
+      assertionsCounter.checkAssertions();
     });
   });
 });
@@ -68,7 +37,7 @@ describe("SharedTestUtils", () => {
 function expectFunctionToBeCalledWithParams(
   spy: jest.SpyInstance,
   params: unknown[],
-  assertionsCounter: ICounter,
+  assertionsCounter: IAssertionsCounter,
 ): void {
   expect(spy).toHaveBeenCalledTimes(1);
   expect(spy).toHaveBeenLastCalledWith(...params);

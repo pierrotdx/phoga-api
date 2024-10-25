@@ -1,6 +1,6 @@
 import { IPhoto, IPhotoImageDb } from "@business-logic";
 import { Storage } from "@google-cloud/storage";
-import { Counter, ICounter, sharedTestUtils } from "@utils";
+import { AssertionsCounter, IAssertionsCounter } from "@utils";
 
 import { dumbPhotoGenerator } from "../../../../primary";
 import { gcsTestUtils } from "../../gcs";
@@ -10,7 +10,7 @@ import { PhotoImageDbGcsTestUtils } from "./photo-image-db.test-utils";
 const assetImagesPaths = ["assets/test-img-1.jpg", "assets/test-img-2.jpg"];
 
 describe("PhotoImageDbGcs", () => {
-  let assertionsCounter: ICounter;
+  let assertionsCounter: IAssertionsCounter;
   let photoImageDbGcsTestUtils: PhotoImageDbGcsTestUtils;
   let photoImageDbGcs: IPhotoImageDb;
   let storage: Storage;
@@ -22,7 +22,7 @@ describe("PhotoImageDbGcs", () => {
   });
 
   beforeEach(async () => {
-    assertionsCounter = new Counter();
+    assertionsCounter = new AssertionsCounter();
     photoImageDbGcs = new PhotoImageDbGcs(storage);
     photoImageDbGcsTestUtils = new PhotoImageDbGcsTestUtils(
       undefined,
@@ -55,7 +55,7 @@ describe("PhotoImageDbGcs", () => {
         expectedValue,
         assertionsCounter,
       });
-      sharedTestUtils.checkAssertionsCount(assertionsCounter);
+      assertionsCounter.checkAssertions();
     });
 
     it("should return `false` if the photo image does not exist in db", async () => {
@@ -66,7 +66,7 @@ describe("PhotoImageDbGcs", () => {
         expectedValue,
         assertionsCounter,
       });
-      sharedTestUtils.checkAssertionsCount(assertionsCounter);
+      assertionsCounter.checkAssertions();
     });
   });
 
@@ -111,7 +111,7 @@ describe("PhotoImageDbGcs", () => {
           expectedPhotos,
           assertionsCounter,
         );
-        sharedTestUtils.checkAssertionsCount(assertionsCounter);
+        assertionsCounter.checkAssertions();
       });
     }
   });
@@ -139,7 +139,7 @@ describe("PhotoImageDbGcs", () => {
         replacingPhoto,
         assertionsCounter,
       });
-      sharedTestUtils.checkAssertionsCount(assertionsCounter);
+      assertionsCounter.checkAssertions();
     });
 
     describe("delete", () => {
@@ -152,7 +152,7 @@ describe("PhotoImageDbGcs", () => {
           dbImageBefore,
           assertionsCounter,
         });
-        sharedTestUtils.checkAssertionsCount(assertionsCounter);
+        assertionsCounter.checkAssertions();
       });
     });
   });

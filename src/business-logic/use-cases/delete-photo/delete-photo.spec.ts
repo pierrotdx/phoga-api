@@ -1,5 +1,5 @@
 import { dumbPhotoGenerator } from "@adapters";
-import { Counter, sharedTestUtils } from "@utils";
+import { AssertionsCounter, sharedTestUtils } from "@utils";
 
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
@@ -39,7 +39,7 @@ describe("delete-photo use case", () => {
     });
 
     it("should not be deleted if image-photo deletion failed", async () => {
-      const assertionsCounter = new Counter();
+      const assertionsCounter = new AssertionsCounter();
       imageDb.delete = jest
         .fn()
         .mockImplementationOnce(() => Promise.reject("image-deletion failed"));
@@ -53,7 +53,7 @@ describe("delete-photo use case", () => {
         photo,
         assertionsCounter,
       );
-      sharedTestUtils.checkAssertionsCount(assertionsCounter);
+      assertionsCounter.checkAssertions();
     });
   });
 

@@ -1,5 +1,5 @@
 import { dumbPhotoGenerator } from "@adapters";
-import { Counter, ICounter, sharedTestUtils } from "@utils";
+import { AssertionsCounter, IAssertionsCounter, sharedTestUtils } from "@utils";
 
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
@@ -7,7 +7,7 @@ import { ReplacePhoto } from "./replace-photo";
 import { ReplacePhotoTestUtils } from "./replace-photo.test-utils";
 
 describe("replace-photo use case", () => {
-  let assertionsCounter: ICounter;
+  let assertionsCounter: IAssertionsCounter;
   let replacePhoto: ReplacePhoto;
   let imageDb: IPhotoImageDb;
   let metadataDb: IPhotoMetadataDb;
@@ -16,7 +16,7 @@ describe("replace-photo use case", () => {
   const photo = dumbPhotoGenerator.generate();
 
   beforeEach(async () => {
-    assertionsCounter = new Counter();
+    assertionsCounter = new AssertionsCounter();
     imageDb = new FakePhotoImageDb();
     metadataDb = new FakePhotoMetadataDb();
     replacePhotoTestUtils = new ReplacePhotoTestUtils(metadataDb, imageDb);
@@ -39,7 +39,7 @@ describe("replace-photo use case", () => {
           fnParams: [photo],
           assertionsCounter,
         });
-        sharedTestUtils.checkAssertionsCount(assertionsCounter);
+        assertionsCounter.checkAssertions();
       },
     );
 
@@ -50,7 +50,7 @@ describe("replace-photo use case", () => {
         fnParams: [newPhoto],
         assertionsCounter,
       });
-      sharedTestUtils.checkAssertionsCount(assertionsCounter);
+      assertionsCounter.checkAssertions();
     });
 
     it("should be replaced in image db", async () => {
@@ -101,7 +101,7 @@ describe("replace-photo use case", () => {
           metadataBefore,
           assertionsCounter,
         );
-        sharedTestUtils.checkAssertionsCount(assertionsCounter);
+        assertionsCounter.checkAssertions();
       },
     );
 
@@ -121,7 +121,7 @@ describe("replace-photo use case", () => {
         assertionsCounter,
       );
 
-      sharedTestUtils.checkAssertionsCount(assertionsCounter);
+      assertionsCounter.checkAssertions();
     });
   });
 });

@@ -1,4 +1,4 @@
-import { Counter, sharedTestUtils } from "@utils";
+import { AssertionsCounter, IAssertionsCounter } from "@utils";
 
 import { SearchPhotoParser } from "./search-photo.parser";
 import { SearchPhotoParserTestUtils } from "./search-photo.parser.test-utils";
@@ -6,11 +6,11 @@ import { SearchPhotoParserTestUtils } from "./search-photo.parser.test-utils";
 describe("SearchPhotoParser", () => {
   const searchPhotoParserTestUtils = new SearchPhotoParserTestUtils();
   let searchPhotoParser: SearchPhotoParser;
-  let assertionCounter: Counter;
+  let assertionsCounter: IAssertionsCounter;
 
   beforeEach(() => {
     searchPhotoParser = new SearchPhotoParser();
-    assertionCounter = new Counter();
+    assertionsCounter = new AssertionsCounter();
   });
 
   describe("parse", () => {
@@ -26,14 +26,14 @@ describe("SearchPhotoParser", () => {
 
         searchPhotoParserTestUtils.expectValidType(
           parsedData,
-          assertionCounter,
+          assertionsCounter,
         );
         searchPhotoParserTestUtils.expectParsedDataMatchingInputData(
           parsedData,
           inputData,
-          assertionCounter,
+          assertionsCounter,
         );
-        sharedTestUtils.checkAssertionsCount(assertionCounter);
+        assertionsCounter.checkAssertions();
       },
     );
   });

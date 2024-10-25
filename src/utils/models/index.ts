@@ -1,3 +1,4 @@
+export * from "./assertions-counter";
 export * from "./counter";
 export * from "./dumb-photo-generator";
 export * from "./lorem-ipsum-generator";

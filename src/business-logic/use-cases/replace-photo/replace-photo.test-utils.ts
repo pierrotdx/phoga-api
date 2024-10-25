@@ -1,4 +1,4 @@
-import { DbsTestUtils, ICounter } from "@utils";
+import { DbsTestUtils, IAssertionsCounter } from "@utils";
 
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
 import { IPhoto } from "../../models";
@@ -41,7 +41,7 @@ export class ReplacePhotoTestUtils extends DbsTestUtils {
   async expectToMatchPhotoMetadata(
     id: IPhoto["_id"],
     expectedMetadata: IPhoto["metadata"],
-    assertionsCounter: ICounter,
+    assertionsCounter: IAssertionsCounter,
   ): Promise<void> {
     const metadataAfter = await this.getPhotoMetadataFromDb(id);
     expect(metadataAfter).toEqual(expectedMetadata);

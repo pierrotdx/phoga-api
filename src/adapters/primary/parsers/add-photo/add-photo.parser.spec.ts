@@ -1,4 +1,7 @@
-import { Counter, ICounter, sharedTestUtils } from "@utils";
+import {
+  AssertionsCounter,
+  IAssertionsCounter,
+} from "@utils";
 
 import { LoremIpsumGenerator } from "../../lorem-ipsum";
 import { UuidGenerator } from "../../uuid";
@@ -14,11 +17,11 @@ const addPhotoParserTestUtils = new AddPhotoParserTestUtils(
 
 describe("AddPhotoParser", () => {
   let addPhotoParser: AddPhotoParser;
-  let assertionCounter: ICounter;
+  let assertionsCounter: IAssertionsCounter;
 
   beforeEach(() => {
     addPhotoParser = new AddPhotoParser();
-    assertionCounter = new Counter();
+    assertionsCounter = new AssertionsCounter();
   });
 
   describe("parse", () => {
@@ -28,9 +31,9 @@ describe("AddPhotoParser", () => {
       addPhotoParserTestUtils.expectParsedDataToBeAValidPhotoWithInputFields(
         inputData,
         parsedData,
-        assertionCounter,
+        assertionsCounter,
       );
-      sharedTestUtils.checkAssertionsCount(assertionCounter);
+      assertionsCounter.checkAssertions();
     });
 
     it("should throw if the parsed data is not a photo", () => {

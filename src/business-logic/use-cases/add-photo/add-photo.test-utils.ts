@@ -1,4 +1,4 @@
-import { DbsTestUtils, ICounter } from "@utils";
+import { DbsTestUtils, IAssertionsCounter } from "@utils";
 
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
 import { IPhoto } from "../../models";
@@ -23,7 +23,7 @@ export class AddPhotoTestUtils extends DbsTestUtils {
 
   async expectMetadataNotToBeInDb(
     id: IPhoto["_id"],
-    assertionsCounter: ICounter,
+    assertionsCounter: IAssertionsCounter,
   ): Promise<void> {
     const dbMetadata = await this.getPhotoMetadataFromDb(id);
     expect(dbMetadata).toBeUndefined();

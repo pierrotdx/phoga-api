@@ -1,4 +1,4 @@
-import { DbsTestUtils, ICounter } from "@utils";
+import { DbsTestUtils, IAssertionsCounter } from "@utils";
 
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
 import { IPhoto } from "../../models";
@@ -23,7 +23,7 @@ export class DeletePhotoTestUtils extends DbsTestUtils {
 
   async expectMetadataNotToBeDeleted(
     photo: IPhoto,
-    assertionsCounter: ICounter,
+    assertionsCounter: IAssertionsCounter,
   ): Promise<void> {
     const metadataFromDb = await this.getPhotoMetadataFromDb(photo._id);
     expect(metadataFromDb).toBeDefined();
