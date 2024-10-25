@@ -5,7 +5,7 @@ import { AssertionsCounter, IAssertionsCounter } from "@utils";
 import { dumbPhotoGenerator } from "../../../../primary";
 import { gcsTestUtils } from "../../gcs";
 import { PhotoImageDbGcs } from "./photo-image-db.gcs";
-import { PhotoImageDbGcsTestUtils } from "./photo-image-db.test-utils";
+import { PhotoImageDbGcsTestUtils } from "./photo-image-db.gcs.test-utils";
 
 const assetImagesPaths = ["assets/test-img-1.jpg", "assets/test-img-2.jpg"];
 
