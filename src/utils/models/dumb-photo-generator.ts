@@ -2,6 +2,11 @@ import { IPhoto } from "@business-logic";
 
 export interface IDumbPhotoGenerator {
   generate(params?: IDumbPhotoGeneratorOptions): IPhoto;
+  generatePhotos(nbPhotos: number): IPhoto[];
+  generatePhotoFromPath(
+    imagePath: string,
+    _id?: IPhoto["_id"],
+  ): Promise<IPhoto>;
 }
 
 export interface IDumbPhotoGeneratorOptions {

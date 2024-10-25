@@ -1,3 +1,4 @@
+import { readFile } from "fs/promises";
 import { path } from "ramda";
 
 import { IPhoto } from "@business-logic";
@@ -31,6 +32,17 @@ export class DumbPhotoGeneratorTestUtils {
     }
     const option = Object.values(options)[0];
     expect(field).toEqual(option);
+    assertionsCounter.increase();
+  }
+
+  async expectPhotoBufferToMatchImageFromPath(
+    photo: IPhoto,
+    path: string,
+    assertionsCounter: IAssertionsCounter,
+  ): Promise<void> {
+    const expectedImageBuffer = await readFile(path);
+    const isSameBuffer = expectedImageBuffer.compare(photo.imageBuffer) === 0;
+    expect(isSameBuffer).toBe(true);
     assertionsCounter.increase();
   }
 }

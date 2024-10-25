@@ -1,3 +1,4 @@
+import { readFile } from "fs/promises";
 import { clone } from "ramda";
 
 import { IPhoto, Photo } from "@business-logic";
@@ -71,5 +72,26 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
       .generateSentences(nbDescriptionSentences)
       .join(" ");
     return description;
+  }
+
+  generatePhotos(nbPhotos: number): IPhoto[] {
+    const photos: IPhoto[] = [];
+    for (let index = 0; index < nbPhotos; index++) {
+      photos.push(
+        this.generate({
+          imageBuffer: Buffer.from("dumb image buffer"),
+        }),
+      );
+    }
+    return photos;
+  }
+
+  async generatePhotoFromPath(
+    imagePath: string,
+    _id?: IPhoto["_id"],
+  ): Promise<Photo> {
+    const imageBuffer = await readFile(imagePath);
+    const photo = this.generate({ _id, imageBuffer });
+    return photo;
   }
 }

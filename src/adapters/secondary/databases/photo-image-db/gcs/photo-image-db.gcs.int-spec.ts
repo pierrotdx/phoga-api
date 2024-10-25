@@ -28,7 +28,7 @@ describe("PhotoImageDbGcs", () => {
       undefined,
       photoImageDbGcs,
     );
-    storedPhoto = await photoImageDbGcsTestUtils.generatePhotoFromAssets(
+    storedPhoto = await dumbPhotoGenerator.generatePhotoFromPath(
       assetImagesPaths[0],
     );
     await photoImageDbGcsTestUtils.insertPhotoInDbs(storedPhoto);
@@ -89,7 +89,7 @@ describe("PhotoImageDbGcs", () => {
     let storedPhotos: IPhoto[];
 
     beforeEach(async () => {
-      storedPhotos = photoImageDbGcsTestUtils.generatePhotos(nbPhotos);
+      storedPhotos = dumbPhotoGenerator.generatePhotos(nbPhotos);
       await photoImageDbGcsTestUtils.insertPhotosInDbs(storedPhotos);
     });
 
@@ -120,7 +120,7 @@ describe("PhotoImageDbGcs", () => {
     let replacingPhoto: IPhoto;
 
     beforeEach(async () => {
-      replacingPhoto = await photoImageDbGcsTestUtils.generatePhotoFromAssets(
+      replacingPhoto = await dumbPhotoGenerator.generatePhotoFromPath(
         assetImagesPaths[1],
         storedPhoto._id,
       );

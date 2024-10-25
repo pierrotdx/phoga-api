@@ -68,4 +68,42 @@ describe("dumbPhotoGenerator", () => {
       },
     );
   });
+
+  describe("generatePhotos", () => {
+    it.each`
+      nbPhotos
+      ${5}
+    `(
+      "should generate the required nb of photos ($nbPhotos)",
+      ({ nbPhotos }: { nbPhotos: number }) => {
+        const result = dumbPhotoGenerator.generatePhotos(nbPhotos);
+        expect(result.length).toBe(nbPhotos);
+        assertionsCounter.increase();
+        result.forEach((r) => {
+          testUtils.expectAnInstanceOfPhoto(r, assertionsCounter);
+        });
+        assertionsCounter.checkAssertions();
+      },
+    );
+  });
+
+  describe("generatePhotoFromAssets", () => {
+    it.each`
+      path
+      ${"assets/test-img-1.jpg"}
+      ${"assets/test-img-2.jpg"}
+    `(
+      "should generate a photo where the image buffer matches the image from path",
+      async ({ path }: { path: string }) => {
+        const result = await dumbPhotoGenerator.generatePhotoFromPath(path);
+        testUtils.expectAnInstanceOfPhoto(result, assertionsCounter);
+        await testUtils.expectPhotoBufferToMatchImageFromPath(
+          result,
+          path,
+          assertionsCounter,
+        );
+        assertionsCounter.checkAssertions();
+      },
+    );
+  });
 });

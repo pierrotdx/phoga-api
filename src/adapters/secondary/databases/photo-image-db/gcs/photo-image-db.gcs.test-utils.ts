@@ -1,40 +1,11 @@
-import { readFile } from "fs/promises";
 import { randomInt } from "node:crypto";
 
-import {
-  IPhoto,
-  IPhotoImageDb,
-  IPhotoMetadataDb,
-  Photo,
-} from "@business-logic";
+import { IPhoto, IPhotoImageDb, IPhotoMetadataDb } from "@business-logic";
 import { DbsTestUtils, IAssertionsCounter } from "@utils";
-
-import { dumbPhotoGenerator } from "../../../../primary/dumb-photo-generator";
 
 export class PhotoImageDbGcsTestUtils extends DbsTestUtils {
   constructor(metadataDb?: IPhotoMetadataDb, imageDb?: IPhotoImageDb) {
     super(metadataDb, imageDb);
-  }
-
-  generatePhotos(nbPhotos: number): IPhoto[] {
-    const photos: IPhoto[] = [];
-    for (let index = 0; index < nbPhotos; index++) {
-      photos.push(
-        dumbPhotoGenerator.generate({
-          imageBuffer: Buffer.from("dumb image buffer"),
-        }),
-      );
-    }
-    return photos;
-  }
-
-  async generatePhotoFromAssets(
-    imagePath: string,
-    _id?: IPhoto["_id"],
-  ): Promise<Photo> {
-    const imageBuffer = await readFile(imagePath);
-    const photo = dumbPhotoGenerator.generate({ _id, imageBuffer });
-    return photo;
   }
 
   pickRandomPhotoIds(photos: IPhoto[]): IPhoto["_id"][] {
