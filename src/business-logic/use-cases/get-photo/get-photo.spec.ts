@@ -10,7 +10,7 @@ import { GetPhoto } from "./get-photo";
 import { GetPhotoTestUtils } from "./get-photo.test-utils";
 
 describe("get-photo use case", () => {
-  const photo = dumbPhotoGenerator.generate();
+  const photo = dumbPhotoGenerator.generatePhoto();
   let assertionsCounter: IAssertionsCounter;
   let getPhoto: GetPhoto;
   let metadataDb: IPhotoMetadataDb;

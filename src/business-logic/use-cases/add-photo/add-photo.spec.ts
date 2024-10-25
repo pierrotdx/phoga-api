@@ -21,7 +21,7 @@ describe("add-photo use case", () => {
     imageDb = new FakePhotoImageDb();
     addPhotoTestUtils = new AddPhotoTestUtils(metadataDb, imageDb);
     addPhoto = new AddPhoto(metadataDb, imageDb);
-    photo = dumbPhotoGenerator.generate();
+    photo = dumbPhotoGenerator.generatePhoto();
   });
 
   describe("photo image", () => {

@@ -33,7 +33,7 @@ describe("dumbPhotoGenerator", () => {
     const nbTests = 5;
     for (let index = 0; index < nbTests; index++) {
       it("should generate a valid photo", () => {
-        const photo = dumbPhotoGenerator.generate();
+        const photo = dumbPhotoGenerator.generatePhoto();
         testUtils.expectAnInstanceOfPhoto(photo, assertionsCounter);
         assertionsCounter.checkAssertions();
       });
@@ -56,7 +56,7 @@ describe("dumbPhotoGenerator", () => {
         fieldPath: string[];
         options: IDumbPhotoGeneratorOptions;
       }) => {
-        const photo = dumbPhotoGenerator.generate(options);
+        const photo = dumbPhotoGenerator.generatePhoto(options);
         testUtils.expectAnInstanceOfPhoto(photo, assertionsCounter);
         testUtils.expectMatchingValues({
           fieldPath,

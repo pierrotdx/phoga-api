@@ -40,7 +40,7 @@ describe("PhotoImageDbGcs", () => {
 
   describe("insert", () => {
     it("should upload the photo image to the cloud", async () => {
-      const photo = dumbPhotoGenerator.generate();
+      const photo = dumbPhotoGenerator.generatePhoto();
       await photoImageDbGcs.insert(photo);
       await photoImageDbGcsTestUtils.expectImageToBeUploaded(photo);
     });

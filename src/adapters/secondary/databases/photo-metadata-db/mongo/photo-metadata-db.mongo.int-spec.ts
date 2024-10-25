@@ -8,7 +8,7 @@ import { MongoBase, MongoCollection } from "../../mongo";
 import { PhotoMetadataDbMongo } from "./photo-metadata-db.mongo";
 
 function generatePhoto(id?: string): IPhoto {
-  const photo = dumbPhotoGenerator.generate({ _id: id });
+  const photo = dumbPhotoGenerator.generatePhoto({ _id: id });
   delete photo.imageBuffer;
   return photo;
 }

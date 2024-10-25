@@ -11,7 +11,7 @@ describe("delete-photo use case", () => {
   let imageDb: IPhotoImageDb;
   let metadataDb: IPhotoMetadataDb;
   let deletePhotoTestUtils: DeletePhotoTestUtils;
-  const photo = dumbPhotoGenerator.generate();
+  const photo = dumbPhotoGenerator.generatePhoto();
 
   beforeEach(async () => {
     metadataDb = new FakePhotoMetadataDb();

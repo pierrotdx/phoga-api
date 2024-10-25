@@ -13,7 +13,7 @@ describe("replace-photo use case", () => {
   let metadataDb: IPhotoMetadataDb;
   let replacePhotoTestUtils: ReplacePhotoTestUtils;
 
-  const photo = dumbPhotoGenerator.generate();
+  const photo = dumbPhotoGenerator.generatePhoto();
 
   beforeEach(async () => {
     assertionsCounter = new AssertionsCounter();
@@ -44,7 +44,7 @@ describe("replace-photo use case", () => {
     );
 
     it("should throw an error if the image to replace is not found", async () => {
-      const newPhoto = dumbPhotoGenerator.generate();
+      const newPhoto = dumbPhotoGenerator.generatePhoto();
       await sharedTestUtils.expectRejection({
         asyncFn: replacePhoto.execute,
         fnParams: [newPhoto],
@@ -70,7 +70,7 @@ describe("replace-photo use case", () => {
 
   describe("photo metadata", () => {
     it("should replace the data in the metadata db", async () => {
-      const newPhoto = dumbPhotoGenerator.generate({ _id: photo._id });
+      const newPhoto = dumbPhotoGenerator.generatePhoto({ _id: photo._id });
       const dbMetadataBefore = await metadataDb.getById(photo._id);
       await replacePhoto.execute(newPhoto);
       await replacePhotoTestUtils.expectMetadataToBeReplacedInDb(
@@ -109,7 +109,7 @@ describe("replace-photo use case", () => {
       await metadataDb.delete(photo._id);
       const dbMetadataBefore = await metadataDb.getById(photo._id);
 
-      const newPhoto = dumbPhotoGenerator.generate({ _id: photo._id });
+      const newPhoto = dumbPhotoGenerator.generatePhoto({ _id: photo._id });
       await replacePhoto.execute(newPhoto);
 
       expect(dbMetadataBefore).toBeUndefined();

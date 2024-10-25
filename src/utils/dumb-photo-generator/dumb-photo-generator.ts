@@ -17,7 +17,7 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     private readonly loremIpsumGenerator: ILoremIpsumGenerator,
   ) {}
 
-  generate(options?: IDumbPhotoGeneratorOptions): IPhoto {
+  generatePhoto(options?: IDumbPhotoGeneratorOptions): IPhoto {
     const id = clone(options?._id) || this.uuidGenerator.generate();
     const imageBuffer =
       clone(options?.imageBuffer) || this.generateImageBuffer();
@@ -78,7 +78,7 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     const photos: IPhoto[] = [];
     for (let index = 0; index < nbPhotos; index++) {
       photos.push(
-        this.generate({
+        this.generatePhoto({
           imageBuffer: Buffer.from("dumb image buffer"),
         }),
       );
@@ -91,7 +91,7 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     _id?: IPhoto["_id"],
   ): Promise<Photo> {
     const imageBuffer = await readFile(imagePath);
-    const photo = this.generate({ _id, imageBuffer });
+    const photo = this.generatePhoto({ _id, imageBuffer });
     return photo;
   }
 }

@@ -63,12 +63,12 @@ import {
 } from "./services/test-utils.service";
 
 describe("ExpressHttpServer", () => {
-  const photoInDbFromStart = dumbPhotoGenerator.generate();
-  const photoToAdd = dumbPhotoGenerator.generate();
-  const replacingPhoto = dumbPhotoGenerator.generate({
+  const photoInDbFromStart = dumbPhotoGenerator.generatePhoto();
+  const photoToAdd = dumbPhotoGenerator.generatePhoto();
+  const replacingPhoto = dumbPhotoGenerator.generatePhoto({
     _id: photoInDbFromStart._id,
   });
-  const photoToDelete = dumbPhotoGenerator.generate();
+  const photoToDelete = dumbPhotoGenerator.generatePhoto();
 
   let expressHttpServer: ExpressHttpServer;
   let app: Express;

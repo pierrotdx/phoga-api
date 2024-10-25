@@ -20,7 +20,7 @@ export class SearchPhotoTestUtils extends DbsTestUtils {
     const storedPhotos = [];
     const nbStoredPhotos = 3;
     for (let index = 0; index < nbStoredPhotos; index++) {
-      const photo = dumbPhotoGenerator.generate();
+      const photo = dumbPhotoGenerator.generatePhoto();
       storedPhotos.push(photo);
     }
     return storedPhotos;
