@@ -1,11 +1,14 @@
 import { Counter } from "../counter";
+import { ICounter } from "../models";
 import { SharedTestUtils } from "./shared-test-utils";
 
 describe("SharedTestUtils", () => {
   let sharedTestUtils: SharedTestUtils;
+  let assertionsCounter: ICounter;
 
   beforeEach(() => {
     sharedTestUtils = new SharedTestUtils();
+    assertionsCounter = new Counter();
   });
 
   describe("checkAssertionsCount", () => {
@@ -38,4 +41,36 @@ describe("SharedTestUtils", () => {
       },
     );
   });
+
+  describe("expectRejection", () => {
+    it("should call the input function with the input params, catch the rejection, add add expect assertion", async () => {
+      const asyncFnMock = jest.fn(({ test: boolean }) =>
+        Promise.reject(new Error("dumb error")),
+      );
+      const params: Parameters<typeof asyncFnMock> = [{ test: true }];
+
+      await sharedTestUtils.expectRejection({
+        asyncFn: asyncFnMock,
+        fnParams: params,
+        assertionsCounter,
+      });
+
+      expectFunctionToBeCalledWithParams(
+        asyncFnMock,
+        params,
+        assertionsCounter,
+      );
+      sharedTestUtils.checkAssertionsCount(assertionsCounter);
+    });
+  });
 });
+
+function expectFunctionToBeCalledWithParams(
+  spy: jest.SpyInstance,
+  params: unknown[],
+  assertionsCounter: ICounter,
+): void {
+  expect(spy).toHaveBeenCalledTimes(1);
+  expect(spy).toHaveBeenLastCalledWith(...params);
+  assertionsCounter.increase(2);
+}
