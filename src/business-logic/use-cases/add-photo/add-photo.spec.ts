@@ -13,13 +13,13 @@ describe("add-photo use case", () => {
   let addPhoto: AddPhoto;
   let metadataDb: IPhotoMetadataDb;
   let imageDb: IPhotoImageDb;
-  let addPhotoTestUtils: AddPhotoTestUtils;
+  let testUtils: AddPhotoTestUtils;
   let photo: IPhoto;
 
   beforeEach(async () => {
     metadataDb = new FakePhotoMetadataDb();
     imageDb = new FakePhotoImageDb();
-    addPhotoTestUtils = new AddPhotoTestUtils(metadataDb, imageDb);
+    testUtils = new AddPhotoTestUtils(metadataDb, imageDb);
     addPhoto = new AddPhoto(metadataDb, imageDb);
     photo = dumbPhotoGenerator.generatePhoto();
   });
@@ -27,14 +27,14 @@ describe("add-photo use case", () => {
   describe("photo image", () => {
     it("should be uploaded to image db", async () => {
       await addPhoto.execute(photo);
-      await addPhotoTestUtils.expectImageToBeInDb(photo);
+      await testUtils.expectImageToBeInDb(photo);
     });
   });
 
   describe("photo metadata", () => {
     it("should be added to metadata db", async () => {
       await addPhoto.execute(photo);
-      await addPhotoTestUtils.expectMetadataToBeInDb(photo);
+      await testUtils.expectMetadataToBeInDb(photo);
     });
 
     it.each`
@@ -54,7 +54,7 @@ describe("add-photo use case", () => {
           fnParams: [photoWithInvalidImage],
           assertionsCounter,
         });
-        await addPhotoTestUtils.expectMetadataNotToBeInDb(
+        await testUtils.expectMetadataNotToBeInDb(
           photo._id,
           assertionsCounter,
         );

@@ -6,7 +6,7 @@ import { AjvValidator } from "./ajv-validator";
 import { AjvTestUtils } from "./ajv-validator.test-utils";
 
 const uuidGenerator = new UuidGenerator();
-const ajvTestUtils = new AjvTestUtils();
+const testUtils = new AjvTestUtils();
 
 describe("AjvValidator", () => {
   let ajvValidator: AjvValidator;
@@ -29,7 +29,7 @@ describe("AjvValidator", () => {
 
       ajvValidator.validate(data);
 
-      ajvTestUtils.expectCorrectInvocation({
+      testUtils.expectCorrectInvocation({
         spy: validateSpy,
         params: [data],
         assertionsCounter: assertionsCounter,
@@ -52,7 +52,7 @@ describe("AjvValidator", () => {
       }).toThrow();
       assertionsCounter.increase();
 
-      ajvTestUtils.expectCorrectInvocation({
+      testUtils.expectCorrectInvocation({
         spy: validateSpy,
         params: [data],
         assertionsCounter,

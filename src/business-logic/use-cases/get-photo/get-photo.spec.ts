@@ -15,21 +15,21 @@ describe("get-photo use case", () => {
   let getPhoto: GetPhoto;
   let metadataDb: IPhotoMetadataDb;
   let imageDb: IPhotoImageDb;
-  let getPhotoTestUtils: GetPhotoTestUtils;
+  let testUtils: GetPhotoTestUtils;
 
   beforeEach(async () => {
     assertionsCounter = new AssertionsCounter();
     metadataDb = new FakePhotoMetadataDb();
     imageDb = new FakePhotoImageDb();
     getPhoto = new GetPhoto(metadataDb, imageDb);
-    getPhotoTestUtils = new GetPhotoTestUtils(metadataDb, imageDb);
+    testUtils = new GetPhotoTestUtils(metadataDb, imageDb);
 
-    await getPhotoTestUtils.insertPhotoInDbs(photo);
+    await testUtils.insertPhotoInDbs(photo);
   });
 
   it("should return the photo with matching id", async () => {
     const result = await getPhoto.execute(photo._id);
-    getPhotoTestUtils.expectResultToMatchPhoto(
+    testUtils.expectResultToMatchPhoto(
       photo,
       result,
       assertionsCounter,
@@ -50,12 +50,12 @@ describe("get-photo use case", () => {
         fields: [fieldValue],
       });
 
-      getPhotoTestUtils.expectResultToMatchPhoto(
+      testUtils.expectResultToMatchPhoto(
         result,
         expectedPhoto as IPhoto,
         assertionsCounter,
       );
-      getPhotoTestUtils.expectResultToHaveOnlyRequiredField(
+      testUtils.expectResultToHaveOnlyRequiredField(
         fieldValue,
         result,
         assertionsCounter,

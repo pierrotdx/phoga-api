@@ -21,25 +21,25 @@ describe("PhotoMetadataDbMongo", () => {
 
   let photoMetadataDbMongo: PhotoMetadataDbMongo;
   let mongoBase: MongoBase;
-  let dbsTestUtils: DbsTestUtils;
+  let testUtils: DbsTestUtils;
 
   beforeEach(async () => {
     mongoBase = new MongoBase(global.__MONGO_URL__, global.__MONGO_DB_NAME__);
     await mongoBase.open();
     photoMetadataDbMongo = new PhotoMetadataDbMongo(mongoBase);
-    dbsTestUtils = new DbsTestUtils(photoMetadataDbMongo);
-    await dbsTestUtils.insertPhotosInDbs(storedPhotos);
+    testUtils = new DbsTestUtils(photoMetadataDbMongo);
+    await testUtils.insertPhotosInDbs(storedPhotos);
   });
 
   afterEach(async () => {
     const storedPhotoIds = storedPhotos.map((photo) => photo._id);
-    await dbsTestUtils.deletePhotosInDbs(storedPhotoIds);
+    await testUtils.deletePhotosInDbs(storedPhotoIds);
     await mongoBase.close();
   });
 
   describe("insert", () => {
     afterEach(async () => {
-      await dbsTestUtils.deletePhotoIfNecessary(photoToInsert._id);
+      await testUtils.deletePhotoIfNecessary(photoToInsert._id);
     });
 
     it("should insert a doc with the photo metadata and photo id", async () => {

@@ -10,7 +10,7 @@ import { AddPhotoParserTestUtils } from "./add-photo.parser.test-utils";
 
 const uuidGenerator = new UuidGenerator();
 const loremIpsum = new LoremIpsumGenerator();
-const addPhotoParserTestUtils = new AddPhotoParserTestUtils(
+const testUtils = new AddPhotoParserTestUtils(
   uuidGenerator,
   loremIpsum,
 );
@@ -26,9 +26,9 @@ describe("AddPhotoParser", () => {
 
   describe("parse", () => {
     it("should parse input data into photo", () => {
-      const inputData = addPhotoParserTestUtils.generateValidData();
+      const inputData = testUtils.generateValidData();
       const parsedData = addPhotoParser.parse(inputData);
-      addPhotoParserTestUtils.expectParsedDataToBeAValidPhotoWithInputFields(
+      testUtils.expectParsedDataToBeAValidPhotoWithInputFields(
         inputData,
         parsedData,
         assertionsCounter,
@@ -37,7 +37,7 @@ describe("AddPhotoParser", () => {
     });
 
     it("should throw if the parsed data is not a photo", () => {
-      const invalidData = addPhotoParserTestUtils.generateValidData();
+      const invalidData = testUtils.generateValidData();
       invalidData.location = ["test", "test2"] as any;
       expect(() => {
         addPhotoParser.parse(invalidData);
