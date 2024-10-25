@@ -1,11 +1,10 @@
-import { DbsTestUtils, IAssertionsCounter } from "@utils";
+import { DbsTestUtils, IAssertionsCounter, IDbsTestUtilsParams } from "@utils";
 
-import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
 import { IPhoto } from "../../models";
 
 export class DeletePhotoTestUtils extends DbsTestUtils {
-  constructor(metadataDb?: IPhotoMetadataDb, imageDb?: IPhotoImageDb) {
-    super(metadataDb, imageDb);
+  constructor(dbsTestUtilsParams: IDbsTestUtilsParams) {
+    super(dbsTestUtilsParams);
   }
 
   async expectMetadataToBeDeletedFromDb(

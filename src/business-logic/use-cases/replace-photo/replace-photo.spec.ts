@@ -19,7 +19,7 @@ describe("replace-photo use case", () => {
     assertionsCounter = new AssertionsCounter();
     imageDb = new FakePhotoImageDb();
     metadataDb = new FakePhotoMetadataDb();
-    testUtils = new ReplacePhotoTestUtils(metadataDb, imageDb);
+    testUtils = new ReplacePhotoTestUtils({ metadataDb, imageDb });
     replacePhoto = new ReplacePhoto(metadataDb, imageDb);
     await testUtils.insertPhotoInDbs(photo);
   });
@@ -54,9 +54,7 @@ describe("replace-photo use case", () => {
     });
 
     it("should be replaced in image db", async () => {
-      const dbImageBefore = await testUtils.getPhotoImageFromDb(
-        photo._id,
-      );
+      const dbImageBefore = await testUtils.getPhotoImageFromDb(photo._id);
       const newImageBuffer = Buffer.from("new image");
       photo.imageBuffer = newImageBuffer;
       await replacePhoto.execute(photo);

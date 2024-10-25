@@ -19,7 +19,7 @@ describe("add-photo use case", () => {
   beforeEach(async () => {
     metadataDb = new FakePhotoMetadataDb();
     imageDb = new FakePhotoImageDb();
-    testUtils = new AddPhotoTestUtils(metadataDb, imageDb);
+    testUtils = new AddPhotoTestUtils({ metadataDb, imageDb });
     addPhoto = new AddPhoto(metadataDb, imageDb);
     photo = dumbPhotoGenerator.generatePhoto();
   });
@@ -54,10 +54,7 @@ describe("add-photo use case", () => {
           fnParams: [photoWithInvalidImage],
           assertionsCounter,
         });
-        await testUtils.expectMetadataNotToBeInDb(
-          photo._id,
-          assertionsCounter,
-        );
+        await testUtils.expectMetadataNotToBeInDb(photo._id, assertionsCounter);
         assertionsCounter.checkAssertions();
       },
     );

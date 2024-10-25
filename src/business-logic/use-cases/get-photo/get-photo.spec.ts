@@ -22,7 +22,7 @@ describe("get-photo use case", () => {
     metadataDb = new FakePhotoMetadataDb();
     imageDb = new FakePhotoImageDb();
     getPhoto = new GetPhoto(metadataDb, imageDb);
-    testUtils = new GetPhotoTestUtils(metadataDb, imageDb);
+    testUtils = new GetPhotoTestUtils({ metadataDb, imageDb });
 
     await testUtils.insertPhotoInDbs(photo);
   });

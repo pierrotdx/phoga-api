@@ -16,7 +16,7 @@ describe("delete-photo use case", () => {
   beforeEach(async () => {
     metadataDb = new FakePhotoMetadataDb();
     imageDb = new FakePhotoImageDb();
-    testUtils = new DeletePhotoTestUtils(metadataDb, imageDb);
+    testUtils = new DeletePhotoTestUtils({ metadataDb, imageDb });
     deletePhoto = new DeletePhoto(metadataDb, imageDb);
     await testUtils.insertPhotoInDbs(photo);
   });
@@ -27,8 +27,9 @@ describe("delete-photo use case", () => {
 
   describe("photo metadata", () => {
     it("should be deleted from db", async () => {
-      const dbMetadataBeforeDelete =
-        await testUtils.getPhotoMetadataFromDb(photo._id);
+      const dbMetadataBeforeDelete = await testUtils.getPhotoMetadataFromDb(
+        photo._id,
+      );
 
       await deletePhoto.execute(photo._id);
 
@@ -49,10 +50,7 @@ describe("delete-photo use case", () => {
         fnParams: [photo._id],
         assertionsCounter,
       });
-      await testUtils.expectMetadataNotToBeDeleted(
-        photo,
-        assertionsCounter,
-      );
+      await testUtils.expectMetadataNotToBeDeleted(photo, assertionsCounter);
       assertionsCounter.checkAssertions();
     });
   });
@@ -61,10 +59,7 @@ describe("delete-photo use case", () => {
     it("should be deleted from db", async () => {
       const dbImageBeforeDelete = await imageDb.getById(photo._id);
       await deletePhoto.execute(photo._id);
-      await testUtils.expectImageToBeDeletedFromDb(
-        dbImageBeforeDelete,
-        photo,
-      );
+      await testUtils.expectImageToBeDeletedFromDb(dbImageBeforeDelete, photo);
     });
   });
 });

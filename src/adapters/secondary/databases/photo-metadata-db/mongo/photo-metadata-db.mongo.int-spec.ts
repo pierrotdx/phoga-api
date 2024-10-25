@@ -27,7 +27,7 @@ describe("PhotoMetadataDbMongo", () => {
     mongoBase = new MongoBase(global.__MONGO_URL__, global.__MONGO_DB_NAME__);
     await mongoBase.open();
     photoMetadataDbMongo = new PhotoMetadataDbMongo(mongoBase);
-    testUtils = new DbsTestUtils(photoMetadataDbMongo);
+    testUtils = new DbsTestUtils({ metadataDb: photoMetadataDbMongo});
     await testUtils.insertPhotosInDbs(storedPhotos);
   });
 

@@ -1,11 +1,11 @@
 import { randomInt } from "node:crypto";
 
-import { IPhoto, IPhotoImageDb, IPhotoMetadataDb } from "@business-logic";
-import { DbsTestUtils, IAssertionsCounter } from "@utils";
+import { IPhoto } from "@business-logic";
+import { DbsTestUtils, IAssertionsCounter, IDbsTestUtilsParams } from "@utils";
 
 export class PhotoImageDbGcsTestUtils extends DbsTestUtils {
-  constructor(metadataDb?: IPhotoMetadataDb, imageDb?: IPhotoImageDb) {
-    super(metadataDb, imageDb);
+  constructor(dbsTestUtilsParams: IDbsTestUtilsParams) {
+    super(dbsTestUtilsParams);
   }
 
   pickRandomPhotoIds(photos: IPhoto[]): IPhoto["_id"][] {

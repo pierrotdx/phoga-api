@@ -24,7 +24,7 @@ describe("PhotoImageDbGcs", () => {
   beforeEach(async () => {
     assertionsCounter = new AssertionsCounter();
     photoImageDbGcs = new PhotoImageDbGcs(storage);
-    testUtils = new PhotoImageDbGcsTestUtils(undefined, photoImageDbGcs);
+    testUtils = new PhotoImageDbGcsTestUtils({ imageDb: photoImageDbGcs });
     storedPhoto = await dumbPhotoGenerator.generatePhotoFromPath(
       assetImagesPaths[0],
     );

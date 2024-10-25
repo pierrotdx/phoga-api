@@ -1,19 +1,14 @@
 import { clone } from "ramda";
 
 import { dumbPhotoGenerator } from "@adapters";
-import {
-  IPhoto,
-  IPhotoImageDb,
-  IPhotoMetadataDb,
-  SortDirection,
-} from "@business-logic";
-import { DbsTestUtils, comparePhotoDates } from "@utils";
+import { IPhoto, SortDirection } from "@business-logic";
+import { DbsTestUtils, IDbsTestUtilsParams, comparePhotoDates } from "@utils";
 
 export class SearchPhotoTestUtils extends DbsTestUtils {
   private readonly storedPhotos = this.generateStoredPhotos();
 
-  constructor(metadataDb?: IPhotoMetadataDb, imageDb?: IPhotoImageDb) {
-    super(metadataDb, imageDb);
+  constructor(dbsTestUtilsParams: IDbsTestUtilsParams) {
+    super(dbsTestUtilsParams);
   }
 
   private generateStoredPhotos() {

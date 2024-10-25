@@ -14,7 +14,7 @@ describe("SearchPhoto", () => {
   beforeEach(async () => {
     metadataDb = new FakePhotoMetadataDb();
     imageDb = new FakePhotoImageDb();
-    testUtils = new SearchPhotoTestUtils(metadataDb, imageDb);
+    testUtils = new SearchPhotoTestUtils({ metadataDb, imageDb });
     await testUtils.init();
     searchPhotos = new SearchPhoto(metadataDb, imageDb);
   });
