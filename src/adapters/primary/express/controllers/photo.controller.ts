@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { Readable } from "node:stream";
 
 import { GetPhotoField, IUseCases } from "@business-logic";
-import { IParsers, IValidators, SearchPhotoSchema } from "@http-server";
+import { IParsers, IValidators } from "@http-server";
 
 export class PhotoController {
   constructor(

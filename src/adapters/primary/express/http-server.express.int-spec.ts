@@ -57,7 +57,6 @@ import {
   getImagePath,
   getMetadataPath,
   getPayloadFromPhoto,
-  getUrlWithReplacedId,
   replacePhotoPath,
   searchPhotoPath,
 } from "./services/test-utils.service";
@@ -197,9 +196,9 @@ describe("ExpressHttpServer", () => {
 
   describe(`GET ${getMetadataPath}`, () => {
     it("should return the metadata of the photo with matching id", async () => {
-      const url = getUrlWithReplacedId(
-        photoInDbFromStart._id,
+      const url = entryPoints.getFullPathWithParams(
         EntryPointId.GetPhotoMetadata,
+        { id: photoInDbFromStart._id },
       );
       await request(app).get(url);
       const metadataFromDb = await metadataDb.getById(photoInDbFromStart._id);
@@ -210,9 +209,9 @@ describe("ExpressHttpServer", () => {
 
   describe(`GET ${getImagePath}`, () => {
     it("should return the image buffer of the photo with matching id", async () => {
-      const url = getUrlWithReplacedId(
-        photoInDbFromStart._id,
+      const url = entryPoints.getFullPathWithParams(
         EntryPointId.GetPhotoImage,
+        { id: photoInDbFromStart._id },
       );
       await request(app).get(url);
       const imageFromDb = await imageDb.getById(photoInDbFromStart._id);
@@ -301,10 +300,9 @@ describe("ExpressHttpServer", () => {
 
   describe(`DELETE ${deletePhotoPath}`, () => {
     const requiredScopes = entryPoints.getScopes(EntryPointId.DeletePhoto);
-    const url = getUrlWithReplacedId(
-      photoToDelete._id,
-      EntryPointId.DeletePhoto,
-    );
+    const url = entryPoints.getFullPathWithParams(EntryPointId.DeletePhoto, {
+      id: photoToDelete._id,
+    });
 
     it("should deny the access and respond with status code 403 if the token scope of the request is invalid", async () => {
       const token = await oauth2Server.fetchAccessToken();

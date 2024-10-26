@@ -10,7 +10,7 @@ import { Server } from "http";
 
 import { LoggerWinston } from "@adapters/loggers";
 import { IUseCases } from "@business-logic";
-import { AppHttpServer, IParser, IParsers, IValidators } from "@http-server";
+import { AppHttpServer, IParsers, IValidators } from "@http-server";
 import { Logger } from "@logger";
 
 import {

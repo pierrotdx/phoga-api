@@ -29,10 +29,7 @@ import {
 } from "@business-logic";
 import { EntryPointId, IParsers, IValidators, entryPoints } from "@http-server";
 
-import {
-  getDumbApp,
-  getUrlWithReplacedId,
-} from "../services/test-utils.service";
+import { getDumbApp } from "../services/test-utils.service";
 import { PhotoController } from "./photo.controller";
 
 describe("photo controller", () => {
@@ -88,8 +85,8 @@ describe("photo controller", () => {
   describe("getPhotoMetadataHandler", () => {
     beforeEach(() => {
       const entryPoint = entryPoints.get(EntryPointId.GetPhotoMetadata);
-      const path = entryPoint.getFullPath();
-      const url = getUrlWithReplacedId(_id, EntryPointId.GetPhotoMetadata);
+      const path = entryPoint.getFullPathRaw();
+      const url = entryPoint.getFullPathWithParams({ id: _id });
       dumbApp.get(path, photoController.getPhotoMetadataHandler);
       res$ = req.get(url);
     });
@@ -124,8 +121,8 @@ describe("photo controller", () => {
       executeSpy.mockResolvedValueOnce(photo);
 
       const entryPoint = entryPoints.get(EntryPointId.GetPhotoImage);
-      const path = entryPoint.getFullPath();
-      const url = getUrlWithReplacedId(_id, EntryPointId.GetPhotoImage);
+      const path = entryPoint.getFullPathRaw();
+      const url = entryPoint.getFullPathWithParams({ id: _id });
       dumbApp.get(path, photoController.getPhotoImageHandler);
       res$ = req.get(url);
     });
@@ -153,7 +150,7 @@ describe("photo controller", () => {
   describe("search", () => {
     let searchPhotoUseCaseSpy: jest.SpyInstance;
     const entryPoint = entryPoints.get(EntryPointId.SearchPhoto);
-    const path = entryPoint.getFullPath();
+    const path = entryPoint.getFullPathRaw();
     const searchOptions: ISearchPhotoOptions = {
       rendering: { size: 10 },
       excludeImages: true,

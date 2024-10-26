@@ -5,24 +5,22 @@ import { Router } from "express";
 import { IPhoto } from "@business-logic";
 import { EntryPointId, entryPoints, imageBufferEncoding } from "@http-server";
 
-export const addPhotoPath = entryPoints.getFullPath(EntryPointId.AddPhoto);
-export const getMetadataPath = entryPoints.getFullPath(
+export const addPhotoPath = entryPoints.getFullPathRaw(EntryPointId.AddPhoto);
+export const getMetadataPath = entryPoints.getFullPathRaw(
   EntryPointId.GetPhotoMetadata,
 );
-export const getImagePath = entryPoints.getFullPath(EntryPointId.GetPhotoImage);
-export const replacePhotoPath = entryPoints.getFullPath(
+export const getImagePath = entryPoints.getFullPathRaw(
+  EntryPointId.GetPhotoImage,
+);
+export const replacePhotoPath = entryPoints.getFullPathRaw(
   EntryPointId.ReplacePhoto,
 );
-export const deletePhotoPath = entryPoints.getFullPath(
+export const deletePhotoPath = entryPoints.getFullPathRaw(
   EntryPointId.DeletePhoto,
 );
-export const searchPhotoPath = entryPoints.getFullPath(
+export const searchPhotoPath = entryPoints.getFullPathRaw(
   EntryPointId.SearchPhoto,
 );
-
-export function getUrlWithReplacedId(id: string, entryPointId: EntryPointId) {
-  return entryPoints.getFullPath(entryPointId).replace(":id", id);
-}
 
 export function getPayloadFromPhoto(
   photo: IPhoto,

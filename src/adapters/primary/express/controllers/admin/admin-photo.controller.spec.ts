@@ -31,7 +31,6 @@ import { EntryPointId, IParsers, IValidators, entryPoints } from "@http-server";
 import {
   getDumbApp,
   getPayloadFromPhoto,
-  getUrlWithReplacedId,
 } from "../../services/test-utils.service";
 
 describe("adminPhotoController", () => {
@@ -131,8 +130,8 @@ describe("adminPhotoController", () => {
 
   describe("deletePhotoHandler", () => {
     const entryPoint = entryPoints.get(EntryPointId.DeletePhoto);
-    const path = entryPoint.getFullPath();
-    const url = getUrlWithReplacedId(photo._id, EntryPointId.DeletePhoto);
+    const path = entryPoint.getFullPathRaw();
+    const url = entryPoint.getFullPathWithParams({ id: photo._id });
     beforeEach(() => {
       dumbApp.delete(path, adminPhotoController.deletePhotoHandler);
     });
