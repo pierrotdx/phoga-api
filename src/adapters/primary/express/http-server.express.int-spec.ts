@@ -4,6 +4,7 @@ import request from "supertest";
 import {
   AddPhotoParser,
   AjvValidator,
+  ExpressTestUtils,
   GetPhotoParser,
   SearchPhotoParser,
   dumbPhotoGenerator,
@@ -51,15 +52,15 @@ import {
 } from "../oauth2-jwt-bearer/test-utils.service";
 import { ExpressHttpServer } from "./http-server.express";
 import { IAuthHandler } from "./models";
-import {
-  addPhotoPath,
-  deletePhotoPath,
-  getImagePath,
-  getMetadataPath,
-  getPayloadFromPhoto,
-  replacePhotoPath,
-  searchPhotoPath,
-} from "./services/test-utils.service";
+
+const addPhotoPath = entryPoints.getFullPathRaw(EntryPointId.AddPhoto);
+const getMetadataPath = entryPoints.getFullPathRaw(
+  EntryPointId.GetPhotoMetadata,
+);
+const getImagePath = entryPoints.getFullPathRaw(EntryPointId.GetPhotoImage);
+const replacePhotoPath = entryPoints.getFullPathRaw(EntryPointId.ReplacePhoto);
+const deletePhotoPath = entryPoints.getFullPathRaw(EntryPointId.DeletePhoto);
+const searchPhotoPath = entryPoints.getFullPathRaw(EntryPointId.SearchPhoto);
 
 describe("ExpressHttpServer", () => {
   const photoInDbFromStart = dumbPhotoGenerator.generatePhoto();
@@ -70,6 +71,7 @@ describe("ExpressHttpServer", () => {
   const photoToDelete = dumbPhotoGenerator.generatePhoto();
 
   let expressHttpServer: ExpressHttpServer;
+  let testUtils: ExpressTestUtils;
   let app: Express;
   let logger: Logger;
   let authHandler: IAuthHandler;
@@ -138,6 +140,8 @@ describe("ExpressHttpServer", () => {
     expressHttpServer.listen();
     app = expressHttpServer.app;
 
+    testUtils = new ExpressTestUtils();
+
     await useCases.addPhoto.execute(photoInDbFromStart);
   });
 
@@ -152,7 +156,11 @@ describe("ExpressHttpServer", () => {
 
   describe(`POST ${addPhotoPath}`, () => {
     const requiredScopes = entryPoints.getScopes(EntryPointId.AddPhoto);
-    const payload = getPayloadFromPhoto(photoToAdd);
+    let payload: ReturnType<typeof testUtils.getPayloadFromPhoto>;
+
+    beforeEach(() => {
+      payload = testUtils.getPayloadFromPhoto(photoToAdd);
+    });
 
     it("should deny the access and respond with status code 401 if no token is associated to the request", async () => {
       const response = await request(app).post(addPhotoPath).send(payload);
@@ -256,7 +264,11 @@ describe("ExpressHttpServer", () => {
 
   describe(`PUT ${replacePhotoPath}`, () => {
     const requiredScopes = entryPoints.getScopes(EntryPointId.ReplacePhoto);
-    const payload = getPayloadFromPhoto(replacingPhoto);
+    let payload: ReturnType<typeof testUtils.getPayloadFromPhoto>;
+
+    beforeEach(() => {
+      payload = testUtils.getPayloadFromPhoto(replacingPhoto);
+    });
 
     it("should deny the access and respond with status code 403 if the token scope of the request is invalid", async () => {
       const token = await oauth2Server.fetchAccessToken();

@@ -6,6 +6,7 @@ import {
   AddPhotoFakeValidator,
   AddPhotoParser,
   AdminPhotoController,
+  ControllersTestUtils,
   DeletePhotoFakeValidator,
   FakePhotoImageDb,
   FakePhotoMetadataDb,
@@ -28,13 +29,9 @@ import {
 } from "@business-logic";
 import { EntryPointId, IParsers, IValidators, entryPoints } from "@http-server";
 
-import {
-  getDumbApp,
-  getPayloadFromPhoto,
-} from "../../services/test-utils.service";
-
 describe("adminPhotoController", () => {
   let adminPhotoController: AdminPhotoController;
+  let testUtils: ControllersTestUtils;
 
   let imageDb: IPhotoImageDb;
   let metadataDb: IPhotoMetadataDb;
@@ -52,6 +49,8 @@ describe("adminPhotoController", () => {
   beforeEach(() => {
     imageDb = new FakePhotoImageDb();
     metadataDb = new FakePhotoMetadataDb();
+
+    testUtils = new ControllersTestUtils();
 
     useCases = {
       getPhoto: new GetPhoto(metadataDb, imageDb),
@@ -82,7 +81,7 @@ describe("adminPhotoController", () => {
       validators,
       parsers,
     );
-    dumbApp = getDumbApp();
+    dumbApp = testUtils.generateDumbApp();
     req = request(dumbApp);
   });
 
@@ -96,7 +95,7 @@ describe("adminPhotoController", () => {
     it("should call the add-photo use case with the appropriate arguments and respond with status 200", async () => {
       const executeSpy = jest.spyOn(useCases.addPhoto, "execute");
 
-      const payload = getPayloadFromPhoto(photo);
+      const payload = testUtils.getPayloadFromPhoto(photo);
       const response = await req.post(path).send(payload);
 
       expect(executeSpy).toHaveBeenCalledTimes(1);
@@ -118,7 +117,7 @@ describe("adminPhotoController", () => {
       await imageDb.insert(initPhoto);
       const executeSpy = jest.spyOn(useCases.replacePhoto, "execute");
 
-      const payload = getPayloadFromPhoto(photo);
+      const payload = testUtils.getPayloadFromPhoto(photo);
       const response = await req.put(path).send(payload);
 
       expect(executeSpy).toHaveBeenCalledTimes(1);

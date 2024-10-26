@@ -5,6 +5,7 @@ import TestAgent from "supertest/lib/agent";
 import {
   AddPhotoFakeValidator,
   AddPhotoParser,
+  ControllersTestUtils,
   DeletePhotoFakeValidator,
   FakePhotoImageDb,
   FakePhotoMetadataDb,
@@ -29,11 +30,11 @@ import {
 } from "@business-logic";
 import { EntryPointId, IParsers, IValidators, entryPoints } from "@http-server";
 
-import { getDumbApp } from "../services/test-utils.service";
 import { PhotoController } from "./photo.controller";
 
 describe("photo controller", () => {
   let photoController: PhotoController;
+  let testUtils: ControllersTestUtils;
 
   let imageDb: IPhotoImageDb;
   let metadataDb: IPhotoMetadataDb;
@@ -52,6 +53,8 @@ describe("photo controller", () => {
   beforeEach(() => {
     imageDb = new FakePhotoImageDb();
     metadataDb = new FakePhotoMetadataDb();
+
+    testUtils = new ControllersTestUtils();
 
     useCases = {
       getPhoto: new GetPhoto(metadataDb, imageDb),
@@ -78,7 +81,7 @@ describe("photo controller", () => {
     };
 
     photoController = new PhotoController(useCases, validators, parsers);
-    dumbApp = getDumbApp();
+    dumbApp = testUtils.generateDumbApp();
     req = request(dumbApp);
   });
 
