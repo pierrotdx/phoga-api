@@ -2,7 +2,7 @@ import { pick } from "ramda";
 
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "@adapters";
 import { dumbPhotoGenerator } from "@adapters";
-import { Counter, ICounter, sharedTestUtils } from "@utils";
+import { AssertionsCounter, IAssertionsCounter } from "@utils";
 
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
 import { GetPhotoField, IPhoto } from "../../models";
@@ -10,31 +10,31 @@ import { GetPhoto } from "./get-photo";
 import { GetPhotoTestUtils } from "./get-photo.test-utils";
 
 describe("get-photo use case", () => {
-  const photo = dumbPhotoGenerator.generate();
-  let assertionsCounter: ICounter;
+  const photo = dumbPhotoGenerator.generatePhoto();
+  let assertionsCounter: IAssertionsCounter;
   let getPhoto: GetPhoto;
   let metadataDb: IPhotoMetadataDb;
   let imageDb: IPhotoImageDb;
-  let getPhotoTestUtils: GetPhotoTestUtils;
+  let testUtils: GetPhotoTestUtils;
 
   beforeEach(async () => {
-    assertionsCounter = new Counter();
+    assertionsCounter = new AssertionsCounter();
     metadataDb = new FakePhotoMetadataDb();
     imageDb = new FakePhotoImageDb();
     getPhoto = new GetPhoto(metadataDb, imageDb);
-    getPhotoTestUtils = new GetPhotoTestUtils(metadataDb, imageDb);
+    testUtils = new GetPhotoTestUtils({ metadataDb, imageDb });
 
-    await getPhotoTestUtils.insertPhotoInDbs(photo);
+    await testUtils.insertPhotoInDbs(photo);
   });
 
   it("should return the photo with matching id", async () => {
     const result = await getPhoto.execute(photo._id);
-    getPhotoTestUtils.expectResultToMatchPhoto(
+    testUtils.expectResultToMatchPhoto(
       photo,
       result,
       assertionsCounter,
     );
-    sharedTestUtils.checkAssertionsCount(assertionsCounter);
+    assertionsCounter.checkAssertions();
   });
 
   it.each`
@@ -50,17 +50,17 @@ describe("get-photo use case", () => {
         fields: [fieldValue],
       });
 
-      getPhotoTestUtils.expectResultToMatchPhoto(
+      testUtils.expectResultToMatchPhoto(
         result,
         expectedPhoto as IPhoto,
         assertionsCounter,
       );
-      getPhotoTestUtils.expectResultToHaveOnlyRequiredField(
+      testUtils.expectResultToHaveOnlyRequiredField(
         fieldValue,
         result,
         assertionsCounter,
       );
-      sharedTestUtils.checkAssertionsCount(assertionsCounter);
+      assertionsCounter.checkAssertions();
     },
   );
 });

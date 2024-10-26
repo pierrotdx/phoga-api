@@ -1,3 +1,4 @@
+export * from "./assertions-counter";
 export * from "./compare-dates/compare-dates";
 export * from "./counter/counter";
 export * from "./dbs.test-utils";

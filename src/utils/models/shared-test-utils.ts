@@ -1,7 +1,6 @@
-import { ICounter } from "./counter";
+import { IAssertionsCounter } from "./assertions-counter";
 
 export interface ISharedTestUtils {
-  checkAssertionsCount(assertionCounter: ICounter): void;
   expectRejection({
     asyncFn,
     fnParams,
@@ -9,6 +8,6 @@ export interface ISharedTestUtils {
   }: {
     asyncFn: Function;
     fnParams: unknown[];
-    assertionsCounter: ICounter;
+    assertionsCounter: IAssertionsCounter;
   }): Promise<void>;
 }

@@ -1,129 +1,128 @@
 import { clone } from "ramda";
 
 import { dumbPhotoGenerator } from "@adapters";
-import { IPhoto, SortDirection } from "@business-logic";
-import { DbsTestUtils, comparePhotoDates } from "@utils";
+import { IPhoto, IRendering, SortDirection } from "@business-logic";
+import {
+  AssertionsCounter,
+  IAssertionsCounter,
+  comparePhotoDates,
+} from "@utils";
 
-import { MongoBase, MongoCollection } from "../../mongo";
+import { MongoBase } from "../../mongo";
 import { PhotoMetadataDbMongo } from "./photo-metadata-db.mongo";
-
-function generatePhoto(id?: string): IPhoto {
-  const photo = dumbPhotoGenerator.generate({ _id: id });
-  delete photo.imageBuffer;
-  return photo;
-}
+import { PhotoMetadataDbMongoTestUtils } from "./photo-metadata-db.mongo.test-utils";
 
 describe("PhotoMetadataDbMongo", () => {
-  const photoInDbFromStart = generatePhoto();
-  const replacingPhoto = generatePhoto(photoInDbFromStart._id);
-  const photoToInsert = generatePhoto();
-  const storedPhotos = [photoInDbFromStart, generatePhoto(), generatePhoto()];
-
+  const storedPhotos = [...dumbPhotoGenerator.generatePhotos(3)];
   let photoMetadataDbMongo: PhotoMetadataDbMongo;
   let mongoBase: MongoBase;
-  let dbsTestUtils: DbsTestUtils;
+  let testUtils: PhotoMetadataDbMongoTestUtils;
+  let assertionsCounter: IAssertionsCounter;
 
   beforeEach(async () => {
     mongoBase = new MongoBase(global.__MONGO_URL__, global.__MONGO_DB_NAME__);
     await mongoBase.open();
     photoMetadataDbMongo = new PhotoMetadataDbMongo(mongoBase);
-    dbsTestUtils = new DbsTestUtils(photoMetadataDbMongo);
-    await dbsTestUtils.insertPhotosInDbs(storedPhotos);
+    testUtils = new PhotoMetadataDbMongoTestUtils({
+      metadataDb: photoMetadataDbMongo,
+    });
+    await testUtils.insertPhotosInDbs(storedPhotos);
+    assertionsCounter = new AssertionsCounter();
   });
 
   afterEach(async () => {
     const storedPhotoIds = storedPhotos.map((photo) => photo._id);
-    await dbsTestUtils.deletePhotosInDbs(storedPhotoIds);
+    await testUtils.deletePhotosInDbs(storedPhotoIds);
     await mongoBase.close();
   });
 
-  describe("insert", () => {
+  describe(`${PhotoMetadataDbMongo.prototype.insert.name}`, () => {
+    let photoToInsert: IPhoto;
+
+    beforeEach(() => {
+      photoToInsert = dumbPhotoGenerator.generatePhoto();
+    });
+
     afterEach(async () => {
-      await dbsTestUtils.deletePhotoIfNecessary(photoToInsert._id);
+      await testUtils.deletePhotoIfNecessary(photoToInsert._id);
     });
 
     it("should insert a doc with the photo metadata and photo id", async () => {
-      const docBefore = await getPhotoMetadataById(
-        mongoBase,
-        photoToInsert._id,
-      );
-
+      const docBefore = await testUtils.getDocFromDb(photoToInsert._id);
       await photoMetadataDbMongo.insert(photoToInsert);
-
-      expect(docBefore).toBeUndefined();
-
-      const docAfter = await getPhotoMetadataById(mongoBase, photoToInsert._id);
-      expect(docAfter).toBeDefined();
-      expect(docAfter._id).toBe(photoToInsert._id);
-      delete docAfter._id;
-      expect(docAfter).toEqual(photoToInsert.metadata);
-      expect.assertions(4);
+      const docAfter = await testUtils.getDocFromDb(photoToInsert._id);
+      await testUtils.expectDocToHaveBeenInserted(
+        docBefore,
+        docAfter,
+        assertionsCounter,
+      );
+      testUtils.expectDocToMatchExpectedPhoto(
+        photoToInsert,
+        docAfter,
+        assertionsCounter,
+      );
+      assertionsCounter.checkAssertions();
     });
   });
 
-  describe("getById", () => {
+  describe(`${PhotoMetadataDbMongo.prototype.getById.name}`, () => {
     it("should return the photo metadata of the doc matching the input id", async () => {
-      const photoMetadata = await photoMetadataDbMongo.getById(
-        photoInDbFromStart._id,
-      );
-
-      expect(photoMetadata).toEqual(photoInDbFromStart.metadata);
+      const storedPhoto = storedPhotos[0];
+      const photoMetadata = await photoMetadataDbMongo.getById(storedPhoto._id);
+      expect(photoMetadata).toEqual(storedPhoto.metadata);
       expect.assertions(1);
     });
   });
 
-  describe("replace", () => {
-    it("should replace the targeted doc with the input photo metadata", async () => {
-      const docBefore = await getPhotoMetadataById(
-        mongoBase,
-        photoInDbFromStart._id,
-      );
-
+  describe(`${PhotoMetadataDbMongo.prototype.replace.name}`, () => {
+    it("should replace the required doc with the input photo metadata", async () => {
+      const storedPhoto = storedPhotos[0];
+      const docBefore = await testUtils.getDocFromDb(storedPhoto._id);
+      const replacingPhoto = dumbPhotoGenerator.generatePhoto({
+        _id: storedPhoto._id,
+      });
       await photoMetadataDbMongo.replace(replacingPhoto);
-
-      const docAfter = await getPhotoMetadataById(
-        mongoBase,
-        replacingPhoto._id,
+      const docAfter = await testUtils.getDocFromDb(storedPhoto._id);
+      testUtils.expectDocToMatchExpectedPhoto(
+        storedPhoto,
+        docBefore,
+        assertionsCounter,
       );
-
-      expect(docBefore._id).toBe(photoInDbFromStart._id);
-      expect(docAfter._id).toBe(photoInDbFromStart._id);
-      delete docBefore._id;
-      expect(docBefore).toEqual(photoInDbFromStart.metadata);
-      delete docAfter._id;
-      expect(docAfter).toEqual(replacingPhoto.metadata);
-      expect.assertions(4);
+      testUtils.expectDocToMatchExpectedPhoto(
+        replacingPhoto,
+        docAfter,
+        assertionsCounter,
+      );
+      assertionsCounter.checkAssertions();
     });
   });
 
-  describe("delete", () => {
+  describe(`${PhotoMetadataDbMongo.prototype.delete.name}`, () => {
     it("should delete the doc matching the input id", async () => {
-      const docBefore = await getPhotoMetadataById(
-        mongoBase,
-        photoInDbFromStart._id,
+      const storedPhoto = storedPhotos[0];
+      const docBefore = await testUtils.getDocFromDb(storedPhoto._id);
+      await photoMetadataDbMongo.delete(storedPhoto._id);
+      testUtils.expectDocToMatchExpectedPhoto(
+        storedPhoto,
+        docBefore,
+        assertionsCounter,
       );
-
-      await photoMetadataDbMongo.delete(photoInDbFromStart._id);
-
-      expect(docBefore).toBeDefined();
-      expect(docBefore._id).toBe(photoInDbFromStart._id);
-      const docAfter = await getPhotoMetadataById(
-        mongoBase,
-        photoInDbFromStart._id,
-      );
+      const docAfter = await testUtils.getDocFromDb(storedPhoto._id);
       expect(docAfter).toBeUndefined();
-      expect.assertions(3);
+      assertionsCounter.increase();
+      assertionsCounter.checkAssertions();
     });
   });
 
-  describe("find", () => {
+  describe(`${PhotoMetadataDbMongo.prototype.find.name}`, () => {
     it("should return the docs in DB", async () => {
       const photos = await photoMetadataDbMongo.find();
-      expect(photos.length).toBe(storedPhotos.length);
-      photos.forEach((photo) => {
-        expect(storedPhotos).toContainEqual(photo);
-      });
-      expect.assertions(photos.length + 1);
+      testUtils.expectMatchingPhotoArrays(
+        storedPhotos,
+        photos,
+        assertionsCounter,
+      );
+      assertionsCounter.checkAssertions();
     });
 
     describe("+ rendering.date", () => {
@@ -135,10 +134,20 @@ describe("PhotoMetadataDbMongo", () => {
         ${"descending"} | ${{ dateOrder: SortDirection.Descending }} | ${descendingPhotos}
       `(
         "should sort the returned docs by date in $case order when required",
-        async ({ expectedResult, rendering }) => {
+        async ({
+          expectedResult,
+          rendering,
+        }: {
+          expectedResult: IPhoto[];
+          rendering: IRendering;
+        }) => {
           const result = await photoMetadataDbMongo.find(rendering);
-          expect(result).toEqual(expectedResult);
-          expect.assertions(1);
+          testUtils.expectMatchingPhotoArrays(
+            expectedResult,
+            result,
+            assertionsCounter,
+          );
+          assertionsCounter.checkAssertions();
         },
       );
     });
@@ -151,7 +160,7 @@ describe("PhotoMetadataDbMongo", () => {
         ${{ size: 3 }}
       `(
         "should return at most $rendering.size results when required",
-        async ({ rendering }) => {
+        async ({ rendering }: { rendering: IRendering }) => {
           const result = await photoMetadataDbMongo.find(rendering);
           expect(result.length).toEqual(rendering.size);
           expect.assertions(1);
@@ -169,18 +178,23 @@ describe("PhotoMetadataDbMongo", () => {
         ${{ from: 3, dateOrder: SortDirection.Ascending }} | ${2}
       `(
         "should return results starting from the $docIndex-th stored photo",
-        async ({ rendering, docIndex }) => {
+        async ({
+          rendering,
+          docIndex,
+        }: {
+          rendering: IRendering;
+          docIndex: number;
+        }) => {
+          const expectedPhoto = ascendingPhotos[docIndex];
           const result = await photoMetadataDbMongo.find(rendering);
-          expect(result[0]).toEqual(ascendingPhotos[docIndex]);
-          expect.assertions(1);
+          testUtils.expectMatchingPhotos(
+            expectedPhoto,
+            result[0],
+            assertionsCounter,
+          );
+          assertionsCounter.checkAssertions();
         },
       );
     });
   });
 });
-
-async function getPhotoMetadataById(mongoBase: MongoBase, _id: string) {
-  const collection = mongoBase.getCollection(MongoCollection.PhotoMetadata);
-  const doc = await collection.findOne({ _id });
-  return doc ?? undefined;
-}

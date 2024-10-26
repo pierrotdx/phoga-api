@@ -1,41 +1,45 @@
-import { Counter } from "../counter";
+import { AssertionsCounter } from "../assertions-counter";
+import { IAssertionsCounter, ICounter } from "../models";
 import { SharedTestUtils } from "./shared-test-utils";
 
 describe("SharedTestUtils", () => {
   let sharedTestUtils: SharedTestUtils;
+  let assertionsCounter: IAssertionsCounter;
 
   beforeEach(() => {
     sharedTestUtils = new SharedTestUtils();
+    assertionsCounter = new AssertionsCounter();
   });
 
-  describe("checkAssertionsCount", () => {
-    const expectAssertionsSpy = jest.spyOn(expect, "assertions");
+  describe("expectRejection", () => {
+    it("should call the input function with the input params, catch the rejection, add add expect assertion", async () => {
+      const asyncFnMock = jest.fn(({ test: boolean }) =>
+        Promise.reject(new Error("dumb error")),
+      );
+      const params: Parameters<typeof asyncFnMock> = [{ test: true }];
 
-    beforeEach(() => {
-      expectAssertionsSpy.mockReset();
+      await sharedTestUtils.expectRejection({
+        asyncFn: asyncFnMock,
+        fnParams: params,
+        assertionsCounter,
+      });
+
+      expectFunctionToBeCalledWithParams(
+        asyncFnMock,
+        params,
+        assertionsCounter,
+      );
+      assertionsCounter.checkAssertions();
     });
-
-    it.each`
-      expectedAssertionsNb
-      ${0}
-      ${1}
-      ${2}
-      ${18}
-      ${188}
-    `(
-      "should call `expect.assertions` with the expected assertions nb ($expectedAssertionsNb)",
-      ({ expectedAssertionsNb }) => {
-        const counter = new Counter();
-        counter.increase(expectedAssertionsNb);
-
-        sharedTestUtils.checkAssertionsCount(counter);
-
-        expect(expectAssertionsSpy).toHaveBeenCalledTimes(1);
-        expect(expectAssertionsSpy).toHaveBeenLastCalledWith(
-          expectedAssertionsNb,
-        );
-        expect.assertions(2);
-      },
-    );
   });
 });
+
+function expectFunctionToBeCalledWithParams(
+  spy: jest.SpyInstance,
+  params: unknown[],
+  assertionsCounter: IAssertionsCounter,
+): void {
+  expect(spy).toHaveBeenCalledTimes(1);
+  expect(spy).toHaveBeenLastCalledWith(...params);
+  assertionsCounter.increase(2);
+}

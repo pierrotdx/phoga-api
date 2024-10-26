@@ -48,7 +48,7 @@ describe("adminPhotoController", () => {
   let req: TestAgent;
 
   const _id = "1684a61d-de2f-43c0-a83b-6f8981a31e0c";
-  const photo = dumbPhotoGenerator.generate({ _id });
+  const photo = dumbPhotoGenerator.generatePhoto({ _id });
 
   beforeEach(() => {
     imageDb = new FakePhotoImageDb();
@@ -115,7 +115,7 @@ describe("adminPhotoController", () => {
     });
 
     it("should call the replace-photo use case with the appropriate arguments and respond with status 200", async () => {
-      const initPhoto = dumbPhotoGenerator.generate({ _id });
+      const initPhoto = dumbPhotoGenerator.generatePhoto({ _id });
       await imageDb.insert(initPhoto);
       const executeSpy = jest.spyOn(useCases.replacePhoto, "execute");
 
