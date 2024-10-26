@@ -30,4 +30,3 @@ networks:
   gcs_network:
     driver: bridge
     name: gcs-network
-    external: true
