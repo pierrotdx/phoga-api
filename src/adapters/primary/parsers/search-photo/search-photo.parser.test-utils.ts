@@ -1,5 +1,5 @@
 import { ISearchPhotoOptions, SortDirection } from "@business-logic";
-import { Counter, assertSearchPhotoOptions } from "@utils";
+import { Counter, IAssertionsCounter, assertSearchPhotoOptions } from "@utils";
 
 export class SearchPhotoParserTestUtils {
   generateInputData(
@@ -14,83 +14,86 @@ export class SearchPhotoParserTestUtils {
     };
   }
 
-  expectValidType(parsedData: unknown, assertionCounter: Counter): void {
+  expectValidType(
+    parsedData: unknown,
+    assertionsCounter: IAssertionsCounter,
+  ): void {
     const isSearchPhotoOptions = assertSearchPhotoOptions(parsedData);
     expect(isSearchPhotoOptions).toBe(true);
-    assertionCounter.increase();
+    assertionsCounter.increase();
   }
 
   expectParsedDataMatchingInputData(
     parsedData: ISearchPhotoOptions,
     inputData: ReturnType<typeof this.generateInputData>,
-    assertionCounter: Counter,
+    assertionsCounter: IAssertionsCounter,
   ): void {
     this.expectExcludeImagesToMatchInputData(
       parsedData,
       inputData,
-      assertionCounter,
+      assertionsCounter,
     );
     this.expectRenderingSizeToMatchInputDate(
       parsedData,
       inputData,
-      assertionCounter,
+      assertionsCounter,
     );
     this.expectRenderingFromToMatchInputDate(
       parsedData,
       inputData,
-      assertionCounter,
+      assertionsCounter,
     );
     this.expectRenderingDateOrderToMatchInputDate(
       parsedData,
       inputData,
-      assertionCounter,
+      assertionsCounter,
     );
   }
 
   private expectExcludeImagesToMatchInputData(
     parsedData: ISearchPhotoOptions,
     inputData: ReturnType<typeof this.generateInputData>,
-    assertionCounter: Counter,
+    assertionsCounter: IAssertionsCounter,
   ): void {
     if (typeof inputData.excludeImages !== "undefined") {
       const stringifiedExcludeImages = JSON.stringify(parsedData.excludeImages);
       expect(stringifiedExcludeImages).toEqual(inputData.excludeImages);
-      assertionCounter.increase();
+      assertionsCounter.increase();
     }
   }
 
   private expectRenderingSizeToMatchInputDate(
     parsedData: ISearchPhotoOptions,
     inputData: ReturnType<typeof this.generateInputData>,
-    assertionCounter: Counter,
+    assertionsCounter: IAssertionsCounter,
   ): void {
     if (typeof inputData.size !== "undefined") {
       const stringifiedSize = JSON.stringify(parsedData.rendering?.size);
       expect(stringifiedSize).toEqual(inputData.size);
-      assertionCounter.increase();
+      assertionsCounter.increase();
     }
   }
 
   private expectRenderingFromToMatchInputDate(
     parsedData: ISearchPhotoOptions,
     inputData: ReturnType<typeof this.generateInputData>,
-    assertionCounter: Counter,
+    assertionsCounter: IAssertionsCounter,
   ): void {
     if (typeof inputData.from !== "undefined") {
       const stringifiedFrom = JSON.stringify(parsedData.rendering?.from);
       expect(stringifiedFrom).toEqual(inputData.from);
-      assertionCounter.increase();
+      assertionsCounter.increase();
     }
   }
 
   private expectRenderingDateOrderToMatchInputDate(
     parsedData: ISearchPhotoOptions,
     inputData: ReturnType<typeof this.generateInputData>,
-    assertionCounter: Counter,
+    assertionsCounter: IAssertionsCounter,
   ): void {
     if (inputData.dateOrder) {
       expect(parsedData.rendering?.dateOrder).toEqual(inputData.dateOrder);
-      assertionCounter.increase();
+      assertionsCounter.increase();
     }
   }
 }

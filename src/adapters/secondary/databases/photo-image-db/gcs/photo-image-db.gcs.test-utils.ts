@@ -1,40 +1,11 @@
-import { readFile } from "fs/promises";
 import { randomInt } from "node:crypto";
 
-import {
-  IPhoto,
-  IPhotoImageDb,
-  IPhotoMetadataDb,
-  Photo,
-} from "@business-logic";
-import { DbsTestUtils, ICounter } from "@utils";
-
-import { dumbPhotoGenerator } from "../../../../primary/dumb-photo-generator";
+import { IPhoto } from "@business-logic";
+import { DbsTestUtils, IAssertionsCounter, IDbsTestUtilsParams } from "@utils";
 
 export class PhotoImageDbGcsTestUtils extends DbsTestUtils {
-  constructor(metadataDb?: IPhotoMetadataDb, imageDb?: IPhotoImageDb) {
-    super(metadataDb, imageDb);
-  }
-
-  generatePhotos(nbPhotos: number): IPhoto[] {
-    const photos: IPhoto[] = [];
-    for (let index = 0; index < nbPhotos; index++) {
-      photos.push(
-        dumbPhotoGenerator.generate({
-          imageBuffer: Buffer.from("dumb image buffer"),
-        }),
-      );
-    }
-    return photos;
-  }
-
-  async generatePhotoFromAssets(
-    imagePath: string,
-    _id?: IPhoto["_id"],
-  ): Promise<Photo> {
-    const imageBuffer = await readFile(imagePath);
-    const photo = dumbPhotoGenerator.generate({ _id, imageBuffer });
-    return photo;
+  constructor(dbsTestUtilsParams: IDbsTestUtilsParams) {
+    super(dbsTestUtilsParams);
   }
 
   pickRandomPhotoIds(photos: IPhoto[]): IPhoto["_id"][] {
@@ -78,7 +49,7 @@ export class PhotoImageDbGcsTestUtils extends DbsTestUtils {
   }: {
     receivedValue: boolean;
     expectedValue: boolean;
-    assertionsCounter: ICounter;
+    assertionsCounter: IAssertionsCounter;
   }): Promise<void> {
     expect(photoId).toBe(expectedValue);
     assertionsCounter.increase(1);
@@ -87,7 +58,7 @@ export class PhotoImageDbGcsTestUtils extends DbsTestUtils {
   expectResultToMatchPhotos(
     result: Record<IPhoto["_id"], Buffer>,
     expectedPhotos: IPhoto[],
-    assertionsCounter: ICounter,
+    assertionsCounter: IAssertionsCounter,
   ): void {
     const idBufferPairs = Object.entries(result);
     expect(idBufferPairs.length).toBe(expectedPhotos.length);
@@ -109,7 +80,7 @@ export class PhotoImageDbGcsTestUtils extends DbsTestUtils {
     initPhoto: IPhoto;
     replacingPhoto: IPhoto;
     dbImageBefore: Buffer;
-    assertionsCounter: ICounter;
+    assertionsCounter: IAssertionsCounter;
   }) {
     expect(initPhoto._id).toBe(replacingPhoto._id);
     expect(dbImageBefore).toEqual(initPhoto.imageBuffer);
@@ -126,7 +97,7 @@ export class PhotoImageDbGcsTestUtils extends DbsTestUtils {
   }: {
     photo: IPhoto;
     dbImageBefore: Buffer;
-    assertionsCounter: ICounter;
+    assertionsCounter: IAssertionsCounter;
   }) {
     const dbImageAfter = await this.getPhotoImageFromDb(photo._id);
     expect(dbImageBefore).toBeDefined();

@@ -1,19 +1,19 @@
 import { GetPhotoSchema, IsoStringDateSchema } from "@http-server";
-import { Counter, sharedTestUtils } from "@utils";
+import { AssertionsCounter, Counter, sharedTestUtils } from "@utils";
 
 import { UuidGenerator } from "../../uuid";
 import { AjvValidator } from "./ajv-validator";
 import { AjvTestUtils } from "./ajv-validator.test-utils";
 
 const uuidGenerator = new UuidGenerator();
-const ajvTestUtils = new AjvTestUtils();
+const testUtils = new AjvTestUtils();
 
 describe("AjvValidator", () => {
   let ajvValidator: AjvValidator;
-  let assertionCounter: Counter;
+  let assertionsCounter: AssertionsCounter;
 
   beforeEach(() => {
-    assertionCounter = new Counter();
+    assertionsCounter = new AssertionsCounter();
   });
 
   describe("validate", () => {
@@ -29,14 +29,14 @@ describe("AjvValidator", () => {
 
       ajvValidator.validate(data);
 
-      ajvTestUtils.expectCorrectInvocation({
+      testUtils.expectCorrectInvocation({
         spy: validateSpy,
         params: [data],
-        assertionCounter: assertionCounter,
+        assertionsCounter: assertionsCounter,
       });
       expect(validateSpy).toHaveReturned();
-      assertionCounter.increase();
-      sharedTestUtils.checkAssertionsCount(assertionCounter);
+      assertionsCounter.increase();
+      assertionsCounter.checkAssertions();
     });
 
     it.each`
@@ -50,15 +50,15 @@ describe("AjvValidator", () => {
       expect(() => {
         ajvValidator.validate(data);
       }).toThrow();
-      assertionCounter.increase();
+      assertionsCounter.increase();
 
-      ajvTestUtils.expectCorrectInvocation({
+      testUtils.expectCorrectInvocation({
         spy: validateSpy,
         params: [data],
-        assertionCounter,
+        assertionsCounter,
       });
 
-      sharedTestUtils.checkAssertionsCount(assertionCounter);
+      assertionsCounter.checkAssertions();
     });
   });
 });

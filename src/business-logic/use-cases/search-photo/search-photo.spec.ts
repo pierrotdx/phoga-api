@@ -6,7 +6,7 @@ import { SearchPhoto } from "./search-photo";
 import { SearchPhotoTestUtils } from "./search-photo.test-utils";
 
 describe("SearchPhoto", () => {
-  let searchPhotoTestUtils: SearchPhotoTestUtils;
+  let testUtils: SearchPhotoTestUtils;
   let searchPhotos: SearchPhoto;
   let metadataDb: IPhotoMetadataDb;
   let imageDb: IPhotoImageDb;
@@ -14,15 +14,15 @@ describe("SearchPhoto", () => {
   beforeEach(async () => {
     metadataDb = new FakePhotoMetadataDb();
     imageDb = new FakePhotoImageDb();
-    searchPhotoTestUtils = new SearchPhotoTestUtils(metadataDb, imageDb);
-    await searchPhotoTestUtils.init();
+    testUtils = new SearchPhotoTestUtils({ metadataDb, imageDb });
+    await testUtils.init();
     searchPhotos = new SearchPhoto(metadataDb, imageDb);
   });
 
   describe("execute", () => {
     it("should return the photos stored in database", async () => {
       const searchResult = await searchPhotos.execute();
-      searchPhotoTestUtils.expectSearchResultToMatchStoredPhotos(searchResult);
+      testUtils.expectSearchResultToMatchStoredPhotos(searchResult);
     });
 
     describe("+ options.rendering.date", () => {
@@ -34,7 +34,7 @@ describe("SearchPhoto", () => {
         "should sort them by $case date when required",
         async ({ rendering }: { rendering: IRendering }) => {
           const searchResult = await searchPhotos.execute({ rendering });
-          searchPhotoTestUtils.expectSearchResultToBeSortedAsRequired(
+          testUtils.expectSearchResultToBeSortedAsRequired(
             searchResult,
             rendering.dateOrder,
           );
@@ -53,7 +53,7 @@ describe("SearchPhoto", () => {
         "should return at most $requiredSize results when required",
         async ({ requiredSize, rendering }) => {
           const searchResult = await searchPhotos.execute({ rendering });
-          searchPhotoTestUtils.expectSearchResultSizeToMatchRequiredSize(
+          testUtils.expectSearchResultSizeToMatchRequiredSize(
             searchResult,
             requiredSize,
           );
@@ -71,7 +71,7 @@ describe("SearchPhoto", () => {
         "should return results starting from the $docIndex-th stored photo",
         async ({ rendering, docIndex }) => {
           const result = await searchPhotos.execute({ rendering });
-          searchPhotoTestUtils.expectSearchResultToStartFromRequiredIndex(
+          testUtils.expectSearchResultToStartFromRequiredIndex(
             result,
             docIndex,
           );
@@ -88,7 +88,7 @@ describe("SearchPhoto", () => {
         "should return photos $case when excludeImages is `$excludeImages`",
         async ({ excludeImages }: { excludeImages: boolean }) => {
           const photos = await searchPhotos.execute({ excludeImages });
-          searchPhotoTestUtils.expectImagesToBeInSearchResultIfRequired(
+          testUtils.expectImagesToBeInSearchResultIfRequired(
             photos,
             excludeImages,
           );

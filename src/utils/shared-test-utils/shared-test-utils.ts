@@ -1,11 +1,6 @@
-import { ICounter, ISharedTestUtils } from "../models";
+import { IAssertionsCounter, ISharedTestUtils } from "../models";
 
 export class SharedTestUtils implements ISharedTestUtils {
-  checkAssertionsCount(assertionCounter: ICounter): void {
-    const nbAssertions = assertionCounter.get();
-    expect.assertions(nbAssertions);
-  }
-
   async expectRejection({
     asyncFn,
     fnParams,
@@ -13,7 +8,7 @@ export class SharedTestUtils implements ISharedTestUtils {
   }: {
     asyncFn: Function;
     fnParams: unknown[];
-    assertionsCounter: ICounter;
+    assertionsCounter: IAssertionsCounter;
   }): Promise<void> {
     try {
       await asyncFn(...fnParams);

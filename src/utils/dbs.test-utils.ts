@@ -1,11 +1,20 @@
 import { IPhotoImageDb, IPhotoMetadataDb } from "@business-logic/gateways";
 import { IPhoto } from "@business-logic/models";
 
+import { IDbsTestUtilsParams } from "./models";
+
 export class DbsTestUtils {
-  constructor(
-    protected readonly metadataDb?: IPhotoMetadataDb,
-    protected readonly imageDb?: IPhotoImageDb,
-  ) {}
+  protected readonly metadataDb?: IPhotoMetadataDb;
+  protected readonly imageDb?: IPhotoImageDb;
+
+  constructor({ metadataDb, imageDb }: IDbsTestUtilsParams) {
+    if (metadataDb) {
+      this.metadataDb = metadataDb;
+    }
+    if (imageDb) {
+      this.imageDb = imageDb;
+    }
+  }
 
   async insertPhotosInDbs(photos: IPhoto[]): Promise<void> {
     const insertPromises = photos.map(this.insertPhotoInDbs.bind(this));

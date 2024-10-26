@@ -1,7 +1,7 @@
 import { omit } from "ramda";
 
 import { dumbPhotoGenerator } from "@adapters";
-import { Counter, ICounter, sharedTestUtils } from "@utils";
+import { AssertionsCounter, sharedTestUtils } from "@utils";
 
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
@@ -13,28 +13,28 @@ describe("add-photo use case", () => {
   let addPhoto: AddPhoto;
   let metadataDb: IPhotoMetadataDb;
   let imageDb: IPhotoImageDb;
-  let addPhotoTestUtils: AddPhotoTestUtils;
+  let testUtils: AddPhotoTestUtils;
   let photo: IPhoto;
 
   beforeEach(async () => {
     metadataDb = new FakePhotoMetadataDb();
     imageDb = new FakePhotoImageDb();
-    addPhotoTestUtils = new AddPhotoTestUtils(metadataDb, imageDb);
+    testUtils = new AddPhotoTestUtils({ metadataDb, imageDb });
     addPhoto = new AddPhoto(metadataDb, imageDb);
-    photo = dumbPhotoGenerator.generate();
+    photo = dumbPhotoGenerator.generatePhoto();
   });
 
   describe("photo image", () => {
     it("should be uploaded to image db", async () => {
       await addPhoto.execute(photo);
-      await addPhotoTestUtils.expectImageToBeInDb(photo);
+      await testUtils.expectImageToBeInDb(photo);
     });
   });
 
   describe("photo metadata", () => {
     it("should be added to metadata db", async () => {
       await addPhoto.execute(photo);
-      await addPhotoTestUtils.expectMetadataToBeInDb(photo);
+      await testUtils.expectMetadataToBeInDb(photo);
     });
 
     it.each`
@@ -45,7 +45,7 @@ describe("add-photo use case", () => {
     `(
       "should throw if image buffer is `$case` and not upload metadata",
       async ({ imageBuffer }) => {
-        const assertionsCounter = new Counter();
+        const assertionsCounter = new AssertionsCounter();
         const photoWithInvalidImage = omit(["imageBuffer"], photo) as IPhoto;
         photoWithInvalidImage.imageBuffer = imageBuffer;
 
@@ -54,11 +54,8 @@ describe("add-photo use case", () => {
           fnParams: [photoWithInvalidImage],
           assertionsCounter,
         });
-        await addPhotoTestUtils.expectMetadataNotToBeInDb(
-          photo._id,
-          assertionsCounter,
-        );
-        sharedTestUtils.checkAssertionsCount(assertionsCounter);
+        await testUtils.expectMetadataNotToBeInDb(photo._id, assertionsCounter);
+        assertionsCounter.checkAssertions();
       },
     );
   });

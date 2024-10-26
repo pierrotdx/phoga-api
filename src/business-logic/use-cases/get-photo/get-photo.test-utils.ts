@@ -1,17 +1,17 @@
-import { DbsTestUtils, ICounter } from "@utils";
+import { DbsTestUtils, IAssertionsCounter, IDbsTestUtilsParams, } from "@utils";
 
-import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
+
 import { GetPhotoField, IPhoto } from "../../models";
 
 export class GetPhotoTestUtils extends DbsTestUtils {
-  constructor(metadataDb?: IPhotoMetadataDb, imageDb?: IPhotoImageDb) {
-    super(metadataDb, imageDb);
+  constructor(dbsTestUtilsParams: IDbsTestUtilsParams) {
+    super(dbsTestUtilsParams);
   }
 
   expectResultToMatchPhoto(
     expectedPhoto: IPhoto,
     result: IPhoto,
-    assertionsCounter: ICounter,
+    assertionsCounter: IAssertionsCounter,
   ) {
     expect(result).toBeDefined();
     expect(result._id).toBe(expectedPhoto._id);
@@ -22,7 +22,7 @@ export class GetPhotoTestUtils extends DbsTestUtils {
   expectResultToHaveOnlyRequiredField(
     requiredField: GetPhotoField,
     result: IPhoto,
-    assertionsCounter: ICounter,
+    assertionsCounter: IAssertionsCounter,
   ) {
     if (requiredField === GetPhotoField.Metadata) {
       expect(result.metadata).toBeDefined();

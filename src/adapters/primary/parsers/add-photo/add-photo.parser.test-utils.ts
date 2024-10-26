@@ -1,7 +1,7 @@
 import { IPhoto } from "@business-logic";
 import { imageBufferEncoding } from "@http-server";
 import {
-  ICounter,
+  IAssertionsCounter,
   ILoremIpsumGenerator,
   IUuidGenerator,
   isPhoto,
@@ -30,22 +30,26 @@ export class AddPhotoParserTestUtils {
   expectParsedDataToBeAValidPhotoWithInputFields(
     inputData: ReturnType<typeof this.generateValidData>,
     parsedData: unknown,
-    assertionCounter: ICounter,
+    assertionsCounter: IAssertionsCounter,
   ) {
     const isValidPhoto = isPhoto(parsedData);
     expect(isValidPhoto).toBe(true);
-    assertionCounter.increase();
+    assertionsCounter.increase();
     if (!isValidPhoto) {
       return;
     }
 
-    this.expectPhotoToMatchInputFields(inputData, parsedData, assertionCounter);
+    this.expectPhotoToMatchInputFields(
+      inputData,
+      parsedData,
+      assertionsCounter,
+    );
   }
 
   private expectPhotoToMatchInputFields(
     inputData: ReturnType<typeof this.generateValidData>,
     photo: IPhoto,
-    assertionCounter: ICounter,
+    assertionsCounter: IAssertionsCounter,
   ) {
     expect(photo._id).toEqual(inputData._id);
     expect(photo.imageBuffer).toEqual(inputData.imageBuffer);
@@ -53,6 +57,6 @@ export class AddPhotoParserTestUtils {
     expect(photo.metadata?.description).toEqual(inputData.description);
     expect(photo.metadata?.titles).toEqual(inputData.titles);
     expect(photo.metadata?.location).toEqual(inputData.location);
-    assertionCounter.increase(6);
+    assertionsCounter.increase(6);
   }
 }

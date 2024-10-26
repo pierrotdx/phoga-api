@@ -1,4 +1,7 @@
-import { Counter, ICounter, sharedTestUtils } from "@utils";
+import {
+  AssertionsCounter,
+  IAssertionsCounter,
+} from "@utils";
 
 import { LoremIpsumGenerator } from "../../lorem-ipsum";
 import { UuidGenerator } from "../../uuid";
@@ -7,34 +10,34 @@ import { AddPhotoParserTestUtils } from "./add-photo.parser.test-utils";
 
 const uuidGenerator = new UuidGenerator();
 const loremIpsum = new LoremIpsumGenerator();
-const addPhotoParserTestUtils = new AddPhotoParserTestUtils(
+const testUtils = new AddPhotoParserTestUtils(
   uuidGenerator,
   loremIpsum,
 );
 
 describe("AddPhotoParser", () => {
   let addPhotoParser: AddPhotoParser;
-  let assertionCounter: ICounter;
+  let assertionsCounter: IAssertionsCounter;
 
   beforeEach(() => {
     addPhotoParser = new AddPhotoParser();
-    assertionCounter = new Counter();
+    assertionsCounter = new AssertionsCounter();
   });
 
   describe("parse", () => {
     it("should parse input data into photo", () => {
-      const inputData = addPhotoParserTestUtils.generateValidData();
+      const inputData = testUtils.generateValidData();
       const parsedData = addPhotoParser.parse(inputData);
-      addPhotoParserTestUtils.expectParsedDataToBeAValidPhotoWithInputFields(
+      testUtils.expectParsedDataToBeAValidPhotoWithInputFields(
         inputData,
         parsedData,
-        assertionCounter,
+        assertionsCounter,
       );
-      sharedTestUtils.checkAssertionsCount(assertionCounter);
+      assertionsCounter.checkAssertions();
     });
 
     it("should throw if the parsed data is not a photo", () => {
-      const invalidData = addPhotoParserTestUtils.generateValidData();
+      const invalidData = testUtils.generateValidData();
       invalidData.location = ["test", "test2"] as any;
       expect(() => {
         addPhotoParser.parse(invalidData);

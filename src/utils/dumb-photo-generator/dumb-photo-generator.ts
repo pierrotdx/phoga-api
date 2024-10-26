@@ -1,3 +1,4 @@
+import { readFile } from "fs/promises";
 import { clone } from "ramda";
 
 import { IPhoto, Photo } from "@business-logic";
@@ -16,7 +17,7 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     private readonly loremIpsumGenerator: ILoremIpsumGenerator,
   ) {}
 
-  generate(options?: IDumbPhotoGeneratorOptions): IPhoto {
+  generatePhoto(options?: IDumbPhotoGeneratorOptions): IPhoto {
     const id = clone(options?._id) || this.uuidGenerator.generate();
     const imageBuffer =
       clone(options?.imageBuffer) || this.generateImageBuffer();
@@ -71,5 +72,26 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
       .generateSentences(nbDescriptionSentences)
       .join(" ");
     return description;
+  }
+
+  generatePhotos(nbPhotos: number): IPhoto[] {
+    const photos: IPhoto[] = [];
+    for (let index = 0; index < nbPhotos; index++) {
+      photos.push(
+        this.generatePhoto({
+          imageBuffer: Buffer.from("dumb image buffer"),
+        }),
+      );
+    }
+    return photos;
+  }
+
+  async generatePhotoFromPath(
+    imagePath: string,
+    _id?: IPhoto["_id"],
+  ): Promise<Photo> {
+    const imageBuffer = await readFile(imagePath);
+    const photo = this.generatePhoto({ _id, imageBuffer });
+    return photo;
   }
 }

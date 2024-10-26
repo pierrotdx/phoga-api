@@ -50,7 +50,7 @@ describe("photo controller", () => {
   let res$: Promise<Response>;
 
   const _id = "1684a61d-de2f-43c0-a83b-6f8981a31e0b";
-  const photo = dumbPhotoGenerator.generate({ _id });
+  const photo = dumbPhotoGenerator.generatePhoto({ _id });
 
   beforeEach(() => {
     imageDb = new FakePhotoImageDb();

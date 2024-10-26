@@ -1,11 +1,10 @@
-import { DbsTestUtils, ICounter } from "@utils";
+import { DbsTestUtils, IAssertionsCounter, IDbsTestUtilsParams } from "@utils";
 
-import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
 import { IPhoto } from "../../models";
 
 export class ReplacePhotoTestUtils extends DbsTestUtils {
-  constructor(metadataDb?: IPhotoMetadataDb, imageDb?: IPhotoImageDb) {
-    super(metadataDb, imageDb);
+  constructor(dbsTestUtilsParams: IDbsTestUtilsParams) {
+    super(dbsTestUtilsParams);
   }
 
   async expectImageToBeReplacedInDb(
@@ -41,7 +40,7 @@ export class ReplacePhotoTestUtils extends DbsTestUtils {
   async expectToMatchPhotoMetadata(
     id: IPhoto["_id"],
     expectedMetadata: IPhoto["metadata"],
-    assertionsCounter: ICounter,
+    assertionsCounter: IAssertionsCounter,
   ): Promise<void> {
     const metadataAfter = await this.getPhotoMetadataFromDb(id);
     expect(metadataAfter).toEqual(expectedMetadata);
