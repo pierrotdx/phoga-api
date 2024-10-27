@@ -20,9 +20,9 @@ export class SharedTestUtils implements ISharedTestUtils {
   }
 
   expectFunctionToBeCalledWith(
-    spy: jest.SpyInstance,
-    params: unknown[],
     assertionsCounter: IAssertionsCounter,
+    spy: jest.SpyInstance,
+    ...params: unknown[]
   ): void {
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenLastCalledWith(...params);

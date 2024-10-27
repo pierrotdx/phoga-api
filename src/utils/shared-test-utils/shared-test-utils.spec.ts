@@ -24,9 +24,9 @@ describe("SharedTestUtils", () => {
         assertionsCounter,
       });
       sharedTestUtils.expectFunctionToBeCalledWith(
-        asyncFnMock,
-        params,
         assertionsCounter,
+        asyncFnMock,
+        ...params,
       );
       assertionsCounter.checkAssertions();
     });

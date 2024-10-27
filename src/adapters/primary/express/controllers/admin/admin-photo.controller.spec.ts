@@ -18,10 +18,12 @@ import {
   UseCasesFactory,
 } from "@business-logic";
 import { EntryPointId, IParsers, IValidators, entryPoints } from "@http-server";
+import { AssertionsCounter, IAssertionsCounter, sharedTestUtils } from "@utils";
 
 describe("adminPhotoController", () => {
   let adminPhotoController: AdminPhotoController;
   let testUtils: ControllersTestUtils;
+  let assertionsCounter: IAssertionsCounter;
 
   let imageDb: IPhotoImageDb;
   let metadataDb: IPhotoMetadataDb;
@@ -40,8 +42,6 @@ describe("adminPhotoController", () => {
     imageDb = new FakePhotoImageDb();
     metadataDb = new FakePhotoMetadataDb();
 
-    testUtils = new ControllersTestUtils();
-
     useCases = new UseCasesFactory(metadataDb, imageDb).create();
     validators = new FakeValidatorsFactory().create();
     parsers = new ParsersFactory().create();
@@ -51,6 +51,9 @@ describe("adminPhotoController", () => {
       validators,
       parsers,
     );
+    testUtils = new ControllersTestUtils();
+    assertionsCounter = new AssertionsCounter();
+
     dumbApp = testUtils.generateDumbApp();
     req = request(dumbApp);
   });
@@ -68,10 +71,14 @@ describe("adminPhotoController", () => {
       const payload = testUtils.getPayloadFromPhoto(photo);
       const response = await req.post(path).send(payload);
 
-      expect(executeSpy).toHaveBeenCalledTimes(1);
-      expect(executeSpy).toHaveBeenLastCalledWith(photo);
+      sharedTestUtils.expectFunctionToBeCalledWith(
+        assertionsCounter,
+        executeSpy,
+        photo,
+      );
       expect(response.statusCode).toBe(200);
-      expect.assertions(3);
+      assertionsCounter.increase();
+      assertionsCounter.checkAssertions();
     });
   });
 
@@ -90,10 +97,14 @@ describe("adminPhotoController", () => {
       const payload = testUtils.getPayloadFromPhoto(photo);
       const response = await req.put(path).send(payload);
 
-      expect(executeSpy).toHaveBeenCalledTimes(1);
-      expect(executeSpy).toHaveBeenLastCalledWith(photo);
+      sharedTestUtils.expectFunctionToBeCalledWith(
+        assertionsCounter,
+        executeSpy,
+        photo,
+      );
       expect(response.statusCode).toBe(200);
-      expect.assertions(3);
+      assertionsCounter.increase();
+      assertionsCounter.checkAssertions();
     });
   });
 
@@ -110,10 +121,14 @@ describe("adminPhotoController", () => {
 
       const response = await req.delete(url);
 
-      expect(executeSpy).toHaveBeenCalledTimes(1);
-      expect(executeSpy).toHaveBeenLastCalledWith(_id);
+      sharedTestUtils.expectFunctionToBeCalledWith(
+        assertionsCounter,
+        executeSpy,
+        _id,
+      );
       expect(response.statusCode).toBe(200);
-      expect.assertions(3);
+      assertionsCounter.increase();
+      assertionsCounter.checkAssertions();
     });
   });
 });

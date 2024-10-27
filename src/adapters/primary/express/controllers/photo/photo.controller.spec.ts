@@ -76,9 +76,9 @@ describe(`${PhotoController.name}`, () => {
         },
       ];
       sharedTestUtils.expectFunctionToBeCalledWith(
-        executeSpy,
-        expectedParams,
         assertionsCounter,
+        executeSpy,
+        ...expectedParams,
       );
       assertionsCounter.checkAssertions();
     });
@@ -115,9 +115,9 @@ describe(`${PhotoController.name}`, () => {
         },
       ];
       sharedTestUtils.expectFunctionToBeCalledWith(
-        executeSpy,
-        expectedParams,
         assertionsCounter,
+        executeSpy,
+        ...expectedParams,
       );
     });
 
@@ -154,9 +154,9 @@ describe(`${PhotoController.name}`, () => {
       await res$;
 
       sharedTestUtils.expectFunctionToBeCalledWith(
-        searchPhotoUseCaseSpy,
-        [searchOptions],
         assertionsCounter,
+        searchPhotoUseCaseSpy,
+        searchOptions,
       );
     });
 
