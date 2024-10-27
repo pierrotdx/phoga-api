@@ -23,8 +23,7 @@ describe("SharedTestUtils", () => {
         fnParams: params,
         assertionsCounter,
       });
-
-      expectFunctionToBeCalledWithParams(
+      sharedTestUtils.expectFunctionToBeCalledWith(
         asyncFnMock,
         params,
         assertionsCounter,
@@ -33,13 +32,3 @@ describe("SharedTestUtils", () => {
     });
   });
 });
-
-function expectFunctionToBeCalledWithParams(
-  spy: jest.SpyInstance,
-  params: unknown[],
-  assertionsCounter: IAssertionsCounter,
-): void {
-  expect(spy).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenLastCalledWith(...params);
-  assertionsCounter.increase(2);
-}

@@ -18,6 +18,16 @@ export class SharedTestUtils implements ISharedTestUtils {
       assertionsCounter.increase();
     }
   }
+
+  expectFunctionToBeCalledWith(
+    spy: jest.SpyInstance,
+    params: unknown[],
+    assertionsCounter: IAssertionsCounter,
+  ): void {
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenLastCalledWith(...params);
+    assertionsCounter.increase(2);
+  }
 }
 
 export const sharedTestUtils = new SharedTestUtils();
