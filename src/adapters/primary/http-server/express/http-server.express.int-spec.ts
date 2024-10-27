@@ -27,13 +27,13 @@ import { EntryPointId, IParsers, IValidators, entryPoints } from "@http-server";
 import { Logger } from "@logger/models";
 import { compareDates } from "@utils";
 
-import { ExpressAuthHandler } from "../oauth2-jwt-bearer";
+import { ExpressAuthHandler } from "../../oauth2-jwt-bearer";
 import {
   OAuth2ServerMock,
   audience,
   issuerHost,
   issuerPort,
-} from "../oauth2-jwt-bearer/test-utils.service";
+} from "../../oauth2-jwt-bearer/test-utils.service";
 import { ExpressHttpServer } from "./http-server.express";
 import { IAuthHandler } from "./models";
 

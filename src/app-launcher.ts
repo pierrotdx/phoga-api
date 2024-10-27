@@ -1,76 +1,48 @@
 import dotenv from "dotenv";
 
 import {
-  AjvValidatorsFactory,
-  ExpressHttpServer,
-  LoggerWinston,
+  ExpressHttpServerFactory,
   MongoBase,
-  ParsersFactory,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
   gcsTestUtils,
 } from "@adapters";
-import {
-  IPhotoImageDb,
-  IPhotoMetadataDb,
-  IUseCases,
-  UseCasesFactory,
-} from "@business-logic";
-import { IParsers, IValidators } from "@http-server";
-
-import { ExpressAuthHandler } from "./adapters/primary/oauth2-jwt-bearer";
+import { IPhotoImageDb, IPhotoMetadataDb } from "@business-logic";
+import { AppHttpServer } from "@http-server";
 
 dotenv.config();
 
 export class AppLauncher {
-  private metadataDb: IPhotoMetadataDb;
-  private imageDb: IPhotoImageDb;
-
-  private useCases: IUseCases;
-  private validators: IValidators;
-  private parsers: IParsers;
-
-  private logger = new LoggerWinston();
-  private authHandler: ExpressAuthHandler;
+  private photoMetadataDb: IPhotoMetadataDb;
+  private photoImageDb: IPhotoImageDb;
+  private httpServer: AppHttpServer;
+  private readonly defaultPort: number = 3000;
 
   async start() {
-    await this.startPhotoMetadataDb();
-    await this.startPhotoImageDb();
-    this.useCases = new UseCasesFactory(this.metadataDb, this.imageDb).create();
-    this.validators = new AjvValidatorsFactory().create();
-    this.parsers = new ParsersFactory().create();
-    this.setAuthHandler();
-    this.startHttpServer();
+    await this.setupDbs();
+    this.httpServer = new ExpressHttpServerFactory({
+      photoMetadataDb: this.photoMetadataDb,
+      photoImageDb: this.photoImageDb,
+    }).create();
+    this.httpServer.listen(this.defaultPort);
   }
 
-  private async startPhotoMetadataDb() {
+  private async setupDbs(): Promise<void> {
+    await this.setPhotoMetadataDb();
+    await this.setPhotoImageDb();
+  }
+
+  private async setPhotoMetadataDb() {
     const mongoBase = new MongoBase(
       process.env.MONGO_URL,
       process.env.MONGO_DB,
     );
     await mongoBase.open();
-    this.metadataDb = new PhotoMetadataDbMongo(mongoBase);
+    this.photoMetadataDb = new PhotoMetadataDbMongo(mongoBase);
   }
 
-  private async startPhotoImageDb() {
+  private async setPhotoImageDb() {
     const storage = await gcsTestUtils.getStorage();
-    this.imageDb = new PhotoImageDbGcs(storage);
-  }
-
-  private setAuthHandler() {
-    const issuerBaseUrl = process.env.OAUTH2_ISSUER_BASE_URL;
-    const audience = process.env.OAUTH2_AUDIENCE;
-    this.authHandler = new ExpressAuthHandler(issuerBaseUrl, audience);
-  }
-
-  private startHttpServer() {
-    const expressHttpServer = new ExpressHttpServer(
-      this.useCases,
-      this.validators,
-      this.parsers,
-      this.logger,
-      this.authHandler,
-    );
-    expressHttpServer.listen();
+    this.photoImageDb = new PhotoImageDbGcs(storage);
   }
 }
