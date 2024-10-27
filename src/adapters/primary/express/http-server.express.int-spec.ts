@@ -2,11 +2,9 @@ import { type Express } from "express";
 import request from "supertest";
 
 import {
-  AddPhotoParser,
-  AjvValidator,
+  AjvValidatorsFactory,
   ExpressTestUtils,
-  GetPhotoParser,
-  SearchPhotoParser,
+  ParsersFactory,
   dumbPhotoGenerator,
 } from "@adapters";
 import {
@@ -17,29 +15,15 @@ import {
 } from "@adapters/databases";
 import { LoggerWinston } from "@adapters/loggers";
 import {
-  AddPhoto,
-  DeletePhoto,
-  GetPhoto,
   IPhoto,
   IPhotoImageDb,
   IPhotoMetadataDb,
   IUseCases,
-  ReplacePhoto,
-  SearchPhoto,
   SortDirection,
+  UseCasesFactory,
 } from "@business-logic";
 import { Storage } from "@google-cloud/storage";
-import {
-  AddPhotoSchema,
-  DeletePhotoSchema,
-  EntryPointId,
-  GetPhotoSchema,
-  IParsers,
-  IValidators,
-  ReplacePhotoSchema,
-  SearchPhotoSchema,
-  entryPoints,
-} from "@http-server";
+import { EntryPointId, IParsers, IValidators, entryPoints } from "@http-server";
 import { Logger } from "@logger/models";
 import { compareDates } from "@utils";
 
@@ -101,29 +85,9 @@ describe("ExpressHttpServer", () => {
   });
 
   beforeEach(async () => {
-    useCases = {
-      getPhoto: new GetPhoto(metadataDb, imageDb),
-      addPhoto: new AddPhoto(metadataDb, imageDb),
-      replacePhoto: new ReplacePhoto(metadataDb, imageDb),
-      deletePhoto: new DeletePhoto(metadataDb, imageDb),
-      searchPhoto: new SearchPhoto(metadataDb, imageDb),
-    };
-
-    validators = {
-      getPhoto: new AjvValidator(GetPhotoSchema),
-      addPhoto: new AjvValidator(AddPhotoSchema),
-      replacePhoto: new AjvValidator(ReplacePhotoSchema),
-      deletePhoto: new AjvValidator(DeletePhotoSchema),
-      searchPhoto: new AjvValidator(SearchPhotoSchema),
-    };
-
-    parsers = {
-      getPhoto: new GetPhotoParser(),
-      addPhoto: new AddPhotoParser(),
-      replacePhoto: new AddPhotoParser(),
-      deletePhoto: new GetPhotoParser(),
-      searchPhoto: new SearchPhotoParser(),
-    };
+    useCases = new UseCasesFactory(metadataDb, imageDb).create();
+    validators = new AjvValidatorsFactory().create();
+    parsers = new ParsersFactory().create();
 
     const silentLogger = true;
     logger = new LoggerWinston(silentLogger);

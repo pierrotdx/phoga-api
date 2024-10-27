@@ -1,36 +1,22 @@
 import dotenv from "dotenv";
 
 import {
-  AddPhotoParser,
-  AjvValidator,
+  AjvValidatorsFactory,
   ExpressHttpServer,
-  GetPhotoParser,
   LoggerWinston,
   MongoBase,
+  ParsersFactory,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
-  SearchPhotoParser,
   gcsTestUtils,
 } from "@adapters";
 import {
-  AddPhoto,
-  DeletePhoto,
-  GetPhoto,
   IPhotoImageDb,
   IPhotoMetadataDb,
   IUseCases,
-  ReplacePhoto,
-  SearchPhoto,
+  UseCasesFactory,
 } from "@business-logic";
-import {
-  AddPhotoSchema,
-  DeletePhotoSchema,
-  GetPhotoSchema,
-  IParsers,
-  IValidators,
-  ReplacePhotoSchema,
-  SearchPhotoSchema,
-} from "@http-server";
+import { IParsers, IValidators } from "@http-server";
 
 import { ExpressAuthHandler } from "./adapters/primary/oauth2-jwt-bearer";
 
@@ -50,9 +36,9 @@ export class AppLauncher {
   async start() {
     await this.startPhotoMetadataDb();
     await this.startPhotoImageDb();
-    this.setUseCases();
-    this.setValidators();
-    this.setParsers();
+    this.useCases = new UseCasesFactory(this.metadataDb, this.imageDb).create();
+    this.validators = new AjvValidatorsFactory().create();
+    this.parsers = new ParsersFactory().create();
     this.setAuthHandler();
     this.startHttpServer();
   }
@@ -69,36 +55,6 @@ export class AppLauncher {
   private async startPhotoImageDb() {
     const storage = await gcsTestUtils.getStorage();
     this.imageDb = new PhotoImageDbGcs(storage);
-  }
-
-  private setUseCases() {
-    this.useCases = {
-      getPhoto: new GetPhoto(this.metadataDb, this.imageDb),
-      addPhoto: new AddPhoto(this.metadataDb, this.imageDb),
-      replacePhoto: new ReplacePhoto(this.metadataDb, this.imageDb),
-      deletePhoto: new DeletePhoto(this.metadataDb, this.imageDb),
-      searchPhoto: new SearchPhoto(this.metadataDb, this.imageDb),
-    };
-  }
-
-  private setValidators() {
-    this.validators = {
-      getPhoto: new AjvValidator(GetPhotoSchema),
-      addPhoto: new AjvValidator(AddPhotoSchema),
-      replacePhoto: new AjvValidator(ReplacePhotoSchema),
-      deletePhoto: new AjvValidator(DeletePhotoSchema),
-      searchPhoto: new AjvValidator(SearchPhotoSchema),
-    };
-  }
-
-  private setParsers() {
-    this.parsers = {
-      getPhoto: new GetPhotoParser(),
-      addPhoto: new AddPhotoParser(),
-      replacePhoto: new AddPhotoParser(),
-      deletePhoto: new GetPhotoParser(),
-      searchPhoto: new SearchPhotoParser(),
-    };
   }
 
   private setAuthHandler() {

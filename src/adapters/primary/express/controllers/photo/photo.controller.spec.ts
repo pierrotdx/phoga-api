@@ -3,29 +3,19 @@ import request, { Response } from "supertest";
 import TestAgent from "supertest/lib/agent";
 
 import {
-  AddPhotoFakeValidator,
-  AddPhotoParser,
-  DeletePhotoFakeValidator,
   FakePhotoImageDb,
   FakePhotoMetadataDb,
-  GetPhotoFakeValidator,
-  GetPhotoParser,
-  ReplacePhotoFakeValidator,
-  SearchPhotoFakeValidator,
-  SearchPhotoParser,
+  FakeValidatorsFactory,
+  ParsersFactory,
   dumbPhotoGenerator,
 } from "@adapters";
 import {
-  AddPhoto,
-  DeletePhoto,
-  GetPhoto,
   GetPhotoField,
   IPhotoImageDb,
   IPhotoMetadataDb,
   ISearchPhotoOptions,
   IUseCases,
-  ReplacePhoto,
-  SearchPhoto,
+  UseCasesFactory,
 } from "@business-logic";
 import { EntryPointId, IParsers, IValidators, entryPoints } from "@http-server";
 import { AssertionsCounter, IAssertionsCounter, sharedTestUtils } from "@utils";
@@ -56,34 +46,13 @@ describe(`${PhotoController.name}`, () => {
     imageDb = new FakePhotoImageDb();
     metadataDb = new FakePhotoMetadataDb();
 
-    testUtils = new ControllersTestUtils();
-    assertionsCounter = new AssertionsCounter();
-
-    useCases = {
-      getPhoto: new GetPhoto(metadataDb, imageDb),
-      addPhoto: new AddPhoto(metadataDb, imageDb),
-      replacePhoto: new ReplacePhoto(metadataDb, imageDb),
-      deletePhoto: new DeletePhoto(metadataDb, imageDb),
-      searchPhoto: new SearchPhoto(metadataDb, imageDb),
-    };
-
-    validators = {
-      getPhoto: new GetPhotoFakeValidator(),
-      addPhoto: new AddPhotoFakeValidator(),
-      replacePhoto: new ReplacePhotoFakeValidator(),
-      deletePhoto: new DeletePhotoFakeValidator(),
-      searchPhoto: new SearchPhotoFakeValidator(),
-    };
-
-    parsers = {
-      getPhoto: new GetPhotoParser(),
-      addPhoto: new AddPhotoParser(),
-      replacePhoto: new AddPhotoParser(),
-      deletePhoto: new GetPhotoParser(),
-      searchPhoto: new SearchPhotoParser(),
-    };
+    useCases = new UseCasesFactory(metadataDb, imageDb).create();
+    validators = new FakeValidatorsFactory().create();
+    parsers = new ParsersFactory().create();
 
     photoController = new PhotoController(useCases, validators, parsers);
+    testUtils = new ControllersTestUtils();
+    assertionsCounter = new AssertionsCounter();
     app = testUtils.generateDumbApp();
     req = request(app);
   });
