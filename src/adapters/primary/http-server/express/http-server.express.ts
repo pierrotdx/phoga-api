@@ -38,18 +38,18 @@ export class ExpressHttpServer implements AppHttpServer {
     private readonly authHandler: IAuthHandler,
   ) {
     this.setLoggerHandler();
-    this.initExpressApp();
+    this.initExpress();
   }
 
-  private initExpressApp() {
+  private initExpress() {
     this.app.use(helmet());
     this.app.use(bodyParser.json());
-    this.initExpressLogger();
+    this.initLogger();
     this.initRouter();
     this.app.use(this.logError.bind(this));
   }
 
-  private initExpressLogger() {
+  private initLogger() {
     if (this.loggerHandler) {
       this.app.use(this.loggerHandler);
     }
