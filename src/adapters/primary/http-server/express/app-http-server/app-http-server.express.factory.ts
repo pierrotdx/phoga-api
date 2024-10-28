@@ -8,8 +8,8 @@ import {
 import { AppHttpServer } from "@http-server";
 import { Factory } from "@utils";
 
-import { ExpressAuthHandler } from "../../oauth2-jwt-bearer";
-import { ParsersFactory } from "../../parsers";
+import { ExpressAuthHandler } from "../../../oauth2-jwt-bearer";
+import { ParsersFactory } from "../../../parsers";
 import { ExpressHttpServer } from "./app-http-server.express";
 
 export class ExpressAppHttpServerFactory implements Factory<AppHttpServer> {

@@ -22,8 +22,8 @@ import {
   IExpressLogger,
   PhotoController,
   PhotoRouter,
-} from ".";
-import { ExpressLoggerWinston } from "./loggers";
+} from "../";
+import { ExpressLoggerWinston } from "../loggers";
 
 export class ExpressHttpServer implements AppHttpServer {
   public readonly app: Express = express();
