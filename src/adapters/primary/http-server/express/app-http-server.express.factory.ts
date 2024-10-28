@@ -10,9 +10,9 @@ import { Factory } from "@utils";
 
 import { ExpressAuthHandler } from "../../oauth2-jwt-bearer";
 import { ParsersFactory } from "../../parsers";
-import { ExpressHttpServer } from "./http-server.express";
+import { ExpressHttpServer } from "./app-http-server.express";
 
-export class ExpressHttpServerFactory implements Factory<AppHttpServer> {
+export class ExpressAppHttpServerFactory implements Factory<AppHttpServer> {
   private readonly photoImageDb: IPhotoImageDb;
   private readonly photoMetadataDb: IPhotoMetadataDb;
 

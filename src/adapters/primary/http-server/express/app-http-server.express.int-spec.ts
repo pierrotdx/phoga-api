@@ -34,7 +34,7 @@ import {
   issuerHost,
   issuerPort,
 } from "../../oauth2-jwt-bearer/test-utils.service";
-import { ExpressHttpServer } from "./http-server.express";
+import { ExpressHttpServer } from "./app-http-server.express";
 import { IAuthHandler } from "./models";
 
 const addPhotoPath = entryPoints.getFullPathRaw(EntryPointId.AddPhoto);

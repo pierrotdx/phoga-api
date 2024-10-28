@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 
 import {
-  ExpressHttpServerFactory,
+  ExpressAppHttpServerFactory,
   MongoBase,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
@@ -20,7 +20,7 @@ export class AppLauncher {
 
   async start() {
     await this.setupDbs();
-    this.httpServer = new ExpressHttpServerFactory({
+    this.httpServer = new ExpressAppHttpServerFactory({
       photoMetadataDb: this.photoMetadataDb,
       photoImageDb: this.photoImageDb,
     }).create();
