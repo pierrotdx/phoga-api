@@ -1,28 +1,22 @@
 import { clone } from "ramda";
 
-import { dumbPhotoGenerator } from "@adapters";
 import { IPhoto, SortDirection } from "@business-logic";
 import { DbsTestUtils, IDbsTestUtilsParams, comparePhotoDates } from "@utils";
 
 export class SearchPhotoTestUtils extends DbsTestUtils {
-  private readonly storedPhotos = this.generateStoredPhotos();
+  storedPhotos: IPhoto[];
 
   constructor(dbsTestUtilsParams: IDbsTestUtilsParams) {
     super(dbsTestUtilsParams);
   }
 
-  private generateStoredPhotos() {
-    const storedPhotos = [];
-    const nbStoredPhotos = 3;
-    for (let index = 0; index < nbStoredPhotos; index++) {
-      const photo = dumbPhotoGenerator.generatePhoto();
-      storedPhotos.push(photo);
-    }
-    return storedPhotos;
+  async init(photos: IPhoto[]): Promise<void> {
+    this.setStoredPhotos(photos);
+    await this.insertPhotosInDbs(this.storedPhotos);
   }
 
-  async init(): Promise<void> {
-    await this.insertPhotosInDbs(this.storedPhotos);
+  public setStoredPhotos(photos: IPhoto[]): void {
+    this.storedPhotos = clone(photos);
   }
 
   getStoredPhotos(sortDirection?: SortDirection): IPhoto[] {

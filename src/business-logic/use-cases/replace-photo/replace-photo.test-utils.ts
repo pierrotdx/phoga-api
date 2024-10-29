@@ -1,8 +1,9 @@
-import { DbsTestUtils, IAssertionsCounter, IDbsTestUtilsParams } from "@utils";
+import { IDbsTestUtilsParams } from "@utils";
 
 import { IPhoto } from "../../models";
+import { UseCasesSharedTestUtils } from "../use-cases.shared-test-utils";
 
-export class ReplacePhotoTestUtils extends DbsTestUtils {
+export class ReplacePhotoTestUtils extends UseCasesSharedTestUtils {
   constructor(dbsTestUtilsParams: IDbsTestUtilsParams) {
     super(dbsTestUtilsParams);
   }
@@ -35,15 +36,5 @@ export class ReplacePhotoTestUtils extends DbsTestUtils {
     expect(dbMetadataAfter.titles).not.toEqual(dbMetadataBefore.titles);
 
     expect.assertions(6);
-  }
-
-  async expectToMatchPhotoMetadata(
-    id: IPhoto["_id"],
-    expectedMetadata: IPhoto["metadata"],
-    assertionsCounter: IAssertionsCounter,
-  ): Promise<void> {
-    const metadataAfter = await this.getPhotoMetadataFromDb(id);
-    expect(metadataAfter).toEqual(expectedMetadata);
-    assertionsCounter.increase();
   }
 }

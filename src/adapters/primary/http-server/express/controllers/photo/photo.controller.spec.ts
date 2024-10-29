@@ -20,7 +20,7 @@ import {
 import { EntryPointId, IParsers, IValidators, entryPoints } from "@http-server";
 import { AssertionsCounter, IAssertionsCounter, sharedTestUtils } from "@utils";
 
-import { ControllersTestUtils } from "../controllers.test-utils";
+import { ControllersTestUtils } from "../controllers.shared-test-utils";
 import { PhotoController } from "./photo.controller";
 
 describe(`${PhotoController.name}`, () => {

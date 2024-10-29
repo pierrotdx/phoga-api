@@ -1,7 +1,7 @@
 import { omit } from "ramda";
 
 import { dumbPhotoGenerator } from "@adapters";
-import { AssertionsCounter, sharedTestUtils } from "@utils";
+import { AssertionsCounter, IAssertionsCounter, sharedTestUtils } from "@utils";
 
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
@@ -14,12 +14,14 @@ describe("add-photo use case", () => {
   let metadataDb: IPhotoMetadataDb;
   let imageDb: IPhotoImageDb;
   let testUtils: AddPhotoTestUtils;
+  let assertionsCounter: IAssertionsCounter;
   let photo: IPhoto;
 
   beforeEach(async () => {
     metadataDb = new FakePhotoMetadataDb();
     imageDb = new FakePhotoImageDb();
     testUtils = new AddPhotoTestUtils({ metadataDb, imageDb });
+    assertionsCounter = new AssertionsCounter();
     addPhoto = new AddPhoto(metadataDb, imageDb);
     photo = dumbPhotoGenerator.generatePhoto();
   });
@@ -34,7 +36,8 @@ describe("add-photo use case", () => {
   describe("photo metadata", () => {
     it("should be added to metadata db", async () => {
       await addPhoto.execute(photo);
-      await testUtils.expectMetadataToBeInDb(photo);
+      await testUtils.expectPhotoMetadataToBeInDb(photo, assertionsCounter);
+      assertionsCounter.checkAssertions();
     });
 
     it.each`

@@ -1,4 +1,8 @@
-import { FakePhotoImageDb, FakePhotoMetadataDb } from "@adapters";
+import {
+  FakePhotoImageDb,
+  FakePhotoMetadataDb,
+  dumbPhotoGenerator,
+} from "@adapters";
 import { IPhotoImageDb, IPhotoMetadataDb } from "@business-logic/gateways";
 import { IRendering, SortDirection } from "@business-logic/models";
 
@@ -15,7 +19,9 @@ describe("SearchPhoto", () => {
     metadataDb = new FakePhotoMetadataDb();
     imageDb = new FakePhotoImageDb();
     testUtils = new SearchPhotoTestUtils({ metadataDb, imageDb });
-    await testUtils.init();
+    const nbStorePhotos = 3;
+    const storedPhotos = dumbPhotoGenerator.generatePhotos(nbStorePhotos);
+    await testUtils.init(storedPhotos);
     searchPhotos = new SearchPhoto(metadataDb, imageDb);
   });
 
