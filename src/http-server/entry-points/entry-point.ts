@@ -1,14 +1,23 @@
 import path from "path";
 
-import { IEntryPoint } from "../models";
+import { IEntryPoint, IEntryPointOptions } from "../models";
 import { Scope } from "../scope";
 
 export class EntryPoint implements IEntryPoint {
+  private readonly parent: IEntryPoint;
+  private readonly scopes: Scope[];
+
   constructor(
     private readonly relativePath: string,
-    public readonly parent?: IEntryPoint,
-    public readonly scopes?: Scope[],
-  ) {}
+    options?: IEntryPointOptions,
+  ) {
+    if (options?.parent) {
+      this.parent = options.parent;
+    }
+    if (options?.scopes) {
+      this.scopes = options.scopes;
+    }
+  }
 
   getParent(): IEntryPoint {
     return this.parent;
@@ -25,14 +34,27 @@ export class EntryPoint implements IEntryPoint {
     return this.relativePath;
   }
 
-  getFullPath() {
+  getFullPathRaw() {
     if (!this.parent) {
       return this.getRelativePath();
     }
     const allPathFragments = [
-      this.parent.getFullPath(),
+      this.parent.getFullPathRaw(),
       this.getRelativePath(),
     ];
     return path.join(...allPathFragments).replace(/\\/g, "/");
+  }
+
+  getFullPathWithParams(params: any) {
+    const rawPath = this.getFullPathRaw();
+    let pathWithParams = rawPath;
+    Object.entries(params).forEach(([key, value]) => {
+      const pathParam = `:${key}`;
+      const isInRawPath = rawPath.includes(pathParam);
+      if (isInRawPath && typeof value === "string") {
+        pathWithParams = pathWithParams.replace(pathParam, value);
+      }
+    });
+    return pathWithParams;
   }
 }

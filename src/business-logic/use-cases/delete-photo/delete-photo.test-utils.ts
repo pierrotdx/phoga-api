@@ -10,6 +10,7 @@ export class DeletePhotoTestUtils extends DbsTestUtils {
   async expectMetadataToBeDeletedFromDb(
     dbMetadataBeforeDelete: IPhoto["metadata"],
     photo: IPhoto,
+    assertionsCounter: IAssertionsCounter,
   ): Promise<void> {
     expect(dbMetadataBeforeDelete).toBeDefined();
     expect(dbMetadataBeforeDelete).toEqual(photo.metadata);
@@ -17,7 +18,7 @@ export class DeletePhotoTestUtils extends DbsTestUtils {
     const dbMetadataAfterDelete = await this.getPhotoMetadataFromDb(photo._id);
     expect(dbMetadataAfterDelete).toBeUndefined();
 
-    expect.assertions(3);
+    assertionsCounter.increase(3);
   }
 
   async expectMetadataNotToBeDeleted(
@@ -33,6 +34,7 @@ export class DeletePhotoTestUtils extends DbsTestUtils {
   async expectImageToBeDeletedFromDb(
     dbImageBeforeDelete: IPhoto["imageBuffer"],
     photo: IPhoto,
+    assertionsCounter: IAssertionsCounter,
   ): Promise<void> {
     expect(dbImageBeforeDelete).toBeDefined();
     expect(dbImageBeforeDelete).toEqual(photo.imageBuffer);
@@ -40,6 +42,6 @@ export class DeletePhotoTestUtils extends DbsTestUtils {
     const dbImageAfterDelete = await this.getPhotoImageFromDb(photo._id);
     expect(dbImageAfterDelete).toBeUndefined();
 
-    expect.assertions(3);
+    assertionsCounter.increase(3);
   }
 }

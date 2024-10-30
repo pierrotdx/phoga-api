@@ -10,4 +10,9 @@ export interface ISharedTestUtils {
     fnParams: unknown[];
     assertionsCounter: IAssertionsCounter;
   }): Promise<void>;
+  expectFunctionToBeCalledWith(
+    assertionsCounter: IAssertionsCounter,
+    spy: jest.SpyInstance,
+    ...params: unknown[]
+  ): void;
 }

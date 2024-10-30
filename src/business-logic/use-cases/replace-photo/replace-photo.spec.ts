@@ -60,9 +60,10 @@ describe("replace-photo use case", () => {
       await replacePhoto.execute(photo);
       await testUtils.expectImageToBeReplacedInDb(
         dbImageBefore,
-        newImageBuffer,
-        photo._id,
+        photo,
+        assertionsCounter,
       );
+      assertionsCounter.checkAssertions();
     });
   });
 
@@ -72,10 +73,11 @@ describe("replace-photo use case", () => {
       const dbMetadataBefore = await metadataDb.getById(photo._id);
       await replacePhoto.execute(newPhoto);
       await testUtils.expectMetadataToBeReplacedInDb(
-        photo._id,
         dbMetadataBefore,
-        newPhoto.metadata,
+        newPhoto,
+        assertionsCounter,
       );
+      assertionsCounter.checkAssertions();
     });
 
     it.each`
@@ -86,7 +88,6 @@ describe("replace-photo use case", () => {
     `(
       "should not change if the image buffer is `$case`",
       async ({ imageBuffer }) => {
-        const metadataBefore = await metadataDb.getById(photo._id);
         photo.imageBuffer = imageBuffer;
 
         await sharedTestUtils.expectRejection({
@@ -94,11 +95,7 @@ describe("replace-photo use case", () => {
           fnParams: [photo],
           assertionsCounter,
         });
-        await testUtils.expectToMatchPhotoMetadata(
-          photo._id,
-          metadataBefore,
-          assertionsCounter,
-        );
+        await testUtils.expectPhotoMetadataToBeInDb(photo, assertionsCounter);
         assertionsCounter.checkAssertions();
       },
     );
@@ -113,12 +110,7 @@ describe("replace-photo use case", () => {
       expect(dbMetadataBefore).toBeUndefined();
       assertionsCounter.increase();
 
-      await testUtils.expectToMatchPhotoMetadata(
-        newPhoto._id,
-        newPhoto.metadata,
-        assertionsCounter,
-      );
-
+      await testUtils.expectPhotoMetadataToBeInDb(newPhoto, assertionsCounter);
       assertionsCounter.checkAssertions();
     });
   });
