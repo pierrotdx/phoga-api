@@ -9,11 +9,11 @@ export class PhotoRouter extends ExpressRouter {
     super();
     this.router.get(
       entryPoints.getRelativePath(EntryPointId.GetPhotoImage),
-      wrapWithErrorCatcher(this.photoController.getPhotoImageHandler),
+      wrapWithErrorCatcher(this.photoController.getImage),
     );
     this.router.get(
       entryPoints.getRelativePath(EntryPointId.GetPhotoMetadata),
-      wrapWithErrorCatcher(this.photoController.getPhotoMetadataHandler),
+      wrapWithErrorCatcher(this.photoController.getMetadata),
     );
     this.router.get(
       entryPoints.getRelativePath(EntryPointId.SearchPhoto),

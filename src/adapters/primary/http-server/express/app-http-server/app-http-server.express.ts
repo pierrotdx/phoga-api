@@ -10,7 +10,7 @@ import { Server } from "http";
 
 import { LoggerWinston } from "@adapters/loggers";
 import { IUseCases } from "@business-logic";
-import { AppHttpServer, IParser, IParsers, IValidators } from "@http-server";
+import { AppHttpServer, IParsers, IValidators } from "@http-server";
 import { Logger } from "@logger";
 
 import {
@@ -22,8 +22,8 @@ import {
   IExpressLogger,
   PhotoController,
   PhotoRouter,
-} from ".";
-import { ExpressLoggerWinston } from "./loggers";
+} from "../";
+import { ExpressLoggerWinston } from "../loggers";
 
 export class ExpressHttpServer implements AppHttpServer {
   public readonly app: Express = express();
@@ -38,18 +38,18 @@ export class ExpressHttpServer implements AppHttpServer {
     private readonly authHandler: IAuthHandler,
   ) {
     this.setLoggerHandler();
-    this.initExpressApp();
+    this.initExpress();
   }
 
-  private initExpressApp() {
+  private initExpress() {
     this.app.use(helmet());
     this.app.use(bodyParser.json());
-    this.initExpressLogger();
+    this.initLogger();
     this.initRouter();
     this.app.use(this.logError.bind(this));
   }
 
-  private initExpressLogger() {
+  private initLogger() {
     if (this.loggerHandler) {
       this.app.use(this.loggerHandler);
     }

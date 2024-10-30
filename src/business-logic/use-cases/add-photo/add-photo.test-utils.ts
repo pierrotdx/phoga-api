@@ -1,23 +1,21 @@
-import { DbsTestUtils, IAssertionsCounter, IDbsTestUtilsParams } from "@utils";
+import { IAssertionsCounter, IDbsTestUtilsParams } from "@utils";
 
 import { IPhoto } from "../../models";
+import { UseCasesSharedTestUtils } from "../use-cases.shared-test-utils";
 
-export class AddPhotoTestUtils extends DbsTestUtils {
+export class AddPhotoTestUtils extends UseCasesSharedTestUtils {
   constructor(dbsTestUtilsParams: IDbsTestUtilsParams) {
     super(dbsTestUtilsParams);
   }
 
-  async expectImageToBeInDb(photo: IPhoto): Promise<void> {
+  async expectPhotoImageToBeInDb(
+    photo: IPhoto,
+    assertionsCounter: IAssertionsCounter,
+  ): Promise<void> {
     const dbImage = await this.getPhotoImageFromDb(photo._id);
     const isInDb = dbImage.compare(photo.imageBuffer as Buffer) === 0;
     expect(isInDb).toBe(true);
-    expect.assertions(1);
-  }
-
-  async expectMetadataToBeInDb(photo: IPhoto): Promise<void> {
-    const dbMetadata = await this.getPhotoMetadataFromDb(photo._id);
-    expect(dbMetadata).toEqual(photo.metadata);
-    expect.assertions(1);
+    assertionsCounter.increase();
   }
 
   async expectMetadataNotToBeInDb(

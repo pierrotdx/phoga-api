@@ -2,16 +2,18 @@ import { Request, Response } from "express";
 import { Readable } from "node:stream";
 
 import { GetPhotoField, IUseCases } from "@business-logic";
-import { IParsers, IValidators, SearchPhotoSchema } from "@http-server";
+import { IParsers, IValidators } from "@http-server";
 
-export class PhotoController {
+import { IPhotoController } from "../../models/controllers/photo-controller";
+
+export class PhotoController implements IPhotoController {
   constructor(
     private readonly useCases: IUseCases,
     private readonly validators: IValidators,
     private readonly parsers: IParsers,
   ) {}
 
-  getPhotoMetadataHandler = async (req: Request, res: Response) => {
+  getMetadata = async (req: Request, res: Response) => {
     const id = this.validateAndParseGetPhoto(req);
     const photo = await this.useCases.getPhoto.execute(id, {
       fields: [GetPhotoField.Metadata],
@@ -25,7 +27,7 @@ export class PhotoController {
     return id;
   }
 
-  getPhotoImageHandler = async (req: Request, res: Response) => {
+  getImage = async (req: Request, res: Response) => {
     const id = this.validateAndParseGetPhoto(req);
     const photo = await this.useCases.getPhoto.execute(id, {
       fields: [GetPhotoField.ImageBuffer],

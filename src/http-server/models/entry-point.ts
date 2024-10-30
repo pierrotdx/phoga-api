@@ -1,8 +1,14 @@
 import { Scope } from "../scope";
 
 export interface IEntryPoint {
-  getFullPath(): string;
+  getFullPathRaw(): string;
+  getFullPathWithParams(params: any): string;
   getRelativePath(): string;
   getScopes(): Scope[];
   getParent(): IEntryPoint;
+}
+
+export interface IEntryPointOptions {
+  parent?: IEntryPoint;
+  scopes?: Scope[];
 }

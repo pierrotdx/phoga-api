@@ -2,10 +2,9 @@ import { type Express } from "express";
 import request from "supertest";
 
 import {
-  AddPhotoParser,
-  AjvValidator,
-  GetPhotoParser,
-  SearchPhotoParser,
+  AjvValidatorsFactory,
+  ExpressSharedTestUtils,
+  ParsersFactory,
   dumbPhotoGenerator,
 } from "@adapters";
 import {
@@ -16,61 +15,48 @@ import {
 } from "@adapters/databases";
 import { LoggerWinston } from "@adapters/loggers";
 import {
-  AddPhoto,
-  DeletePhoto,
-  GetPhoto,
+  AddPhotoTestUtils,
+  DeletePhotoTestUtils,
+  GetPhotoTestUtils,
   IPhoto,
   IPhotoImageDb,
   IPhotoMetadataDb,
   IUseCases,
-  ReplacePhoto,
-  SearchPhoto,
+  ReplacePhotoTestUtils,
+  SearchPhotoTestUtils,
   SortDirection,
+  UseCasesFactory,
 } from "@business-logic";
 import { Storage } from "@google-cloud/storage";
-import {
-  AddPhotoSchema,
-  DeletePhotoSchema,
-  EntryPointId,
-  GetPhotoSchema,
-  IParsers,
-  IValidators,
-  ReplacePhotoSchema,
-  SearchPhotoSchema,
-  entryPoints,
-} from "@http-server";
+import { EntryPointId, IParsers, IValidators, entryPoints } from "@http-server";
 import { Logger } from "@logger/models";
-import { compareDates } from "@utils";
+import { AssertionsCounter, IAssertionsCounter } from "@utils";
 
-import { ExpressAuthHandler } from "../oauth2-jwt-bearer";
+import { ExpressAuthHandler } from "../../../oauth2-jwt-bearer";
 import {
   OAuth2ServerMock,
   audience,
   issuerHost,
   issuerPort,
-} from "../oauth2-jwt-bearer/test-utils.service";
-import { ExpressHttpServer } from "./http-server.express";
-import { IAuthHandler } from "./models";
-import {
-  addPhotoPath,
-  deletePhotoPath,
-  getImagePath,
-  getMetadataPath,
-  getPayloadFromPhoto,
-  getUrlWithReplacedId,
-  replacePhotoPath,
-  searchPhotoPath,
-} from "./services/test-utils.service";
+} from "../../../oauth2-jwt-bearer/test-utils.service";
+import { IAuthHandler } from "../models";
+import { ExpressHttpServer } from "./app-http-server.express";
+
+const addPhotoPath = entryPoints.getFullPathRaw(EntryPointId.AddPhoto);
+const getMetadataPath = entryPoints.getFullPathRaw(
+  EntryPointId.GetPhotoMetadata,
+);
+const getImagePath = entryPoints.getFullPathRaw(EntryPointId.GetPhotoImage);
+const replacePhotoPath = entryPoints.getFullPathRaw(EntryPointId.ReplacePhoto);
+const deletePhotoPath = entryPoints.getFullPathRaw(EntryPointId.DeletePhoto);
+const searchPhotoPath = entryPoints.getFullPathRaw(EntryPointId.SearchPhoto);
 
 describe("ExpressHttpServer", () => {
-  const photoInDbFromStart = dumbPhotoGenerator.generatePhoto();
-  const photoToAdd = dumbPhotoGenerator.generatePhoto();
-  const replacingPhoto = dumbPhotoGenerator.generatePhoto({
-    _id: photoInDbFromStart._id,
-  });
-  const photoToDelete = dumbPhotoGenerator.generatePhoto();
+  const storedPhoto = dumbPhotoGenerator.generatePhoto();
 
   let expressHttpServer: ExpressHttpServer;
+  let expressTestUtils: ExpressSharedTestUtils;
+  let assertionsCounter: IAssertionsCounter;
   let app: Express;
   let logger: Logger;
   let authHandler: IAuthHandler;
@@ -100,29 +86,9 @@ describe("ExpressHttpServer", () => {
   });
 
   beforeEach(async () => {
-    useCases = {
-      getPhoto: new GetPhoto(metadataDb, imageDb),
-      addPhoto: new AddPhoto(metadataDb, imageDb),
-      replacePhoto: new ReplacePhoto(metadataDb, imageDb),
-      deletePhoto: new DeletePhoto(metadataDb, imageDb),
-      searchPhoto: new SearchPhoto(metadataDb, imageDb),
-    };
-
-    validators = {
-      getPhoto: new AjvValidator(GetPhotoSchema),
-      addPhoto: new AjvValidator(AddPhotoSchema),
-      replacePhoto: new AjvValidator(ReplacePhotoSchema),
-      deletePhoto: new AjvValidator(DeletePhotoSchema),
-      searchPhoto: new AjvValidator(SearchPhotoSchema),
-    };
-
-    parsers = {
-      getPhoto: new GetPhotoParser(),
-      addPhoto: new AddPhotoParser(),
-      replacePhoto: new AddPhotoParser(),
-      deletePhoto: new GetPhotoParser(),
-      searchPhoto: new SearchPhotoParser(),
-    };
+    useCases = new UseCasesFactory(metadataDb, imageDb).create();
+    validators = new AjvValidatorsFactory().create();
+    parsers = new ParsersFactory().create();
 
     const silentLogger = true;
     logger = new LoggerWinston(silentLogger);
@@ -139,7 +105,8 @@ describe("ExpressHttpServer", () => {
     expressHttpServer.listen();
     app = expressHttpServer.app;
 
-    await useCases.addPhoto.execute(photoInDbFromStart);
+    expressTestUtils = new ExpressSharedTestUtils();
+    assertionsCounter = new AssertionsCounter();
   });
 
   afterEach(() => {
@@ -152,8 +119,15 @@ describe("ExpressHttpServer", () => {
   });
 
   describe(`POST ${addPhotoPath}`, () => {
+    let addPhotoTestUtils: AddPhotoTestUtils;
+    const photoToAdd = dumbPhotoGenerator.generatePhoto();
     const requiredScopes = entryPoints.getScopes(EntryPointId.AddPhoto);
-    const payload = getPayloadFromPhoto(photoToAdd);
+    let payload: ReturnType<typeof expressTestUtils.getPayloadFromPhoto>;
+
+    beforeEach(() => {
+      addPhotoTestUtils = new AddPhotoTestUtils({ metadataDb, imageDb });
+      payload = expressTestUtils.getPayloadFromPhoto(photoToAdd);
+    });
 
     it("should deny the access and respond with status code 401 if no token is associated to the request", async () => {
       const response = await request(app).post(addPhotoPath).send(payload);
@@ -172,9 +146,6 @@ describe("ExpressHttpServer", () => {
     });
 
     it("should add the photo image and metadata to their respective DBs", async () => {
-      const imageFromDbBefore = await imageDb.getById(photoToAdd._id);
-      const metadataFromDbBefore = await metadataDb.getById(photoToAdd._id);
-
       const token = await oauth2Server.fetchAccessToken({
         scope: requiredScopes,
       });
@@ -183,45 +154,82 @@ describe("ExpressHttpServer", () => {
         .auth(token, { type: "bearer" })
         .send(payload);
 
-      const imageFromDbAfter = await imageDb.getById(photoToAdd._id);
-      expect(imageFromDbBefore).toBeUndefined();
-      expect(imageFromDbAfter).toEqual(photoToAdd.imageBuffer);
-
-      const metadataFromDbAfter = await metadataDb.getById(photoToAdd._id);
-      expect(metadataFromDbBefore).toBeUndefined();
-      expect(metadataFromDbAfter).toEqual(photoToAdd.metadata);
-
-      expect.assertions(4);
+      await addPhotoTestUtils.expectPhotoImageToBeInDb(
+        photoToAdd,
+        assertionsCounter,
+      );
+      await addPhotoTestUtils.expectPhotoMetadataToBeInDb(
+        photoToAdd,
+        assertionsCounter,
+      );
+      assertionsCounter.checkAssertions();
     });
   });
 
   describe(`GET ${getMetadataPath}`, () => {
+    let getPhotoTestUtils: GetPhotoTestUtils;
+
+    beforeEach(async () => {
+      getPhotoTestUtils = new GetPhotoTestUtils({ metadataDb, imageDb });
+      await getPhotoTestUtils.insertPhotoInDbs(storedPhoto);
+    });
+
     it("should return the metadata of the photo with matching id", async () => {
-      const url = getUrlWithReplacedId(
-        photoInDbFromStart._id,
+      const url = entryPoints.getFullPathWithParams(
         EntryPointId.GetPhotoMetadata,
+        { id: storedPhoto._id },
       );
-      await request(app).get(url);
-      const metadataFromDb = await metadataDb.getById(photoInDbFromStart._id);
-      expect(metadataFromDb).toEqual(photoInDbFromStart.metadata);
-      expect.assertions(1);
+      const response = await request(app).get(url);
+      const responsePhoto = expressTestUtils.getPhotoFromResponse(response);
+      getPhotoTestUtils.expectMatchingPhotoIds(
+        storedPhoto,
+        responsePhoto,
+        assertionsCounter,
+      );
+      getPhotoTestUtils.expectMatchingPhotoMetadata(
+        storedPhoto,
+        responsePhoto,
+        assertionsCounter,
+      );
+      assertionsCounter.checkAssertions();
     });
   });
 
   describe(`GET ${getImagePath}`, () => {
+    let getPhotoTestUtils: GetPhotoTestUtils;
+
+    beforeEach(() => {
+      getPhotoTestUtils = new GetPhotoTestUtils({ metadataDb, imageDb });
+    });
+
     it("should return the image buffer of the photo with matching id", async () => {
-      const url = getUrlWithReplacedId(
-        photoInDbFromStart._id,
+      const url = entryPoints.getFullPathWithParams(
         EntryPointId.GetPhotoImage,
+        { id: storedPhoto._id },
       );
-      await request(app).get(url);
-      const imageFromDb = await imageDb.getById(photoInDbFromStart._id);
-      expect(imageFromDb).toEqual(photoInDbFromStart.imageBuffer);
-      expect.assertions(1);
+      const response = await request(app).get(url);
+      const responsePhoto = expressTestUtils.getPhotoFromResponse(response);
+      getPhotoTestUtils.expectMatchingPhotoIds(
+        storedPhoto,
+        responsePhoto,
+        assertionsCounter,
+      );
+      getPhotoTestUtils.expectMatchingPhotoImages(
+        storedPhoto,
+        responsePhoto,
+        assertionsCounter,
+      );
+      assertionsCounter.checkAssertions();
     });
   });
 
   describe(`GET ${searchPhotoPath}`, () => {
+    let searchPhotoTestUtils: SearchPhotoTestUtils;
+
+    beforeEach(() => {
+      searchPhotoTestUtils = new SearchPhotoTestUtils({ metadataDb, imageDb });
+    });
+
     it.each`
       queryParams
       ${{ size: 1 }}
@@ -235,29 +243,43 @@ describe("ExpressHttpServer", () => {
           .query(queryParams);
         const searchResult = response.body as IPhoto[];
 
-        let assertionsCount = 0;
-
         if (queryParams.size) {
-          expectSearchResultMatchingSize(searchResult, queryParams.size);
-          assertionsCount++;
+          searchPhotoTestUtils.expectSearchResultMatchingSize(
+            searchResult,
+            queryParams.size,
+            assertionsCounter,
+          );
         }
 
         if (queryParams.date) {
-          expectSearchResultMatchingDateOrdering(
+          searchPhotoTestUtils.expectSearchResultMatchingDateOrdering(
             searchResult,
             queryParams.date,
+            assertionsCounter,
           );
-          assertionsCount++;
         }
 
-        expect.assertions(assertionsCount);
+        assertionsCounter.checkAssertions();
       },
     );
   });
 
   describe(`PUT ${replacePhotoPath}`, () => {
+    let replacingPhoto: IPhoto;
+    let replacePhotoTestUtils: ReplacePhotoTestUtils;
     const requiredScopes = entryPoints.getScopes(EntryPointId.ReplacePhoto);
-    const payload = getPayloadFromPhoto(replacingPhoto);
+    let payload: ReturnType<typeof expressTestUtils.getPayloadFromPhoto>;
+
+    beforeEach(() => {
+      replacingPhoto = dumbPhotoGenerator.generatePhoto({
+        _id: storedPhoto._id,
+      });
+      replacePhotoTestUtils = new ReplacePhotoTestUtils({
+        metadataDb,
+        imageDb,
+      });
+      payload = expressTestUtils.getPayloadFromPhoto(replacingPhoto);
+    });
 
     it("should deny the access and respond with status code 403 if the token scope of the request is invalid", async () => {
       const token = await oauth2Server.fetchAccessToken();
@@ -270,11 +292,8 @@ describe("ExpressHttpServer", () => {
     });
 
     it("should replace the photo with the one in the request", async () => {
-      const imageFromDbBefore = await imageDb.getById(photoInDbFromStart._id);
-      const metadataFromDbBefore = await metadataDb.getById(
-        photoInDbFromStart._id,
-      );
-
+      const dbImageBefore = await imageDb.getById(storedPhoto._id);
+      const dbMetadataBefore = await metadataDb.getById(storedPhoto._id);
       const token = await oauth2Server.fetchAccessToken({
         scope: requiredScopes,
       });
@@ -282,29 +301,44 @@ describe("ExpressHttpServer", () => {
         .put(replacePhotoPath)
         .auth(token, { type: "bearer" })
         .send(payload);
-
-      expect(photoInDbFromStart._id).toBe(replacingPhoto._id);
-
-      const imageFromDbAfter = await imageDb.getById(photoInDbFromStart._id);
-      expect(imageFromDbAfter).not.toEqual(imageFromDbBefore);
-      expect(imageFromDbAfter).toEqual(replacingPhoto.imageBuffer);
-
-      const metadataFromDbAfter = await metadataDb.getById(
-        photoInDbFromStart._id,
+      replacePhotoTestUtils.expectMatchingPhotoIds(
+        storedPhoto,
+        replacingPhoto,
+        assertionsCounter,
       );
-      expect(metadataFromDbAfter).not.toEqual(metadataFromDbBefore);
-      expect(metadataFromDbAfter).toEqual(replacingPhoto.metadata);
-
-      expect.assertions(5);
+      await replacePhotoTestUtils.expectImageToBeReplacedInDb(
+        dbImageBefore,
+        replacingPhoto,
+        assertionsCounter,
+      );
+      await replacePhotoTestUtils.expectMetadataToBeReplacedInDb(
+        dbMetadataBefore,
+        replacingPhoto,
+        assertionsCounter,
+      );
+      assertionsCounter.checkAssertions();
     });
   });
 
   describe(`DELETE ${deletePhotoPath}`, () => {
+    let photoToDelete: IPhoto;
+    let deletePhotoTestUtils: DeletePhotoTestUtils;
     const requiredScopes = entryPoints.getScopes(EntryPointId.DeletePhoto);
-    const url = getUrlWithReplacedId(
-      photoToDelete._id,
-      EntryPointId.DeletePhoto,
-    );
+    let url: string;
+
+    beforeEach(async () => {
+      photoToDelete = dumbPhotoGenerator.generatePhoto();
+      url = entryPoints.getFullPathWithParams(EntryPointId.DeletePhoto, {
+        id: photoToDelete._id,
+      });
+      deletePhotoTestUtils = new DeletePhotoTestUtils({ metadataDb, imageDb });
+      await deletePhotoTestUtils.insertPhotoInDbs(photoToDelete);
+    });
+
+    afterEach(async () => {
+      // in case a test fails
+      await deletePhotoTestUtils.deletePhotoIfNecessary(photoToDelete._id);
+    });
 
     it("should deny the access and respond with status code 403 if the token scope of the request is invalid", async () => {
       const token = await oauth2Server.fetchAccessToken();
@@ -316,24 +350,25 @@ describe("ExpressHttpServer", () => {
     });
 
     it("should delete the image and metadata from their respective DBs of the targeted photo", async () => {
-      await useCases.addPhoto.execute(photoToDelete);
-      const imageFromDbBefore = await imageDb.getById(photoToDelete._id);
-      const metadataFromDbBefore = await metadataDb.getById(photoToDelete._id);
+      const dbImageBefore = await imageDb.getById(photoToDelete._id);
+      const dbMetadataBefore = await metadataDb.getById(photoToDelete._id);
 
       const token = await oauth2Server.fetchAccessToken({
         scope: requiredScopes,
       });
       await request(app).delete(url).auth(token, { type: "bearer" });
 
-      expect(imageFromDbBefore).toBeDefined();
-      const imageFromDbAfter = await imageDb.getById(photoToDelete._id);
-      expect(imageFromDbAfter).toBeUndefined();
-
-      expect(metadataFromDbBefore).toBeDefined();
-      const metadataFromDbAfter = await metadataDb.getById(photoToDelete._id);
-      expect(metadataFromDbAfter).toBeUndefined();
-
-      expect.assertions(4);
+      await deletePhotoTestUtils.expectMetadataToBeDeletedFromDb(
+        dbMetadataBefore,
+        photoToDelete,
+        assertionsCounter,
+      );
+      await deletePhotoTestUtils.expectImageToBeDeletedFromDb(
+        dbImageBefore,
+        photoToDelete,
+        assertionsCounter,
+      );
+      assertionsCounter.checkAssertions();
     });
   });
 
@@ -357,24 +392,3 @@ describe("ExpressHttpServer", () => {
     });
   });
 });
-
-function expectSearchResultMatchingSize(searchResult: any[], size: number) {
-  expect(searchResult.length).toBeLessThanOrEqual(size);
-}
-
-function expectSearchResultMatchingDateOrdering(
-  searchResult: any[],
-  dateOrdering: SortDirection,
-) {
-  const searchResultDates = searchResult.map((data) => {
-    const stringDate = data.metadata?.date;
-    if (stringDate) {
-      return new Date(stringDate);
-    }
-  });
-  const orderedDates = [...searchResultDates].sort(compareDates);
-  if (dateOrdering === SortDirection.Descending) {
-    orderedDates.reverse();
-  }
-  expect(searchResultDates).toEqual(orderedDates);
-}

@@ -5,35 +5,42 @@ import { EntryPoint } from "./entry-point";
 class EntryPoints implements IEntryPoints {
   private readonly base = new EntryPoint("/");
 
-  private readonly photoBase = new EntryPoint("/photo", this.base, [
-    Scope.PhotosRead,
-  ]);
-  private readonly getPhotoImage = new EntryPoint(
-    "/:id/image",
-    this.photoBase,
-    [Scope.PhotosRead],
-  );
-  private readonly getPhotoMetadata = new EntryPoint(
-    "/:id/metadata",
-    this.photoBase,
-    [Scope.PhotosRead],
-  );
-  private readonly searchPhoto = new EntryPoint("/", this.photoBase);
+  private readonly photoBase = new EntryPoint("/photo", {
+    parent: this.base,
+    scopes: [Scope.PhotosRead],
+  });
+  private readonly getPhotoImage = new EntryPoint("/:id/image", {
+    parent: this.photoBase,
+    scopes: [Scope.PhotosRead],
+  });
+  private readonly getPhotoMetadata = new EntryPoint("/:id/metadata", {
+    parent: this.photoBase,
+    scopes: [Scope.PhotosRead],
+  });
+  private readonly searchPhoto = new EntryPoint("/", {
+    parent: this.photoBase,
+  });
 
-  private readonly adminBase = new EntryPoint("/admin", this.base, [
-    Scope.RestrictedRead,
-  ]);
+  private readonly adminBase = new EntryPoint("/admin", {
+    parent: this.base,
+    scopes: [Scope.RestrictedRead],
+  });
 
-  private readonly adminPhotoBase = new EntryPoint("/photo", this.adminBase);
-  private readonly replacePhoto = new EntryPoint("/", this.adminPhotoBase, [
-    Scope.PhotosWrite,
-  ]);
-  private readonly addPhoto = new EntryPoint("/", this.adminPhotoBase, [
-    Scope.PhotosWrite,
-  ]);
-  private readonly deletePhoto = new EntryPoint("/:id", this.adminPhotoBase, [
-    Scope.PhotosWrite,
-  ]);
+  private readonly adminPhotoBase = new EntryPoint("/photo", {
+    parent: this.adminBase,
+  });
+  private readonly replacePhoto = new EntryPoint("/", {
+    parent: this.adminPhotoBase,
+    scopes: [Scope.PhotosWrite],
+  });
+  private readonly addPhoto = new EntryPoint("/", {
+    parent: this.adminPhotoBase,
+    scopes: [Scope.PhotosWrite],
+  });
+  private readonly deletePhoto = new EntryPoint("/:id", {
+    parent: this.adminPhotoBase,
+    scopes: [Scope.PhotosWrite],
+  });
 
   private readonly entryPoints: Record<EntryPointId, EntryPoint> = {
     [EntryPointId.AdminBase]: this.adminBase,
@@ -56,8 +63,12 @@ class EntryPoints implements IEntryPoints {
     return this.entryPoints[id].getRelativePath();
   }
 
-  getFullPath(id: EntryPointId): string {
-    return this.entryPoints[id].getFullPath();
+  getFullPathRaw(id: EntryPointId): string {
+    return this.entryPoints[id].getFullPathRaw();
+  }
+
+  getFullPathWithParams(id: EntryPointId, params: any): string {
+    return this.entryPoints[id].getFullPathWithParams(params);
   }
 
   getScopes(id: EntryPointId): Scope[] {
