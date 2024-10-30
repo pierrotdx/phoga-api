@@ -8,11 +8,14 @@ export class AddPhotoTestUtils extends UseCasesSharedTestUtils {
     super(dbsTestUtilsParams);
   }
 
-  async expectImageToBeInDb(photo: IPhoto): Promise<void> {
+  async expectPhotoImageToBeInDb(
+    photo: IPhoto,
+    assertionsCounter: IAssertionsCounter,
+  ): Promise<void> {
     const dbImage = await this.getPhotoImageFromDb(photo._id);
     const isInDb = dbImage.compare(photo.imageBuffer as Buffer) === 0;
     expect(isInDb).toBe(true);
-    expect.assertions(1);
+    assertionsCounter.increase();
   }
 
   async expectMetadataNotToBeInDb(

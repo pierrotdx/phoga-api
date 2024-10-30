@@ -1,5 +1,5 @@
 import { dumbPhotoGenerator } from "@adapters";
-import { AssertionsCounter, sharedTestUtils } from "@utils";
+import { AssertionsCounter, IAssertionsCounter, sharedTestUtils } from "@utils";
 
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
@@ -11,12 +11,14 @@ describe("delete-photo use case", () => {
   let imageDb: IPhotoImageDb;
   let metadataDb: IPhotoMetadataDb;
   let testUtils: DeletePhotoTestUtils;
+  let assertionsCounter: IAssertionsCounter;
   const photo = dumbPhotoGenerator.generatePhoto();
 
   beforeEach(async () => {
     metadataDb = new FakePhotoMetadataDb();
     imageDb = new FakePhotoImageDb();
     testUtils = new DeletePhotoTestUtils({ metadataDb, imageDb });
+    assertionsCounter = new AssertionsCounter();
     deletePhoto = new DeletePhoto(metadataDb, imageDb);
     await testUtils.insertPhotoInDbs(photo);
   });
@@ -36,7 +38,9 @@ describe("delete-photo use case", () => {
       await testUtils.expectMetadataToBeDeletedFromDb(
         dbMetadataBeforeDelete,
         photo,
+        assertionsCounter,
       );
+      assertionsCounter.checkAssertions();
     });
 
     it("should not be deleted if image-photo deletion failed", async () => {
@@ -59,7 +63,12 @@ describe("delete-photo use case", () => {
     it("should be deleted from db", async () => {
       const dbImageBeforeDelete = await imageDb.getById(photo._id);
       await deletePhoto.execute(photo._id);
-      await testUtils.expectImageToBeDeletedFromDb(dbImageBeforeDelete, photo);
+      await testUtils.expectImageToBeDeletedFromDb(
+        dbImageBeforeDelete,
+        photo,
+        assertionsCounter,
+      );
+      assertionsCounter.checkAssertions();
     });
   });
 });

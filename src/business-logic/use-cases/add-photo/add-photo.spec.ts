@@ -29,7 +29,8 @@ describe("add-photo use case", () => {
   describe("photo image", () => {
     it("should be uploaded to image db", async () => {
       await addPhoto.execute(photo);
-      await testUtils.expectImageToBeInDb(photo);
+      await testUtils.expectPhotoImageToBeInDb(photo, assertionsCounter);
+      assertionsCounter.checkAssertions();
     });
   });
 

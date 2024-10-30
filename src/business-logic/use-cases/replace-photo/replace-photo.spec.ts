@@ -60,9 +60,10 @@ describe("replace-photo use case", () => {
       await replacePhoto.execute(photo);
       await testUtils.expectImageToBeReplacedInDb(
         dbImageBefore,
-        newImageBuffer,
-        photo._id,
+        photo,
+        assertionsCounter,
       );
+      assertionsCounter.checkAssertions();
     });
   });
 
@@ -72,10 +73,11 @@ describe("replace-photo use case", () => {
       const dbMetadataBefore = await metadataDb.getById(photo._id);
       await replacePhoto.execute(newPhoto);
       await testUtils.expectMetadataToBeReplacedInDb(
-        photo._id,
         dbMetadataBefore,
-        newPhoto.metadata,
+        newPhoto,
+        assertionsCounter,
       );
+      assertionsCounter.checkAssertions();
     });
 
     it.each`

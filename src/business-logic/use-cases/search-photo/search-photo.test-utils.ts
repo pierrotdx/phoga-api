@@ -1,10 +1,12 @@
 import { clone } from "ramda";
 
 import { IPhoto, SortDirection } from "@business-logic";
-import { DbsTestUtils, IDbsTestUtilsParams, comparePhotoDates } from "@utils";
+import { IDbsTestUtilsParams, comparePhotoDates } from "@utils";
 
-export class SearchPhotoTestUtils extends DbsTestUtils {
-  storedPhotos: IPhoto[];
+import { UseCasesSharedTestUtils } from "../use-cases.shared-test-utils";
+
+export class SearchPhotoTestUtils extends UseCasesSharedTestUtils {
+  private storedPhotos: IPhoto[];
 
   constructor(dbsTestUtilsParams: IDbsTestUtilsParams) {
     super(dbsTestUtilsParams);
@@ -31,23 +33,6 @@ export class SearchPhotoTestUtils extends DbsTestUtils {
 
   expectSearchResultToMatchStoredPhotos(searchResult: IPhoto[]): void {
     expect(searchResult).toEqual(this.storedPhotos);
-    expect.assertions(1);
-  }
-
-  expectSearchResultToBeSortedAsRequired(
-    searchResult: IPhoto[],
-    requiredSortDirection: SortDirection,
-  ): void {
-    const expectedSortedList = this.getStoredPhotos(requiredSortDirection);
-    expect(searchResult).toEqual(expectedSortedList);
-    expect.assertions(1);
-  }
-
-  expectSearchResultSizeToMatchRequiredSize(
-    searchResult: IPhoto[],
-    requiredSize: number,
-  ): void {
-    expect(searchResult.length).toEqual(requiredSize);
     expect.assertions(1);
   }
 

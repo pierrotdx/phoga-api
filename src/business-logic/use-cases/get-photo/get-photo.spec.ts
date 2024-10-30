@@ -29,11 +29,7 @@ describe("get-photo use case", () => {
 
   it("should return the photo with matching id", async () => {
     const result = await getPhoto.execute(photo._id);
-    testUtils.expectResultToMatchPhoto(
-      photo,
-      result,
-      assertionsCounter,
-    );
+    testUtils.expectMatchingPhotos(photo, result, assertionsCounter);
     assertionsCounter.checkAssertions();
   });
 
@@ -50,7 +46,7 @@ describe("get-photo use case", () => {
         fields: [fieldValue],
       });
 
-      testUtils.expectResultToMatchPhoto(
+      testUtils.expectMatchingPhotos(
         result,
         expectedPhoto as IPhoto,
         assertionsCounter,

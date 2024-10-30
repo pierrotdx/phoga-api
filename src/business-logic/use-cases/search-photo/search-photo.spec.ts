@@ -5,12 +5,14 @@ import {
 } from "@adapters";
 import { IPhotoImageDb, IPhotoMetadataDb } from "@business-logic/gateways";
 import { IRendering, SortDirection } from "@business-logic/models";
+import { AssertionsCounter, IAssertionsCounter } from "@utils";
 
 import { SearchPhoto } from "./search-photo";
 import { SearchPhotoTestUtils } from "./search-photo.test-utils";
 
 describe("SearchPhoto", () => {
   let testUtils: SearchPhotoTestUtils;
+  let assertionsCounter: IAssertionsCounter;
   let searchPhotos: SearchPhoto;
   let metadataDb: IPhotoMetadataDb;
   let imageDb: IPhotoImageDb;
@@ -19,6 +21,7 @@ describe("SearchPhoto", () => {
     metadataDb = new FakePhotoMetadataDb();
     imageDb = new FakePhotoImageDb();
     testUtils = new SearchPhotoTestUtils({ metadataDb, imageDb });
+    assertionsCounter = new AssertionsCounter();
     const nbStorePhotos = 3;
     const storedPhotos = dumbPhotoGenerator.generatePhotos(nbStorePhotos);
     await testUtils.init(storedPhotos);
@@ -40,10 +43,12 @@ describe("SearchPhoto", () => {
         "should sort them by $case date when required",
         async ({ rendering }: { rendering: IRendering }) => {
           const searchResult = await searchPhotos.execute({ rendering });
-          testUtils.expectSearchResultToBeSortedAsRequired(
+          testUtils.expectSearchResultMatchingDateOrdering(
             searchResult,
             rendering.dateOrder,
+            assertionsCounter,
           );
+          assertionsCounter.checkAssertions();
         },
       );
     });
@@ -59,10 +64,12 @@ describe("SearchPhoto", () => {
         "should return at most $requiredSize results when required",
         async ({ requiredSize, rendering }) => {
           const searchResult = await searchPhotos.execute({ rendering });
-          testUtils.expectSearchResultSizeToMatchRequiredSize(
+          testUtils.expectSearchResultMatchingSize(
             searchResult,
             requiredSize,
+            assertionsCounter,
           );
+          assertionsCounter.checkAssertions();
         },
       );
     });

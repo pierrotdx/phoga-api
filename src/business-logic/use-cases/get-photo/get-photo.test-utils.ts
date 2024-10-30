@@ -1,22 +1,11 @@
-import { DbsTestUtils, IAssertionsCounter, IDbsTestUtilsParams, } from "@utils";
-
+import { IAssertionsCounter, IDbsTestUtilsParams } from "@utils";
 
 import { GetPhotoField, IPhoto } from "../../models";
+import { UseCasesSharedTestUtils } from "../use-cases.shared-test-utils";
 
-export class GetPhotoTestUtils extends DbsTestUtils {
+export class GetPhotoTestUtils extends UseCasesSharedTestUtils {
   constructor(dbsTestUtilsParams: IDbsTestUtilsParams) {
     super(dbsTestUtilsParams);
-  }
-
-  expectResultToMatchPhoto(
-    expectedPhoto: IPhoto,
-    result: IPhoto,
-    assertionsCounter: IAssertionsCounter,
-  ) {
-    expect(result).toBeDefined();
-    expect(result._id).toBe(expectedPhoto._id);
-    expect(result).toEqual(expectedPhoto);
-    assertionsCounter.increase(3);
   }
 
   expectResultToHaveOnlyRequiredField(

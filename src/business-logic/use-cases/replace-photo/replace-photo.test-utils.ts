@@ -1,4 +1,8 @@
-import { IDbsTestUtilsParams } from "@utils";
+import {
+  IAssertionsCounter,
+  IDbsTestUtilsParams,
+  sharedTestUtils,
+} from "@utils";
 
 import { IPhoto } from "../../models";
 import { UseCasesSharedTestUtils } from "../use-cases.shared-test-utils";
@@ -10,31 +14,29 @@ export class ReplacePhotoTestUtils extends UseCasesSharedTestUtils {
 
   async expectImageToBeReplacedInDb(
     dbImageBefore: IPhoto["imageBuffer"],
-    expectedImage: IPhoto["imageBuffer"],
-    id: IPhoto["_id"],
+    expectedPhoto: IPhoto,
+    assertionsCounter: IAssertionsCounter,
   ): Promise<void> {
-    const dbImageAfter = await this.getPhotoImageFromDb(id);
-    expect(dbImageAfter).toEqual(expectedImage);
+    const dbImageAfter = await this.getPhotoImageFromDb(expectedPhoto._id);
     expect(dbImageAfter).not.toEqual(dbImageBefore);
-    expect.assertions(2);
+    assertionsCounter.increase(1);
+    sharedTestUtils.expectMatchingBuffers(
+      dbImageAfter,
+      expectedPhoto.imageBuffer,
+      assertionsCounter,
+    );
   }
 
   async expectMetadataToBeReplacedInDb(
-    id: IPhoto["_id"],
     dbMetadataBefore: IPhoto["metadata"],
-    expectedMetadata: IPhoto["metadata"],
+    expectedPhoto: IPhoto,
+    assertionsCounter: IAssertionsCounter,
   ): Promise<void> {
-    const dbMetadataAfter = await this.getPhotoMetadataFromDb(id);
-
-    expect(dbMetadataAfter).toEqual(expectedMetadata);
+    const dbMetadataAfter = await this.getPhotoMetadataFromDb(
+      expectedPhoto._id,
+    );
     expect(dbMetadataAfter).not.toEqual(dbMetadataBefore);
-
-    expect(dbMetadataBefore.location).toBeDefined();
-    expect(dbMetadataAfter.location).not.toEqual(dbMetadataBefore.location);
-
-    expect(dbMetadataBefore.titles).toBeDefined();
-    expect(dbMetadataAfter.titles).not.toEqual(dbMetadataBefore.titles);
-
-    expect.assertions(6);
+    expect(dbMetadataAfter).toEqual(expectedPhoto.metadata);
+    assertionsCounter.increase(2);
   }
 }

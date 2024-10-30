@@ -28,6 +28,16 @@ export class SharedTestUtils implements ISharedTestUtils {
     expect(spy).toHaveBeenLastCalledWith(...params);
     assertionsCounter.increase(2);
   }
+
+  expectMatchingBuffers(
+    bufferA: Buffer,
+    bufferB: Buffer,
+    assertionsCounter: IAssertionsCounter,
+  ) {
+    const haveSameContent = bufferA.compare(bufferB) === 0;
+    expect(haveSameContent).toBe(true);
+    assertionsCounter.increase();
+  }
 }
 
 export const sharedTestUtils = new SharedTestUtils();
