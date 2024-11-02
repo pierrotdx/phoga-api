@@ -1,3 +1,3 @@
 export enum MongoCollection {
-  PhotoMetadata = "photoMetadata",
+  PhotoMetadata = "photo-metadata",
 }
