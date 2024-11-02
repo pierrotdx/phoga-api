@@ -1,6 +1,6 @@
-import { Logger } from "@logger";
+import { ILogger } from "@logger";
 
-export class LoggerConsole implements Logger {
+export class LoggerConsole implements ILogger {
   info(message: string, meta?: object): void {
     console.info(message, meta);
   }

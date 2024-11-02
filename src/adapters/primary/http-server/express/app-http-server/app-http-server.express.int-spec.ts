@@ -29,7 +29,7 @@ import {
 } from "@business-logic";
 import { Storage } from "@google-cloud/storage";
 import { EntryPointId, IParsers, IValidators, entryPoints } from "@http-server";
-import { Logger } from "@logger/models";
+import { ILogger } from "@logger/models";
 import { AssertionsCounter, IAssertionsCounter } from "@utils";
 
 import { ExpressAuthHandler } from "../../../oauth2-jwt-bearer";
@@ -58,7 +58,7 @@ describe("ExpressHttpServer", () => {
   let expressTestUtils: ExpressSharedTestUtils;
   let assertionsCounter: IAssertionsCounter;
   let app: Express;
-  let logger: Logger;
+  let logger: ILogger;
   let authHandler: IAuthHandler;
 
   let mongoBase: MongoBase;

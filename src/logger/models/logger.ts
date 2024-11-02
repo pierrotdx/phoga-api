@@ -1,6 +1,6 @@
 type logFn = (message: string, meta?: object) => void;
 
-export interface Logger {
+export interface ILogger {
   info: logFn;
   warn: logFn;
   error: (err: unknown) => void;
