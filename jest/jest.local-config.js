@@ -6,7 +6,7 @@ module.exports = {
   rootDir: "../",
   testMatch: [
     "<rootDir>**/src/**/*.spec.(ts)",
-    "<rootDir>**/src/**/*.int-spec.(ts)",
+    "<rootDir>**/src/**/*.integration.(ts)",
   ],
   globalSetup: "<rootDir>/jest/integration/int-global-setup.ts",
   globalTeardown: "<rootDir>/jest/integration/int-global-teardown.ts",

@@ -4,7 +4,7 @@ const sharedConfig = require("../../jest.config");
 module.exports = {
   ...sharedConfig,
   rootDir: "../..",
-  testMatch: ["<rootDir>**/src/**/*.int-spec.(ts)"],
+  testMatch: ["<rootDir>**/src/**/*.integration.(ts)"],
   globalSetup: "<rootDir>/jest/integration/int-global-setup.ts",
   globalTeardown: "<rootDir>/jest/integration/int-global-teardown.ts",
 };
