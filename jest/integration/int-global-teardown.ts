@@ -1,15 +1,14 @@
 import compose from "docker-compose";
 
 import { DockerService } from "../../docker";
-import { JestGlobalManager } from "./jest-global-manager";
+import { JestGlobalManager } from "../jest-global-manager";
 
-export class JestGlobalTeardown extends JestGlobalManager {
+class IntGlobalTeardown extends JestGlobalManager {
   constructor(configRelativePath: string) {
     super(configRelativePath);
   }
 
-  execute = async (globalConfig, projectConfig) => {
-    this.setConfigFullPathAndEnv(projectConfig.rootDir);
+  actions = async (): Promise<void> => {
     await this.teardownContainer(DockerService.Gcs);
     await this.teardownContainer(DockerService.Mongo);
   };
@@ -27,3 +26,7 @@ export class JestGlobalTeardown extends JestGlobalManager {
     }
   };
 }
+
+const configRelativePath = "/docker/tests";
+const intGlobalTeardown = new IntGlobalTeardown(configRelativePath).execute;
+export default intGlobalTeardown;

@@ -7,8 +7,7 @@ module.exports = {
   testMatch: [
     "<rootDir>**/src/**/*.spec.(ts)",
     "<rootDir>**/src/**/*.int-spec.(ts)",
-    "<rootDir>**/src/**/*.e2e-spec.(ts)",
   ],
-  globalSetup: "<rootDir>/jest/int-global-setup.ts",
-  globalTeardown: "<rootDir>/jest/int-global-teardown.ts",
+  globalSetup: "<rootDir>/jest/integration/int-global-setup.ts",
+  globalTeardown: "<rootDir>/jest/integration/int-global-teardown.ts",
 };

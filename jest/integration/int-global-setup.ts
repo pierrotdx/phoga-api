@@ -1,18 +1,16 @@
 import compose from "docker-compose";
 
 import { DockerService } from "../../docker";
-import { JestGlobalManager } from "./jest-global-manager";
+import { JestGlobalManager } from "../jest-global-manager";
 
-export class JestGlobalSetup extends JestGlobalManager {
+class IntGlobalSetup extends JestGlobalManager {
   constructor(configRelativePath: string) {
     super(configRelativePath);
   }
 
-  execute = async (globalConfig, projectConfig) => {
-    this.setConfigFullPathAndEnv(projectConfig.rootDir);
+  actions = async (): Promise<void> => {
     await this.setupContainer(DockerService.Gcs);
     await this.setupContainer(DockerService.Mongo);
-    this.setGlobalVariables(projectConfig);
   };
 
   private setupContainer = async (serviceName: DockerService) => {
@@ -26,9 +24,8 @@ export class JestGlobalSetup extends JestGlobalManager {
       throw err;
     }
   };
-
-  private setGlobalVariables = (projectConfig: any) => {
-    projectConfig.globals.__MONGO_URL__ = this.env.MONGO_URL;
-    projectConfig.globals.__MONGO_DB_NAME__ = this.env.MONGO_DB;
-  };
 }
+
+const configRelativePath = "/docker/tests";
+const intGlobalSetup = new IntGlobalSetup(configRelativePath).execute;
+export default intGlobalSetup;
