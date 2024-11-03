@@ -30,7 +30,11 @@ import {
 import { Storage } from "@google-cloud/storage";
 import { EntryPointId, IParsers, IValidators, entryPoints } from "@http-server";
 import { ILogger } from "@logger/models";
-import { AssertionsCounter, IAssertionsCounter } from "@utils";
+import {
+  AssertionsCounter,
+  IAssertionsCounter,
+  IDbsTestUtilsParams,
+} from "@utils";
 
 import { ExpressAuthHandler } from "../../../oauth2-jwt-bearer";
 import {
@@ -64,6 +68,7 @@ describe("ExpressHttpServer", () => {
   let mongoBase: MongoBase;
   let metadataDb: IPhotoMetadataDb;
   let imageDb: IPhotoImageDb;
+  let dbsTestUtilsParams: IDbsTestUtilsParams;
 
   let storage: Storage;
 
@@ -80,6 +85,8 @@ describe("ExpressHttpServer", () => {
 
     storage = await gcsTestUtils.getStorage();
     imageDb = new PhotoImageDbGcs(storage);
+
+    dbsTestUtilsParams = { metadataDb, imageDb };
 
     oauth2Server = new OAuth2ServerMock(issuerHost, issuerPort);
     await oauth2Server.start({ aud: audience });
@@ -125,7 +132,7 @@ describe("ExpressHttpServer", () => {
     let payload: ReturnType<typeof expressTestUtils.getPayloadFromPhoto>;
 
     beforeEach(() => {
-      addPhotoTestUtils = new AddPhotoTestUtils({ metadataDb, imageDb });
+      addPhotoTestUtils = new AddPhotoTestUtils(dbsTestUtilsParams);
       payload = expressTestUtils.getPayloadFromPhoto(photoToAdd);
     });
 
@@ -170,7 +177,7 @@ describe("ExpressHttpServer", () => {
     let getPhotoTestUtils: GetPhotoTestUtils;
 
     beforeEach(async () => {
-      getPhotoTestUtils = new GetPhotoTestUtils({ metadataDb, imageDb });
+      getPhotoTestUtils = new GetPhotoTestUtils(dbsTestUtilsParams);
       await getPhotoTestUtils.insertPhotoInDbs(storedPhoto);
     });
 
@@ -199,7 +206,7 @@ describe("ExpressHttpServer", () => {
     let getPhotoTestUtils: GetPhotoTestUtils;
 
     beforeEach(() => {
-      getPhotoTestUtils = new GetPhotoTestUtils({ metadataDb, imageDb });
+      getPhotoTestUtils = new GetPhotoTestUtils(dbsTestUtilsParams);
     });
 
     it("should return the image buffer of the photo with matching id", async () => {
@@ -227,7 +234,7 @@ describe("ExpressHttpServer", () => {
     let searchPhotoTestUtils: SearchPhotoTestUtils;
 
     beforeEach(() => {
-      searchPhotoTestUtils = new SearchPhotoTestUtils({ metadataDb, imageDb });
+      searchPhotoTestUtils = new SearchPhotoTestUtils(dbsTestUtilsParams);
     });
 
     it.each`
@@ -331,7 +338,7 @@ describe("ExpressHttpServer", () => {
       url = entryPoints.getFullPathWithParams(EntryPointId.DeletePhoto, {
         id: photoToDelete._id,
       });
-      deletePhotoTestUtils = new DeletePhotoTestUtils({ metadataDb, imageDb });
+      deletePhotoTestUtils = new DeletePhotoTestUtils(dbsTestUtilsParams);
       await deletePhotoTestUtils.insertPhotoInDbs(photoToDelete);
     });
 
