@@ -8,10 +8,11 @@ import {
   dumbPhotoGenerator,
 } from "@adapters";
 import {
+  GcsManager,
+  GcsTestUtils,
   MongoBase,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
-  gcsTestUtils,
 } from "@adapters/databases";
 import { LoggerWinston } from "@adapters/loggers";
 import {
@@ -60,6 +61,7 @@ describe("ExpressHttpServer", () => {
 
   let expressHttpServer: ExpressHttpServer;
   let expressTestUtils: ExpressSharedTestUtils;
+  let gcsTestUtils: GcsTestUtils;
   let assertionsCounter: IAssertionsCounter;
   let app: Express;
   let logger: ILogger;
@@ -83,7 +85,10 @@ describe("ExpressHttpServer", () => {
     await mongoBase.open();
     metadataDb = new PhotoMetadataDbMongo(mongoBase);
 
-    storage = await gcsTestUtils.getStorage();
+    const gcsManager = new GcsManager();
+    storage = await gcsManager.getStorage();
+    gcsTestUtils = new GcsTestUtils(gcsManager);
+    await gcsTestUtils.deleteAllImages();
     imageDb = new PhotoImageDbGcs(storage);
 
     dbsTestUtilsParams = { metadataDb, imageDb };

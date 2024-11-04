@@ -1,3 +1,4 @@
 export * from "./constants.gcs";
 export * from "./models";
-export * from "./test-utils.service";
+export * from "./gcs-manager";
+export * from "./gcs.test-utils";

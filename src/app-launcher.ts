@@ -2,10 +2,10 @@ import dotenv from "dotenv";
 
 import {
   ExpressAppHttpServerFactory,
+  GcsManager,
   MongoBase,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
-  gcsTestUtils,
 } from "@adapters";
 import { IPhotoImageDb, IPhotoMetadataDb } from "@business-logic";
 import { AppHttpServer } from "@http-server";
@@ -49,7 +49,8 @@ export class AppLauncher {
   }
 
   private async setPhotoImageDb() {
-    const storage = await gcsTestUtils.getStorage();
+    const gcsManager = new GcsManager();
+    const storage = await gcsManager.getStorage();
     this.photoImageDb = new PhotoImageDbGcs(storage);
   }
 }
