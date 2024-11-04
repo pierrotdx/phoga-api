@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import {
   ExpressAppHttpServerFactory,
   GcsManager,
-  MongoBase,
+  MongoManager,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
 } from "@adapters";
@@ -40,12 +40,12 @@ export class AppLauncher {
   }
 
   private async setPhotoMetadataDb() {
-    const mongoBase = new MongoBase(
+    const mongoManager = new MongoManager(
       process.env.MONGO_URL,
       process.env.MONGO_DB,
     );
-    await mongoBase.open();
-    this.photoMetadataDb = new PhotoMetadataDbMongo(mongoBase);
+    await mongoManager.open();
+    this.photoMetadataDb = new PhotoMetadataDbMongo(mongoManager);
   }
 
   private async setPhotoImageDb() {

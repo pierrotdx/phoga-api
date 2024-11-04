@@ -1,25 +1,28 @@
 import { Collection } from "mongodb";
 
 import { MongoCollection } from "./models";
-import { MongoBase } from "./mongo-base";
+import { MongoManager } from "./mongo-manager";
 
-describe("MongoBase", () => {
-  let mongoBase: MongoBase;
+describe("MongoManager", () => {
+  let mongoManager: MongoManager;
 
   beforeEach(async () => {
-    mongoBase = new MongoBase(global.__MONGO_URL__, global.__MONGO_DB_NAME__);
-    await mongoBase.open();
+    mongoManager = new MongoManager(
+      global.__MONGO_URL__,
+      global.__MONGO_DB_NAME__,
+    );
+    await mongoManager.open();
   });
 
   afterEach(async () => {
-    await mongoBase.close();
+    await mongoManager.close();
   });
 
   describe("getCollection", () => {
     it("should return the required Mongo collection", () => {
       const collectionName = MongoCollection.PhotoMetadata;
 
-      const collection = mongoBase.getCollection(collectionName);
+      const collection = mongoManager.getCollection(collectionName);
 
       expect(collection).toBeDefined();
       expect(collection instanceof Collection).toBe(true);

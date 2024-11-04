@@ -10,7 +10,7 @@ import {
 import {
   GcsManager,
   GcsTestUtils,
-  MongoBase,
+  MongoManager,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
 } from "@adapters/databases";
@@ -67,7 +67,7 @@ describe("ExpressHttpServer", () => {
   let logger: ILogger;
   let authHandler: IAuthHandler;
 
-  let mongoBase: MongoBase;
+  let mongoManager: MongoManager;
   let metadataDb: IPhotoMetadataDb;
   let imageDb: IPhotoImageDb;
   let dbsTestUtilsParams: IDbsTestUtilsParams;
@@ -81,9 +81,9 @@ describe("ExpressHttpServer", () => {
   let oauth2Server: OAuth2ServerMock;
 
   beforeAll(async () => {
-    mongoBase = new MongoBase(global.__MONGO_URL__, global.__MONGO_DB_NAME);
-    await mongoBase.open();
-    metadataDb = new PhotoMetadataDbMongo(mongoBase);
+    mongoManager = new MongoManager(global.__MONGO_URL__, global.__MONGO_DB_NAME);
+    await mongoManager.open();
+    metadataDb = new PhotoMetadataDbMongo(mongoManager);
 
     const gcsManager = new GcsManager();
     storage = await gcsManager.getStorage();
@@ -126,7 +126,7 @@ describe("ExpressHttpServer", () => {
   });
 
   afterAll(async () => {
-    await mongoBase.close();
+    await mongoManager.close();
     await oauth2Server.close();
   });
 
