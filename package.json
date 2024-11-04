@@ -7,7 +7,7 @@
     "start": "ts-node -r tsconfig-paths/register src/main.ts",
     "build": "tsc",
     "test:unit": "jest --config ./jest/unit/jest.unit-config.js",
-    "test:int": "jest --config ./jest/integration/jest.int-config.js --runInBand",
+    "test:int": "jest --config ./jest/integration/jest.integration-config.js --runInBand",
     "test:e2e": "jest --config ./jest/e2e/jest.e2e-config.js --runInBand",
     "test:local": "jest --config ./jest/jest.local-config.js --runInBand",
     "docker:dev:up": "docker-compose -f ./docker/dev/docker-compose.yaml up -d",

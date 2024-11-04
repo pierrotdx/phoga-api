@@ -8,6 +8,6 @@ module.exports = {
     "<rootDir>**/src/**/*.spec.(ts)",
     "<rootDir>**/src/**/*.integration.(ts)",
   ],
-  globalSetup: "<rootDir>/jest/integration/int-global-setup.ts",
-  globalTeardown: "<rootDir>/jest/integration/int-global-teardown.ts",
+  globalSetup: "<rootDir>/jest/integration/integration-global-setup.ts",
+  globalTeardown: "<rootDir>/jest/integration/integration-global-teardown.ts",
 };
