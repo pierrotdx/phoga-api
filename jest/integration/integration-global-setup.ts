@@ -1,31 +1,21 @@
-import compose from "docker-compose";
-
 import { DockerService } from "../../docker";
 import { JestGlobalManager } from "../jest-global-manager";
+import { IConfigFolders } from "../models";
 
 class IntGlobalSetup extends JestGlobalManager {
-  constructor(configRelativePath: string) {
-    super(configRelativePath);
+  constructor(configFolders: IConfigFolders) {
+    super(configFolders);
   }
 
   actions = async (): Promise<void> => {
     await this.setupContainer(DockerService.Gcs);
     await this.setupContainer(DockerService.Mongo);
   };
-
-  private setupContainer = async (serviceName: DockerService) => {
-    try {
-      const result = await compose.upOne(serviceName, {
-        cwd: this.configFullPath,
-      });
-      console.info(result.err);
-    } catch (err) {
-      console.error(err);
-      throw err;
-    }
-  };
 }
 
-const configRelativePath = "/docker/tests";
-const intGlobalSetup = new IntGlobalSetup(configRelativePath).execute;
+const configFolders: IConfigFolders = {
+  env: "/docker/tests",
+  dockerConfig: "/docker/tests",
+};
+const intGlobalSetup = new IntGlobalSetup(configFolders).execute;
 export default intGlobalSetup;

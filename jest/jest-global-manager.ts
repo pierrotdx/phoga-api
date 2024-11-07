@@ -1,21 +1,22 @@
+import compose from "docker-compose";
 import dotenv from "dotenv";
 import path from "path";
 
-interface IJestGlobalManager {
-  execute(globalConfig, projectConfig): Promise<void>;
-  actions?: () => Promise<void>;
-}
+import { DockerService } from "../docker";
+import { IConfigFolders } from "./models";
 
-export class JestGlobalManager implements IJestGlobalManager {
-  actions?: () => Promise<void>;
+export abstract class JestGlobalManager {
+  abstract actions?: () => Promise<void>;
 
-  protected configFullPath: string;
+  protected envPath: string;
+  protected dockerConfigFolderPath: string;
   protected env: any;
 
-  constructor(private readonly configRelativePath: string) {}
+  constructor(private readonly configFolders: IConfigFolders) {}
 
   execute = async (globalConfig, projectConfig) => {
-    this.setConfigFullPath(projectConfig.rootDir);
+    this.setEnvPath(projectConfig.rootDir);
+    this.setDockerConfigPath(projectConfig.rootDir);
     this.setEnv();
     this.setGlobalVariables(projectConfig);
     if (this.actions) {
@@ -23,12 +24,23 @@ export class JestGlobalManager implements IJestGlobalManager {
     }
   };
 
-  private setConfigFullPath(rootDir: string) {
-    this.configFullPath = path.join(rootDir, this.configRelativePath);
+  private setEnvPath(rootDir: string) {
+    if (this.configFolders.env) {
+      this.envPath = path.join(rootDir, this.configFolders.env);
+    }
+  }
+
+  private setDockerConfigPath(rootDir: string) {
+    if (this.configFolders.dockerConfig) {
+      this.dockerConfigFolderPath = path.join(
+        rootDir,
+        this.configFolders.dockerConfig,
+      );
+    }
   }
 
   private setEnv() {
-    dotenv.config({ path: `${this.configFullPath}/.env` });
+    dotenv.config({ path: `${this.envPath}/.env` });
     this.env = process.env;
   }
 
@@ -40,5 +52,30 @@ export class JestGlobalManager implements IJestGlobalManager {
     projectConfig.globals.__MONGO_DB_NAME__ = this.env.MONGO_DB;
     projectConfig.globals.__GCS_API_ENDPOINT__ = this.env.GCS_API_ENDPOINT;
     projectConfig.globals.__GCS_PROJECT_ID__ = this.env.GCS_PROJECT_ID;
+  };
+
+  setupContainer = async (serviceName: DockerService) => {
+    try {
+      const result = await compose.upOne(serviceName, {
+        cwd: this.dockerConfigFolderPath,
+      });
+      console.info(result.err);
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  teardownContainer = async (serviceName: DockerService) => {
+    try {
+      const result = await compose.down({
+        cwd: this.dockerConfigFolderPath,
+        commandOptions: [serviceName, ["--volumes"]],
+      });
+      console.info(result.err);
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
   };
 }

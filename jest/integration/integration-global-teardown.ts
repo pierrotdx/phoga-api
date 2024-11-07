@@ -2,31 +2,22 @@ import compose from "docker-compose";
 
 import { DockerService } from "../../docker";
 import { JestGlobalManager } from "../jest-global-manager";
+import { IConfigFolders } from "../models";
 
 class IntGlobalTeardown extends JestGlobalManager {
-  constructor(configRelativePath: string) {
-    super(configRelativePath);
+  constructor(configFolders: IConfigFolders) {
+    super(configFolders);
   }
 
   actions = async (): Promise<void> => {
     await this.teardownContainer(DockerService.Gcs);
     await this.teardownContainer(DockerService.Mongo);
   };
-
-  private teardownContainer = async (serviceName: DockerService) => {
-    try {
-      const result = await compose.down({
-        cwd: this.configFullPath,
-        commandOptions: [serviceName, ["--volumes"]],
-      });
-      console.info(result.err);
-    } catch (err) {
-      console.error(err);
-      throw err;
-    }
-  };
 }
 
-const configRelativePath = "/docker/tests";
-const intGlobalTeardown = new IntGlobalTeardown(configRelativePath).execute;
+const configFolders: IConfigFolders = {
+  env: "/docker/tests",
+  dockerConfig: "/docker/tests",
+};
+const intGlobalTeardown = new IntGlobalTeardown(configFolders).execute;
 export default intGlobalTeardown;
