@@ -8,8 +8,7 @@ import {
   dumbPhotoGenerator,
 } from "@adapters";
 import {
-  GcsManager,
-  GcsTestUtils,
+  GcStorageTestUtils,
   MongoManager,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
@@ -61,7 +60,7 @@ describe("ExpressHttpServer", () => {
 
   let expressHttpServer: ExpressHttpServer;
   let expressTestUtils: ExpressSharedTestUtils;
-  let gcsTestUtils: GcsTestUtils;
+  let gcsTestUtils: GcStorageTestUtils;
   let assertionsCounter: IAssertionsCounter;
   let app: Express;
   let logger: ILogger;
@@ -81,13 +80,18 @@ describe("ExpressHttpServer", () => {
   let oauth2Server: OAuth2ServerMock;
 
   beforeAll(async () => {
-    mongoManager = new MongoManager(global.__MONGO_URL__, global.__MONGO_DB_NAME);
+    mongoManager = new MongoManager(
+      global.__MONGO_URL__,
+      global.__MONGO_DB_NAME,
+    );
     await mongoManager.open();
     metadataDb = new PhotoMetadataDbMongo(mongoManager);
 
-    const gcsManager = new GcsManager();
-    storage = await gcsManager.getStorage();
-    gcsTestUtils = new GcsTestUtils(gcsManager);
+    storage = new Storage({
+      apiEndpoint: global.__GCS_API_ENDPOINT__,
+      projectId: global.__GCS_PROJECT_ID__,
+    });
+    gcsTestUtils = new GcStorageTestUtils(storage);
     await gcsTestUtils.deleteAllImages();
     imageDb = new PhotoImageDbGcs(storage);
 

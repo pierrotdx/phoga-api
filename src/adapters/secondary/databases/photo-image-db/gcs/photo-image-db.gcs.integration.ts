@@ -3,7 +3,7 @@ import { Storage } from "@google-cloud/storage";
 import { AssertionsCounter, IAssertionsCounter } from "@utils";
 
 import { dumbPhotoGenerator } from "../../../../primary";
-import { GcsManager, GcsTestUtils } from "../../gcs";
+import { GcStorageTestUtils } from "../../gcs";
 import { PhotoImageDbGcs } from "./photo-image-db.gcs";
 import { PhotoImageDbGcsTestUtils } from "./photo-image-db.gcs.test-utils";
 
@@ -12,16 +12,18 @@ const assetImagesPaths = ["assets/test-img-1.jpg", "assets/test-img-2.jpg"];
 describe("PhotoImageDbGcs", () => {
   let assertionsCounter: IAssertionsCounter;
   let testUtils: PhotoImageDbGcsTestUtils;
-  let gcsTestUtils: GcsTestUtils;
+  let gcsTestUtils: GcStorageTestUtils;
   let photoImageDbGcs: IPhotoImageDb;
   let storage: Storage;
 
   let storedPhoto: IPhoto;
 
   beforeAll(async () => {
-    const gcsManager = new GcsManager();
-    storage = await gcsManager.getStorage();
-    gcsTestUtils = new GcsTestUtils(gcsManager);
+    storage = new Storage({
+      apiEndpoint: global.__GCS_API_ENDPOINT__,
+      projectId: global.__GCS_PROJECT_ID__,
+    });
+    gcsTestUtils = new GcStorageTestUtils(storage);
     await gcsTestUtils.deleteAllImages();
   });
 
