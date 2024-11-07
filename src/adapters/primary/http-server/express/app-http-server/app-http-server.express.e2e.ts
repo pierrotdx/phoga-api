@@ -8,7 +8,6 @@ import {
   dumbPhotoGenerator,
 } from "@adapters";
 import {
-  GcStorageTestUtils,
   MongoManager,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
@@ -32,6 +31,7 @@ import { EntryPointId, IParsers, IValidators, entryPoints } from "@http-server";
 import { ILogger } from "@logger/models";
 import {
   AssertionsCounter,
+  DbsTestUtils,
   IAssertionsCounter,
   IDbsTestUtilsParams,
 } from "@utils";
@@ -60,7 +60,6 @@ describe("ExpressHttpServer", () => {
 
   let expressHttpServer: ExpressHttpServer;
   let expressTestUtils: ExpressSharedTestUtils;
-  let gcsTestUtils: GcStorageTestUtils;
   let assertionsCounter: IAssertionsCounter;
   let app: Express;
   let logger: ILogger;
@@ -69,6 +68,7 @@ describe("ExpressHttpServer", () => {
   let mongoManager: MongoManager;
   let metadataDb: IPhotoMetadataDb;
   let imageDb: IPhotoImageDb;
+  let dbsTestUtils: DbsTestUtils;
   let dbsTestUtilsParams: IDbsTestUtilsParams;
 
   let storage: Storage;
@@ -82,17 +82,14 @@ describe("ExpressHttpServer", () => {
   beforeAll(async () => {
     mongoManager = new MongoManager(
       global.__MONGO_URL__,
-      global.__MONGO_DB_NAME,
+      global.__MONGO_DB_NAME__,
     );
     await mongoManager.open();
     metadataDb = new PhotoMetadataDbMongo(mongoManager);
 
     storage = new Storage({
-      apiEndpoint: global.__GCS_API_ENDPOINT__,
-      projectId: global.__GCS_PROJECT_ID__,
+      keyFile: global.__GOOGLE_APPLICATION_CREDENTIALS__,
     });
-    gcsTestUtils = new GcStorageTestUtils(storage);
-    await gcsTestUtils.deleteAllImages();
     imageDb = new PhotoImageDbGcs(storage);
 
     dbsTestUtilsParams = { metadataDb, imageDb };
@@ -122,6 +119,7 @@ describe("ExpressHttpServer", () => {
     app = expressHttpServer.app;
 
     expressTestUtils = new ExpressSharedTestUtils();
+    dbsTestUtils = new DbsTestUtils(dbsTestUtilsParams);
     assertionsCounter = new AssertionsCounter();
   });
 
@@ -130,6 +128,7 @@ describe("ExpressHttpServer", () => {
   });
 
   afterAll(async () => {
+    await dbsTestUtils.deletePhotoIfNecessary(storedPhoto._id);
     await mongoManager.close();
     await oauth2Server.close();
   });
@@ -143,6 +142,10 @@ describe("ExpressHttpServer", () => {
     beforeEach(() => {
       addPhotoTestUtils = new AddPhotoTestUtils(dbsTestUtilsParams);
       payload = expressTestUtils.getPayloadFromPhoto(photoToAdd);
+    });
+
+    afterEach(async () => {
+      await addPhotoTestUtils.deletePhotoIfNecessary(photoToAdd._id);
     });
 
     it("should deny the access and respond with status code 401 if no token is associated to the request", async () => {
