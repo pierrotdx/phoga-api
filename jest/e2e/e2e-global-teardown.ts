@@ -1,20 +1,16 @@
-import { DockerService } from "../../docker";
 import { JestGlobalManager } from "../jest-global-manager";
 import { IConfigFolders } from "../models";
 
-class E2EtGlobalTeardown extends JestGlobalManager {
+class E2eGlobalTeardown extends JestGlobalManager {
   constructor(configFolders: IConfigFolders) {
     super(configFolders);
   }
 
-  actions = async (): Promise<void> => {
-    await this.teardownContainer(DockerService.Gcs);
-  };
+  actions = async (): Promise<void> => {};
 }
 
 const configFolders: IConfigFolders = {
   env: "./.env",
-  dockerConfig: "/docker/tests",
 };
-const intGlobalTeardown = new E2EtGlobalTeardown(configFolders).execute;
+const intGlobalTeardown = new E2eGlobalTeardown(configFolders).execute;
 export default intGlobalTeardown;

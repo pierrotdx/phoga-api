@@ -50,10 +50,21 @@ export abstract class JestGlobalManager {
     }
     projectConfig.globals.__MONGO_URL__ = this.env.MONGO_URL;
     projectConfig.globals.__MONGO_DB_NAME__ = this.env.MONGO_DB;
+
     projectConfig.globals.__GCS_API_ENDPOINT__ = this.env.GCS_API_ENDPOINT;
     projectConfig.globals.__GCS_PROJECT_ID__ = this.env.GCS_PROJECT_ID;
     projectConfig.globals.__GOOGLE_APPLICATION_CREDENTIALS__ =
       this.env.GOOGLE_APPLICATION_CREDENTIALS;
+
+    projectConfig.globals.__OAUTH2_AUTHORIZATION_SERVER_DOMAIN__ =
+      this.env.OAUTH2_AUTHORIZATION_SERVER_DOMAIN;
+    projectConfig.globals.__OAUTH2_CLIENT_ID__ = this.env.OAUTH2_CLIENT_ID;
+    projectConfig.globals.__OAUTH2_CLIENT_SECRET__ =
+      this.env.OAUTH2_CLIENT_SECRET;
+    projectConfig.globals.__OAUTH2_AUDIENCE__ = this.env.OAUTH2_AUDIENCE;
+    projectConfig.globals.__OAUTH2_USER_NAME__ = this.env.OAUTH2_USER_NAME;
+    projectConfig.globals.__OAUTH2_USER_PASSWORD__ =
+      this.env.OAUTH2_USER_PASSWORD;
   };
 
   setupContainer = async (serviceName: DockerService) => {

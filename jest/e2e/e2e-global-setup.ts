@@ -1,7 +1,7 @@
 import { JestGlobalManager } from "../jest-global-manager";
 import { IConfigFolders } from "../models";
 
-class E2EGlobalSetup extends JestGlobalManager {
+class E2eGlobalSetup extends JestGlobalManager {
   constructor(configFolders: IConfigFolders) {
     super(configFolders);
   }
@@ -12,5 +12,5 @@ class E2EGlobalSetup extends JestGlobalManager {
 const configFolders: IConfigFolders = {
   env: "/jest/e2e",
 };
-const e2eGlobalSetup = new E2EGlobalSetup(configFolders).execute;
+const e2eGlobalSetup = new E2eGlobalSetup(configFolders).execute;
 export default e2eGlobalSetup;

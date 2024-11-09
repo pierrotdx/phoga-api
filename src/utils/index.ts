@@ -6,3 +6,4 @@ export * from "./dumb-photo-generator/dumb-photo-generator";
 export * from "./assertions";
 export * from "./models";
 export * from "./shared-test-utils";
+export * from "./token-provider";

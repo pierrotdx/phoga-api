@@ -3,6 +3,7 @@ import request from "supertest";
 
 import {
   AjvValidatorsFactory,
+  Auth0TokenProvider,
   ExpressSharedTestUtils,
   ParsersFactory,
   dumbPhotoGenerator,
@@ -27,22 +28,23 @@ import {
   UseCasesFactory,
 } from "@business-logic";
 import { Storage } from "@google-cloud/storage";
-import { EntryPointId, IParsers, IValidators, entryPoints } from "@http-server";
+import {
+  EntryPointId,
+  IParsers,
+  IValidators,
+  Scope,
+  entryPoints,
+} from "@http-server";
 import { ILogger } from "@logger/models";
 import {
   AssertionsCounter,
   DbsTestUtils,
   IAssertionsCounter,
   IDbsTestUtilsParams,
+  ITokenProvider,
 } from "@utils";
 
 import { ExpressAuthHandler } from "../../../oauth2-jwt-bearer";
-import {
-  OAuth2ServerMock,
-  audience,
-  issuerHost,
-  issuerPort,
-} from "../../../oauth2-jwt-bearer/test-utils.service";
 import { IAuthHandler } from "../models";
 import { ExpressHttpServer } from "./app-http-server.express";
 
@@ -77,7 +79,7 @@ describe("ExpressHttpServer", () => {
   let validators: IValidators;
   let parsers: IParsers;
 
-  let oauth2Server: OAuth2ServerMock;
+  let getToken: (scopes?: Scope[]) => Promise<string>;
 
   beforeAll(async () => {
     mongoManager = new MongoManager(
@@ -94,8 +96,20 @@ describe("ExpressHttpServer", () => {
 
     dbsTestUtilsParams = { metadataDb, imageDb };
 
-    oauth2Server = new OAuth2ServerMock(issuerHost, issuerPort);
-    await oauth2Server.start({ aud: audience });
+    const tokenProvider = new Auth0TokenProvider({
+      domain: global.__OAUTH2_AUTHORIZATION_SERVER_DOMAIN__,
+      clientId: global.__OAUTH2_CLIENT_ID__,
+      clientSecret: global.__OAUTH2_CLIENT_SECRET__,
+    });
+    getToken = async (scopes?: Scope[]) => {
+      const scope = scopes?.join(" ");
+      return await tokenProvider.getToken({
+        username: global.__OAUTH2_USER_NAME__,
+        password: global.__OAUTH2_USER_PASSWORD__,
+        audience: global.__OAUTH2_AUDIENCE__,
+        scope,
+      });
+    };
   });
 
   beforeEach(async () => {
@@ -106,7 +120,10 @@ describe("ExpressHttpServer", () => {
     const silentLogger = true;
     logger = new LoggerWinston(silentLogger);
 
-    authHandler = new ExpressAuthHandler(oauth2Server.issuerBaseURL, audience);
+    authHandler = new ExpressAuthHandler(
+      `https://${global.__OAUTH2_AUTHORIZATION_SERVER_DOMAIN__}`,
+      global.__OAUTH2_AUDIENCE__,
+    );
 
     expressHttpServer = new ExpressHttpServer(
       useCases,
@@ -130,7 +147,6 @@ describe("ExpressHttpServer", () => {
   afterAll(async () => {
     await dbsTestUtils.deletePhotoIfNecessary(storedPhoto._id);
     await mongoManager.close();
-    await oauth2Server.close();
   });
 
   describe(`POST ${addPhotoPath}`, () => {
@@ -155,7 +171,7 @@ describe("ExpressHttpServer", () => {
     });
 
     it("should deny the access and respond with status code 403 if the token scope of the request is invalid", async () => {
-      const token = await oauth2Server.fetchAccessToken();
+      const token = await getToken();
       const response = await request(app)
         .post(addPhotoPath)
         .auth(token, { type: "bearer" })
@@ -165,9 +181,7 @@ describe("ExpressHttpServer", () => {
     });
 
     it("should add the photo image and metadata to their respective DBs", async () => {
-      const token = await oauth2Server.fetchAccessToken({
-        scope: requiredScopes,
-      });
+      const token = await getToken(requiredScopes);
       await request(app)
         .post(addPhotoPath)
         .auth(token, { type: "bearer" })
@@ -301,7 +315,7 @@ describe("ExpressHttpServer", () => {
     });
 
     it("should deny the access and respond with status code 403 if the token scope of the request is invalid", async () => {
-      const token = await oauth2Server.fetchAccessToken();
+      const token = await getToken();
       const response = await request(app)
         .post(replacePhotoPath)
         .auth(token, { type: "bearer" })
@@ -313,9 +327,7 @@ describe("ExpressHttpServer", () => {
     it("should replace the photo with the one in the request", async () => {
       const dbImageBefore = await imageDb.getById(storedPhoto._id);
       const dbMetadataBefore = await metadataDb.getById(storedPhoto._id);
-      const token = await oauth2Server.fetchAccessToken({
-        scope: requiredScopes,
-      });
+      const token = await getToken(requiredScopes);
       await request(app)
         .put(replacePhotoPath)
         .auth(token, { type: "bearer" })
@@ -360,7 +372,7 @@ describe("ExpressHttpServer", () => {
     });
 
     it("should deny the access and respond with status code 403 if the token scope of the request is invalid", async () => {
-      const token = await oauth2Server.fetchAccessToken();
+      const token = await getToken();
       const response = await request(app)
         .delete(url)
         .auth(token, { type: "bearer" });
@@ -372,9 +384,7 @@ describe("ExpressHttpServer", () => {
       const dbImageBefore = await imageDb.getById(photoToDelete._id);
       const dbMetadataBefore = await metadataDb.getById(photoToDelete._id);
 
-      const token = await oauth2Server.fetchAccessToken({
-        scope: requiredScopes,
-      });
+      const token = await getToken(requiredScopes);
       await request(app).delete(url).auth(token, { type: "bearer" });
 
       await deletePhotoTestUtils.expectMetadataToBeDeletedFromDb(
@@ -397,9 +407,7 @@ describe("ExpressHttpServer", () => {
 
       const incorrectPayload = {};
       const requiredScopes = entryPoints.getScopes(EntryPointId.ReplacePhoto);
-      const token = await oauth2Server.fetchAccessToken({
-        scope: requiredScopes,
-      });
+      const token = await getToken(requiredScopes);
       const response = await request(app)
         .put(replacePhotoPath)
         .send(incorrectPayload)
