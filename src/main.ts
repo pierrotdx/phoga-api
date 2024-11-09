@@ -1,6 +1,11 @@
+import { LoggerWinston } from "@adapters";
+
 import { AppLauncher } from "./app-launcher";
 
-const app = new AppLauncher();
-app.start().catch((err) => {
-  console.error("error while launching app: ", err);
-});
+const logger = new LoggerWinston();
+const app = new AppLauncher(logger);
+app
+  .start()
+  .catch((err) => {
+    logger.error(err);
+  });

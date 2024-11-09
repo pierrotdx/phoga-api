@@ -3,9 +3,9 @@ import request from "supertest";
 
 import { Scope } from "@http-server";
 
+import { FakeTokenProvider } from "../token-provider";
 import { ExpressAuthHandler } from "./express-auth-handler.oauth2-jwt-bearer";
 import {
-  OAuth2ServerMock,
   audience,
   dumbReqHandler,
   issuerHost,
@@ -14,22 +14,22 @@ import {
 } from "./test-utils.service";
 
 describe("ExpressAuthHandler", () => {
-  const oauth2Server = new OAuth2ServerMock(issuerHost, issuerPort);
+  const tokenProvider = new FakeTokenProvider(issuerHost, issuerPort);
   let authHandler: ExpressAuthHandler;
   let dumbApp: Express;
 
   beforeAll(async () => {
-    await oauth2Server.start({ aud: audience });
+    await tokenProvider.start({ aud: audience });
   });
 
   beforeEach(() => {
-    authHandler = new ExpressAuthHandler(oauth2Server.issuerBaseURL, audience);
+    authHandler = new ExpressAuthHandler(tokenProvider.issuerBaseURL, audience);
     dumbApp = express();
     dumbApp.use(authHandler.requiresAuth);
   });
 
   afterAll(async () => {
-    await oauth2Server.close();
+    await tokenProvider.close();
   });
 
   describe("requiresAuth", () => {
@@ -43,7 +43,7 @@ describe("ExpressAuthHandler", () => {
     });
 
     it("should allow access to the requested route if a valid token is provided and respond with status code 200", async () => {
-      const token = await oauth2Server.fetchAccessToken();
+      const token = await tokenProvider.getToken();
       const response = await request(dumbApp)
         .get(restrictedRoute)
         .auth(token, { type: "bearer" });
@@ -71,7 +71,7 @@ describe("ExpressAuthHandler", () => {
     `(
       "should respond with the status code $expectedStatus if the request $case the required scopes",
       async ({ value, expectedStatus }) => {
-        const token = await oauth2Server.fetchAccessToken({
+        const token = await tokenProvider.getToken({
           scope: value,
         });
         const response = await request(dumbApp)

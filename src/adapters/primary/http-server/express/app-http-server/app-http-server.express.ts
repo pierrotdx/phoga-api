@@ -11,7 +11,7 @@ import { Server } from "http";
 import { LoggerWinston } from "@adapters/loggers";
 import { IUseCases } from "@business-logic";
 import { AppHttpServer, IParsers, IValidators } from "@http-server";
-import { Logger } from "@logger";
+import { ILogger } from "@logger";
 
 import {
   AdminPhotoController,
@@ -34,7 +34,7 @@ export class ExpressHttpServer implements AppHttpServer {
     private readonly useCases: IUseCases,
     private readonly validators: IValidators,
     private readonly parsers: IParsers,
-    private readonly logger: Logger,
+    private readonly logger: ILogger,
     private readonly authHandler: IAuthHandler,
   ) {
     this.setLoggerHandler();

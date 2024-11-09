@@ -9,14 +9,14 @@ import {
   Photo,
 } from "@business-logic";
 
-import { MongoBase, MongoCollection, MongoStore } from "../../mongo";
+import { MongoCollection, MongoManager, MongoStore } from "../../mongo";
 
 export class PhotoMetadataDbMongo implements IPhotoMetadataDb {
   private readonly collection: Collection<MongoStore<IPhotoMetadata>>;
   private readonly defaultSize = 20;
 
-  constructor(private readonly mongoBase: MongoBase) {
-    this.collection = this.mongoBase.getCollection<IPhotoMetadata>(
+  constructor(private readonly mongoManager: MongoManager) {
+    this.collection = this.mongoManager.getCollection<IPhotoMetadata>(
       MongoCollection.PhotoMetadata,
     );
   }

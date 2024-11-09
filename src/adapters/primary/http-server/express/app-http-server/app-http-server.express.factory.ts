@@ -1,4 +1,3 @@
-import { LoggerWinston } from "@adapters";
 import { AjvValidatorsFactory } from "@adapters/validators";
 import {
   IPhotoImageDb,
@@ -6,6 +5,7 @@ import {
   UseCasesFactory,
 } from "@business-logic";
 import { AppHttpServer } from "@http-server";
+import { ILogger } from "@logger";
 import { Factory } from "@utils";
 
 import { ExpressAuthHandler } from "../../../oauth2-jwt-bearer";
@@ -13,16 +13,20 @@ import { ParsersFactory } from "../../../parsers";
 import { ExpressHttpServer } from "./app-http-server.express";
 
 export class ExpressAppHttpServerFactory implements Factory<AppHttpServer> {
+  private readonly logger: ILogger;
   private readonly photoImageDb: IPhotoImageDb;
   private readonly photoMetadataDb: IPhotoMetadataDb;
 
   constructor({
+    logger,
     photoImageDb,
     photoMetadataDb,
   }: {
+    logger: ILogger;
     photoImageDb: IPhotoImageDb;
     photoMetadataDb: IPhotoMetadataDb;
   }) {
+    this.logger = logger;
     this.photoImageDb = photoImageDb;
     this.photoMetadataDb = photoMetadataDb;
   }
@@ -34,13 +38,12 @@ export class ExpressAppHttpServerFactory implements Factory<AppHttpServer> {
     ).create();
     const validators = new AjvValidatorsFactory().create();
     const parsers = new ParsersFactory().create();
-    const logger = new LoggerWinston();
     const authHandler = this.getAuthHandler();
     return new ExpressHttpServer(
       useCases,
       validators,
       parsers,
-      logger,
+      this.logger,
       authHandler,
     );
   }
