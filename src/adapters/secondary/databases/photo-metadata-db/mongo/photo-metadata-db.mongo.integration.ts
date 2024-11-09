@@ -8,21 +8,24 @@ import {
   comparePhotoDates,
 } from "@utils";
 
-import { MongoBase } from "../../mongo";
+import { MongoManager } from "../../mongo";
 import { PhotoMetadataDbMongo } from "./photo-metadata-db.mongo";
 import { PhotoMetadataDbMongoTestUtils } from "./photo-metadata-db.mongo.test-utils";
 
 describe("PhotoMetadataDbMongo", () => {
   const storedPhotos = [...dumbPhotoGenerator.generatePhotos(3)];
   let photoMetadataDbMongo: PhotoMetadataDbMongo;
-  let mongoBase: MongoBase;
+  let mongoManager: MongoManager;
   let testUtils: PhotoMetadataDbMongoTestUtils;
   let assertionsCounter: IAssertionsCounter;
 
   beforeEach(async () => {
-    mongoBase = new MongoBase(global.__MONGO_URL__, global.__MONGO_DB_NAME__);
-    await mongoBase.open();
-    photoMetadataDbMongo = new PhotoMetadataDbMongo(mongoBase);
+    mongoManager = new MongoManager(
+      global.__MONGO_URL__,
+      global.__MONGO_DB_NAME__,
+    );
+    await mongoManager.open();
+    photoMetadataDbMongo = new PhotoMetadataDbMongo(mongoManager);
     testUtils = new PhotoMetadataDbMongoTestUtils({
       metadataDb: photoMetadataDbMongo,
     });
@@ -33,7 +36,7 @@ describe("PhotoMetadataDbMongo", () => {
   afterEach(async () => {
     const storedPhotoIds = storedPhotos.map((photo) => photo._id);
     await testUtils.deletePhotosInDbs(storedPhotoIds);
-    await mongoBase.close();
+    await mongoManager.close();
   });
 
   describe(`${PhotoMetadataDbMongo.prototype.insert.name}`, () => {

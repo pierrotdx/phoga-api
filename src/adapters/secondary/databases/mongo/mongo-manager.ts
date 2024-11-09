@@ -2,7 +2,7 @@ import { Db, MongoClient } from "mongodb";
 
 import { MongoCollection, MongoStore } from "./models";
 
-export class MongoBase {
+export class MongoManager {
   private readonly client: MongoClient;
   private db: Db;
 

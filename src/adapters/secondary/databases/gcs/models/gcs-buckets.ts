@@ -1,3 +1,3 @@
 export enum GcsBucket {
-  PhotoImages = "photo_images",
+  PhotoImages = "phoga-test-photo-images",
 }

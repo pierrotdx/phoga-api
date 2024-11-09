@@ -6,9 +6,9 @@ import winston, {
 } from "winston";
 import "winston-daily-rotate-file";
 
-import { Logger } from "@logger";
+import { ILogger } from "@logger";
 
-export class LoggerWinston implements Logger {
+export class LoggerWinston implements ILogger {
   private winstonLogger: WLogger;
 
   public transports: transport[];
