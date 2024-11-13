@@ -1,11 +1,81 @@
-import { IAssertionsCounter, IDbsTestUtilsParams } from "@utils";
+import { FakePhotoImageDb, FakePhotoMetadataDb } from "@adapters";
+import { IPhotoImageDb, IPhotoMetadataDb } from "@business-logic";
+import { DbsTestUtils, IAssertionsCounter, SharedTestUtils } from "@utils";
 
 import { GetPhotoField, IPhoto } from "../../models";
-import { UseCasesSharedTestUtils } from "../use-cases.shared-test-utils";
 
-export class GetPhotoTestUtils extends UseCasesSharedTestUtils {
-  constructor(dbsTestUtilsParams: IDbsTestUtilsParams) {
-    super(dbsTestUtilsParams);
+export class GetPhotoTestUtils {
+  private dbsTestUtils: DbsTestUtils;
+  private sharedTestUtils: SharedTestUtils;
+
+  constructor(
+    public readonly photoMetadataDb: IPhotoMetadataDb,
+    public readonly photoImageDb: IPhotoImageDb,
+  ) {
+    this.testUtilsFactory();
+  }
+
+  private testUtilsFactory() {
+    this.dbsTestUtils = new DbsTestUtils(
+      this.photoMetadataDb,
+      this.photoImageDb,
+    );
+    this.sharedTestUtils = new SharedTestUtils();
+  }
+
+  async insertPhotoInDbs(photo: IPhoto): Promise<void> {
+    return await this.dbsTestUtils.insertPhotoInDbs(photo);
+  }
+
+  async deletePhotoIfNecessary(id: IPhoto["_id"]): Promise<void> {
+    return await this.dbsTestUtils.deletePhotoIfNecessary(id);
+  }
+
+  expectMatchingPhotos(
+    expectedPhoto: IPhoto,
+    result: IPhoto,
+    assertionsCounter: IAssertionsCounter,
+  ) {
+    this.expectMatchingPhotoIds(expectedPhoto, result, assertionsCounter);
+    this.expectMatchingPhotoMetadata(expectedPhoto, result, assertionsCounter);
+    this.expectMatchingPhotoImages(expectedPhoto, result, assertionsCounter);
+  }
+
+  private expectMatchingPhotoIds(
+    expectedPhoto: IPhoto,
+    result: IPhoto,
+    assertionsCounter: IAssertionsCounter,
+  ): void {
+    expect(expectedPhoto._id).toBeDefined();
+    expect(result._id).toBe(expectedPhoto._id);
+    assertionsCounter.increase(2);
+  }
+
+  private expectMatchingPhotoMetadata(
+    expectedPhoto: IPhoto,
+    result: IPhoto,
+    assertionsCounter: IAssertionsCounter,
+  ): void {
+    if (!expectedPhoto.metadata) {
+      return;
+    }
+    expect(result.metadata).toEqual(expectedPhoto.metadata);
+    assertionsCounter.increase();
+  }
+
+  private expectMatchingPhotoImages(
+    expectedPhoto: IPhoto,
+    result: IPhoto,
+    assertionsCounter: IAssertionsCounter,
+  ): void {
+    if (!expectedPhoto.imageBuffer) {
+      return;
+    }
+    this.sharedTestUtils.expectMatchingBuffers(
+      expectedPhoto.imageBuffer,
+      result.imageBuffer,
+      assertionsCounter,
+    );
   }
 
   expectResultToHaveOnlyRequiredField(

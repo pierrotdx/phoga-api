@@ -1,29 +1,71 @@
-import { IAssertionsCounter, IDbsTestUtilsParams } from "@utils";
+import {
+  IAssertionsCounter,
+  PhotoImageTestUtils,
+  PhotoMetadataTestUtils,
+  SharedTestUtils,
+} from "@utils";
 
+import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
 import { IPhoto } from "../../models";
-import { UseCasesSharedTestUtils } from "../use-cases.shared-test-utils";
 
-export class AddPhotoTestUtils extends UseCasesSharedTestUtils {
-  constructor(dbsTestUtilsParams: IDbsTestUtilsParams) {
-    super(dbsTestUtilsParams);
+export class AddPhotoTestUtils {
+  private photoMetadataTestUtils: PhotoMetadataTestUtils;
+  private photoImageTestUtils: PhotoImageTestUtils;
+  private sharedTestUtils: SharedTestUtils;
+
+  constructor(
+    public readonly photoMetadataDb: IPhotoMetadataDb,
+    public readonly photoImageDb: IPhotoImageDb,
+  ) {
+    this.testUtilsFactory();
   }
 
-  async expectPhotoImageToBeInDb(
+  private testUtilsFactory(): void {
+    this.photoMetadataTestUtils = new PhotoMetadataTestUtils(
+      this.photoMetadataDb,
+    );
+    this.sharedTestUtils = new SharedTestUtils();
+    this.photoImageTestUtils = new PhotoImageTestUtils(
+      this.photoImageDb,
+      this.sharedTestUtils,
+    );
+  }
+
+  async expectPhotoToBeUploaded(
     photo: IPhoto,
     assertionsCounter: IAssertionsCounter,
   ): Promise<void> {
-    const dbImage = await this.getPhotoImageFromDb(photo._id);
-    const isInDb = dbImage.compare(photo.imageBuffer as Buffer) === 0;
-    expect(isInDb).toBe(true);
-    assertionsCounter.increase();
+    await this.photoMetadataTestUtils.expectPhotoMetadataToBeInDb(
+      photo,
+      assertionsCounter,
+    );
+    await this.photoImageTestUtils.expectPhotoImageToBeInDb(
+      photo,
+      assertionsCounter,
+    );
+    assertionsCounter.checkAssertions();
   }
 
-  async expectMetadataNotToBeInDb(
-    id: IPhoto["_id"],
-    assertionsCounter: IAssertionsCounter,
-  ): Promise<void> {
-    const dbMetadata = await this.getPhotoMetadataFromDb(id);
-    expect(dbMetadata).toBeUndefined();
-    assertionsCounter.increase();
+  async expectThrowAndNoMetadataUpdate({
+    fnExpectedToReject,
+    fnParams,
+    photo,
+    assertionsCounter,
+  }: {
+    fnExpectedToReject: Function;
+    fnParams: unknown[];
+    photo: IPhoto;
+    assertionsCounter: IAssertionsCounter;
+  }) {
+    await this.sharedTestUtils.expectRejection({
+      fnExpectedToReject,
+      fnParams,
+      assertionsCounter,
+    });
+    await this.photoMetadataTestUtils.expectMetadataNotToBeInDb(
+      photo._id,
+      assertionsCounter,
+    );
+    assertionsCounter.checkAssertions();
   }
 }

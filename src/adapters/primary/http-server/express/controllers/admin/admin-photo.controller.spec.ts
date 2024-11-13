@@ -4,65 +4,48 @@ import TestAgent from "supertest/lib/agent";
 
 import {
   AdminPhotoController,
-  ControllersTestUtils,
   FakePhotoImageDb,
   FakePhotoMetadataDb,
-  FakeValidatorsFactory,
-  ParsersFactory,
   dumbPhotoGenerator,
 } from "@adapters";
-import {
-  IPhotoImageDb,
-  IPhotoMetadataDb,
-  IUseCases,
-  UseCasesFactory,
-} from "@business-logic";
-import { EntryPointId, IParsers, IValidators, entryPoints } from "@http-server";
+import { IUseCases } from "@business-logic";
+import { EntryPointId, entryPoints } from "@http-server";
 import { AssertionsCounter, IAssertionsCounter, sharedTestUtils } from "@utils";
 
+import { AdminPhotoControllerTestUtils } from "./admin-photo.controller.test-utils";
+
 describe("adminPhotoController", () => {
+  const photoMetadataDb = new FakePhotoMetadataDb();
+  const photoImageDb = new FakePhotoImageDb();
+  let testUtils = new AdminPhotoControllerTestUtils(
+    photoMetadataDb,
+    photoImageDb,
+  );
   let adminPhotoController: AdminPhotoController;
-  let testUtils: ControllersTestUtils;
-  let assertionsCounter: IAssertionsCounter;
-
-  let imageDb: IPhotoImageDb;
-  let metadataDb: IPhotoMetadataDb;
-
   let useCases: IUseCases;
-  let validators: IValidators;
-  let parsers: IParsers;
 
-  let dumbApp: Express;
+  let app: Express;
   let req: TestAgent;
+  let assertionsCounter: IAssertionsCounter;
 
   const _id = "1684a61d-de2f-43c0-a83b-6f8981a31e0c";
   const photo = dumbPhotoGenerator.generatePhoto({ _id });
 
   beforeEach(() => {
-    imageDb = new FakePhotoImageDb();
-    metadataDb = new FakePhotoMetadataDb();
+    testUtils.internalSetup();
+    adminPhotoController = testUtils.getAdminPhotoController();
+    useCases = testUtils.getUseCases();
 
-    useCases = new UseCasesFactory(metadataDb, imageDb).create();
-    validators = new FakeValidatorsFactory().create();
-    parsers = new ParsersFactory().create();
-
-    adminPhotoController = new AdminPhotoController(
-      useCases,
-      validators,
-      parsers,
-    );
-    testUtils = new ControllersTestUtils();
+    app = testUtils.getApp();
+    req = request(app);
     assertionsCounter = new AssertionsCounter();
-
-    dumbApp = testUtils.generateDumbApp();
-    req = request(dumbApp);
   });
 
   describe("addPhotoHandler", () => {
     const entryPoint = entryPoints.get(EntryPointId.AddPhoto);
     const path = entryPoint.getRelativePath();
     beforeEach(() => {
-      dumbApp.post(path, adminPhotoController.addPhotoHandler);
+      app.post(path, adminPhotoController.addPhotoHandler);
     });
 
     it("should call the add-photo use case with the appropriate arguments and respond with status 200", async () => {
@@ -84,18 +67,19 @@ describe("adminPhotoController", () => {
 
   describe("replacePhotoHandler", () => {
     const entryPoint = entryPoints.get(EntryPointId.ReplacePhoto);
-    const path = entryPoint.getRelativePath();
+    const path = entryPoint.getFullPathRaw();
     beforeEach(() => {
-      dumbApp.put(path, adminPhotoController.replacePhotoHandler);
+      app.put(path, adminPhotoController.replacePhotoHandler);
     });
 
     it("should call the replace-photo use case with the appropriate arguments and respond with status 200", async () => {
-      const initPhoto = dumbPhotoGenerator.generatePhoto({ _id });
-      await imageDb.insert(initPhoto);
+      const initPhoto = dumbPhotoGenerator.generatePhoto({ _id: photo._id });
+      await testUtils.insertPhotoInDbs(initPhoto);
       const executeSpy = jest.spyOn(useCases.replacePhoto, "execute");
 
       const payload = testUtils.getPayloadFromPhoto(photo);
-      const response = await req.put(path).send(payload);
+      const url = entryPoint.getFullPathWithParams({ id: initPhoto._id });
+      const response = await req.put(url).send(payload);
 
       sharedTestUtils.expectFunctionToBeCalledWith(
         assertionsCounter,
@@ -113,7 +97,7 @@ describe("adminPhotoController", () => {
     const path = entryPoint.getFullPathRaw();
     const url = entryPoint.getFullPathWithParams({ id: photo._id });
     beforeEach(() => {
-      dumbApp.delete(path, adminPhotoController.deletePhotoHandler);
+      app.delete(path, adminPhotoController.deletePhotoHandler);
     });
 
     it("should call the delete-photo use case with the appropriate arguments and respond with status 200", async () => {

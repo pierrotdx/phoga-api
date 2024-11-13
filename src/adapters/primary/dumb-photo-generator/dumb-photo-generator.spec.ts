@@ -1,13 +1,14 @@
-import { LoremIpsumGenerator, UuidGenerator } from "@adapters";
-
-import { AssertionsCounter } from "../assertions-counter";
 import {
+  AssertionsCounter,
   IAssertionsCounter,
   IDumbPhotoGenerator,
   IDumbPhotoGeneratorOptions,
   ILoremIpsumGenerator,
   IUuidGenerator,
-} from "../models";
+} from "@utils";
+
+import { LoremIpsumGenerator } from "../lorem-ipsum";
+import { UuidGenerator } from "../uuid";
 import { DumbPhotoGenerator } from "./dumb-photo-generator";
 import { DumbPhotoGeneratorTestUtils } from "./dumb-photo-generator.test-utils";
 

@@ -1,5 +1,5 @@
-import { AssertionsCounter } from "../assertions-counter";
-import { IAssertionsCounter } from "../models";
+import { AssertionsCounter } from "../../assertions-counter";
+import { IAssertionsCounter } from "../../models";
 import { SharedTestUtils } from "./shared-test-utils";
 
 describe("SharedTestUtils", () => {
@@ -19,7 +19,7 @@ describe("SharedTestUtils", () => {
       const params: Parameters<typeof asyncFnMock> = [{ test: true }];
 
       await sharedTestUtils.expectRejection({
-        asyncFn: asyncFnMock,
+        fnExpectedToReject: asyncFnMock,
         fnParams: params,
         assertionsCounter,
       });

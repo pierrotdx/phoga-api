@@ -1,6 +1,5 @@
 export * from "./assertions-counter";
 export * from "./counter";
-export * from "./dbs-test-utils";
 export * from "./dumb-photo-generator";
 export * from "./factory";
 export * from "./lorem-ipsum-generator";

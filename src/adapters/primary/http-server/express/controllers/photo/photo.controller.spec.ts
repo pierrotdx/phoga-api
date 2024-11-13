@@ -5,36 +5,23 @@ import TestAgent from "supertest/lib/agent";
 import {
   FakePhotoImageDb,
   FakePhotoMetadataDb,
-  FakeValidatorsFactory,
-  ParsersFactory,
   dumbPhotoGenerator,
 } from "@adapters";
-import {
-  GetPhotoField,
-  IPhotoImageDb,
-  IPhotoMetadataDb,
-  ISearchPhotoOptions,
-  IUseCases,
-  UseCasesFactory,
-} from "@business-logic";
-import { EntryPointId, IParsers, IValidators, entryPoints } from "@http-server";
+import { GetPhotoField, ISearchPhotoOptions, IUseCases } from "@business-logic";
+import { EntryPointId, entryPoints } from "@http-server";
 import { AssertionsCounter, IAssertionsCounter, sharedTestUtils } from "@utils";
 
-import { ControllersTestUtils } from "../controllers.shared-test-utils";
 import { PhotoController } from "./photo.controller";
+import { PhotoControllerTestUtils } from "./photo.controller.test-utils";
 
 describe(`${PhotoController.name}`, () => {
+  const photoImageDb = new FakePhotoImageDb();
+  const photoMetadataDb = new FakePhotoMetadataDb();
+  const testUtils = new PhotoControllerTestUtils(photoMetadataDb, photoImageDb);
   let photoController: PhotoController;
-  let testUtils: ControllersTestUtils;
   let assertionsCounter: IAssertionsCounter;
 
-  let imageDb: IPhotoImageDb;
-  let metadataDb: IPhotoMetadataDb;
-
   let useCases: IUseCases;
-  let validators: IValidators;
-  let parsers: IParsers;
-
   let app: Express;
   let req: TestAgent;
   let res$: Promise<Response>;
@@ -43,18 +30,12 @@ describe(`${PhotoController.name}`, () => {
   const photo = dumbPhotoGenerator.generatePhoto({ _id: id });
 
   beforeEach(() => {
-    imageDb = new FakePhotoImageDb();
-    metadataDb = new FakePhotoMetadataDb();
-
-    useCases = new UseCasesFactory(metadataDb, imageDb).create();
-    validators = new FakeValidatorsFactory().create();
-    parsers = new ParsersFactory().create();
-
-    photoController = new PhotoController(useCases, validators, parsers);
-    testUtils = new ControllersTestUtils();
-    assertionsCounter = new AssertionsCounter();
-    app = testUtils.generateDumbApp();
+    testUtils.internalSetup();
+    photoController = testUtils.getPhotoController();
+    useCases = testUtils.getUseCases();
+    app = testUtils.getApp();
     req = request(app);
+    assertionsCounter = new AssertionsCounter();
   });
 
   describe("getMetadata", () => {

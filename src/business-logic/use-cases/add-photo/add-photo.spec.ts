@@ -1,44 +1,33 @@
 import { omit } from "ramda";
 
-import { dumbPhotoGenerator } from "@adapters";
-import { AssertionsCounter, IAssertionsCounter, sharedTestUtils } from "@utils";
+import {
+  FakePhotoImageDb,
+  FakePhotoMetadataDb,
+  dumbPhotoGenerator,
+} from "@adapters";
+import { AssertionsCounter, IAssertionsCounter } from "@utils";
 
-import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
-import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
 import { IPhoto } from "../../models";
 import { AddPhoto } from "./add-photo";
 import { AddPhotoTestUtils } from "./add-photo.test-utils";
 
-describe("add-photo use case", () => {
+describe(`${AddPhoto.name}`, () => {
+  const photoMetadataDb = new FakePhotoMetadataDb();
+  const photoImageDb = new FakePhotoImageDb();
+  const testUtils = new AddPhotoTestUtils(photoMetadataDb, photoImageDb);
   let addPhoto: AddPhoto;
-  let metadataDb: IPhotoMetadataDb;
-  let imageDb: IPhotoImageDb;
-  let testUtils: AddPhotoTestUtils;
   let assertionsCounter: IAssertionsCounter;
-  let photo: IPhoto;
 
   beforeEach(async () => {
-    metadataDb = new FakePhotoMetadataDb();
-    imageDb = new FakePhotoImageDb();
-    testUtils = new AddPhotoTestUtils({ metadataDb, imageDb });
+    addPhoto = new AddPhoto(testUtils.photoMetadataDb, testUtils.photoImageDb);
     assertionsCounter = new AssertionsCounter();
-    addPhoto = new AddPhoto(metadataDb, imageDb);
-    photo = dumbPhotoGenerator.generatePhoto();
   });
 
-  describe("photo image", () => {
-    it("should be uploaded to image db", async () => {
+  describe(`${AddPhoto.prototype.execute.name}`, () => {
+    it("should upload photo image and metadata to their respective DBs", async () => {
+      const photo = dumbPhotoGenerator.generatePhoto();
       await addPhoto.execute(photo);
-      await testUtils.expectPhotoImageToBeInDb(photo, assertionsCounter);
-      assertionsCounter.checkAssertions();
-    });
-  });
-
-  describe("photo metadata", () => {
-    it("should be added to metadata db", async () => {
-      await addPhoto.execute(photo);
-      await testUtils.expectPhotoMetadataToBeInDb(photo, assertionsCounter);
-      assertionsCounter.checkAssertions();
+      await testUtils.expectPhotoToBeUploaded(photo, assertionsCounter);
     });
 
     it.each`
@@ -49,17 +38,16 @@ describe("add-photo use case", () => {
     `(
       "should throw if image buffer is `$case` and not upload metadata",
       async ({ imageBuffer }) => {
-        const assertionsCounter = new AssertionsCounter();
+        const photo = dumbPhotoGenerator.generatePhoto();
         const photoWithInvalidImage = omit(["imageBuffer"], photo) as IPhoto;
         photoWithInvalidImage.imageBuffer = imageBuffer;
 
-        await sharedTestUtils.expectRejection({
-          asyncFn: addPhoto.execute,
+        await testUtils.expectThrowAndNoMetadataUpdate({
+          fnExpectedToReject: addPhoto.execute,
           fnParams: [photoWithInvalidImage],
+          photo,
           assertionsCounter,
         });
-        await testUtils.expectMetadataNotToBeInDb(photo._id, assertionsCounter);
-        assertionsCounter.checkAssertions();
       },
     );
   });

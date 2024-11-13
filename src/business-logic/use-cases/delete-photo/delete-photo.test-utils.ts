@@ -1,47 +1,61 @@
-import { DbsTestUtils, IAssertionsCounter, IDbsTestUtilsParams } from "@utils";
+import { FakePhotoImageDb, FakePhotoMetadataDb } from "@adapters";
+import { IPhotoImageDb, IPhotoMetadataDb } from "@business-logic/gateways";
+import { DbsTestUtils, IAssertionsCounter } from "@utils";
 
 import { IPhoto } from "../../models";
 
-export class DeletePhotoTestUtils extends DbsTestUtils {
-  constructor(dbsTestUtilsParams: IDbsTestUtilsParams) {
-    super(dbsTestUtilsParams);
+export class DeletePhotoTestUtils {
+  private dbsTestUtils: DbsTestUtils;
+
+  constructor(
+    public readonly photoMetadataDb: IPhotoMetadataDb,
+    public readonly photoImageDb: IPhotoImageDb,
+  ) {
+    this.testUtilsFactory();
   }
 
-  async expectMetadataToBeDeletedFromDb(
-    dbMetadataBeforeDelete: IPhoto["metadata"],
-    photo: IPhoto,
+  private testUtilsFactory() {
+    this.dbsTestUtils = new DbsTestUtils(
+      this.photoMetadataDb,
+      this.photoImageDb,
+    );
+  }
+
+  async insertPhotoInDbs(photo: IPhoto): Promise<void> {
+    return await this.dbsTestUtils.insertPhotoInDbs(photo);
+  }
+
+  async getPhotoFromDb(id: IPhoto["_id"]): Promise<IPhoto> {
+    return await this.dbsTestUtils.getPhotoFromDb(id);
+  }
+
+  async deletePhotoIfNecessary(id: IPhoto["_id"]): Promise<void> {
+    return await this.dbsTestUtils.deletePhotoIfNecessary(id);
+  }
+
+  async getPhotoMetadataFromDb(id: IPhoto["_id"]): Promise<IPhoto["metadata"]> {
+    return await this.dbsTestUtils.getPhotoMetadataFromDb(id);
+  }
+
+  async expectPhotoToBeDeletedFromDbs(
+    id: IPhoto["_id"],
     assertionsCounter: IAssertionsCounter,
   ): Promise<void> {
-    expect(dbMetadataBeforeDelete).toBeDefined();
-    expect(dbMetadataBeforeDelete).toEqual(photo.metadata);
-
-    const dbMetadataAfterDelete = await this.getPhotoMetadataFromDb(photo._id);
-    expect(dbMetadataAfterDelete).toBeUndefined();
-
-    assertionsCounter.increase(3);
+    const photo = await this.getPhotoFromDb(id);
+    expect(photo.imageBuffer).toBeUndefined();
+    expect(photo.metadata).toBeUndefined();
+    assertionsCounter.increase(2);
   }
 
   async expectMetadataNotToBeDeleted(
     photo: IPhoto,
     assertionsCounter: IAssertionsCounter,
   ): Promise<void> {
-    const metadataFromDb = await this.getPhotoMetadataFromDb(photo._id);
+    const metadataFromDb = await this.dbsTestUtils.getPhotoMetadataFromDb(
+      photo._id,
+    );
     expect(metadataFromDb).toBeDefined();
     expect(metadataFromDb).toEqual(photo.metadata);
     assertionsCounter.increase(2);
-  }
-
-  async expectImageToBeDeletedFromDb(
-    dbImageBeforeDelete: IPhoto["imageBuffer"],
-    photo: IPhoto,
-    assertionsCounter: IAssertionsCounter,
-  ): Promise<void> {
-    expect(dbImageBeforeDelete).toBeDefined();
-    expect(dbImageBeforeDelete).toEqual(photo.imageBuffer);
-
-    const dbImageAfterDelete = await this.getPhotoImageFromDb(photo._id);
-    expect(dbImageAfterDelete).toBeUndefined();
-
-    assertionsCounter.increase(3);
   }
 }

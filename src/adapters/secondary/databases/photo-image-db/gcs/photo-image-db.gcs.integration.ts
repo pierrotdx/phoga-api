@@ -1,36 +1,28 @@
 import { IPhoto, IPhotoImageDb } from "@business-logic";
-import { Storage } from "@google-cloud/storage";
 import { AssertionsCounter, IAssertionsCounter } from "@utils";
 
 import { dumbPhotoGenerator } from "../../../../primary";
 import { GcStorageTestUtils } from "../../gcs";
-import { PhotoImageDbGcs } from "./photo-image-db.gcs";
 import { PhotoImageDbGcsTestUtils } from "./photo-image-db.gcs.test-utils";
 
 const assetImagesPaths = ["assets/test-img-1.jpg", "assets/test-img-2.jpg"];
 
 describe("PhotoImageDbGcs", () => {
   let assertionsCounter: IAssertionsCounter;
-  let testUtils: PhotoImageDbGcsTestUtils;
+  const testUtils = new PhotoImageDbGcsTestUtils(
+    global.__GCS_API_ENDPOINT__,
+    global.__GCS_PROJECT_ID__,
+  );
   let gcsTestUtils: GcStorageTestUtils;
   let photoImageDbGcs: IPhotoImageDb;
-  let storage: Storage;
 
   let storedPhoto: IPhoto;
 
-  beforeAll(async () => {
-    storage = new Storage({
-      apiEndpoint: global.__GCS_API_ENDPOINT__,
-      projectId: global.__GCS_PROJECT_ID__,
-    });
-    gcsTestUtils = new GcStorageTestUtils(storage);
-    await gcsTestUtils.deleteAllImages();
-  });
-
   beforeEach(async () => {
+    await testUtils.internalSetup();
+    photoImageDbGcs = testUtils.getPhotoImageDbGcs();
+
     assertionsCounter = new AssertionsCounter();
-    photoImageDbGcs = new PhotoImageDbGcs(storage);
-    testUtils = new PhotoImageDbGcsTestUtils({ imageDb: photoImageDbGcs });
     storedPhoto = await dumbPhotoGenerator.generatePhotoFromPath(
       assetImagesPaths[0],
     );

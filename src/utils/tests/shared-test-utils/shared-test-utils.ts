@@ -1,17 +1,17 @@
-import { IAssertionsCounter, ISharedTestUtils } from "../models";
+import { IAssertionsCounter, ISharedTestUtils } from "../../models";
 
 export class SharedTestUtils implements ISharedTestUtils {
   async expectRejection({
-    asyncFn,
+    fnExpectedToReject,
     fnParams,
     assertionsCounter,
   }: {
-    asyncFn: Function;
+    fnExpectedToReject: Function;
     fnParams: unknown[];
     assertionsCounter: IAssertionsCounter;
   }): Promise<void> {
     try {
-      await asyncFn(...fnParams);
+      await fnExpectedToReject(...fnParams);
     } catch (err) {
       expect(err).toBeDefined();
     } finally {

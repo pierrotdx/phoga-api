@@ -29,7 +29,7 @@ class EntryPoints implements IEntryPoints {
   private readonly adminPhotoBase = new EntryPoint("/photo", {
     parent: this.adminBase,
   });
-  private readonly replacePhoto = new EntryPoint("/", {
+  private readonly replacePhoto = new EntryPoint("/:id", {
     parent: this.adminPhotoBase,
     scopes: [Scope.PhotosWrite],
   });

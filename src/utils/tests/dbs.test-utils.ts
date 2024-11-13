@@ -1,20 +1,15 @@
-import { IPhotoImageDb, IPhotoMetadataDb } from "@business-logic/gateways";
-import { IPhoto } from "@business-logic/models";
-
-import { IDbsTestUtilsParams } from "./models";
+import {
+  IPhoto,
+  IPhotoImageDb,
+  IPhotoMetadataDb,
+  Photo,
+} from "@business-logic";
 
 export class DbsTestUtils {
-  protected readonly metadataDb?: IPhotoMetadataDb;
-  protected readonly imageDb?: IPhotoImageDb;
-
-  constructor({ metadataDb, imageDb }: IDbsTestUtilsParams) {
-    if (metadataDb) {
-      this.metadataDb = metadataDb;
-    }
-    if (imageDb) {
-      this.imageDb = imageDb;
-    }
-  }
+  constructor(
+    private readonly metadataDb?: IPhotoMetadataDb,
+    private readonly imageDb?: IPhotoImageDb,
+  ) {}
 
   async insertPhotosInDbs(photos: IPhoto[]): Promise<void> {
     const insertPromises = photos.map(this.insertPhotoInDbs.bind(this));
@@ -22,16 +17,18 @@ export class DbsTestUtils {
   }
 
   async insertPhotoInDbs(photo: IPhoto): Promise<void> {
-    if (this.metadataDb) {
+    if (this.metadataDb && photo.metadata) {
       await this.metadataDb.insert(photo);
     }
-    if (this.imageDb) {
+    if (this.imageDb && photo.imageBuffer) {
       await this.imageDb.insert(photo);
     }
   }
 
   async deletePhotosInDbs(photoIds: IPhoto["_id"][]): Promise<void> {
-    const deletePromises = photoIds.map(this.deletePhotoIfNecessary.bind(this));
+    const deletePromises = photoIds.map((id) =>
+      this.deletePhotoIfNecessary(id),
+    );
     await Promise.all(deletePromises);
   }
 
@@ -52,5 +49,11 @@ export class DbsTestUtils {
 
   async getPhotoMetadataFromDb(id: IPhoto["_id"]): Promise<IPhoto["metadata"]> {
     return await this.metadataDb.getById(id);
+  }
+
+  async getPhotoFromDb(id: IPhoto["_id"]): Promise<IPhoto> {
+    const imageBuffer = await this.getPhotoImageFromDb(id);
+    const metadata = await this.getPhotoMetadataFromDb(id);
+    return new Photo(id, { imageBuffer, metadata });
   }
 }

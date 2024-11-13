@@ -2,11 +2,11 @@ import { IAssertionsCounter } from "./assertions-counter";
 
 export interface ISharedTestUtils {
   expectRejection({
-    asyncFn,
+    fnExpectedToReject,
     fnParams,
     assertionsCounter,
   }: {
-    asyncFn: Function;
+    fnExpectedToReject: Function;
     fnParams: unknown[];
     assertionsCounter: IAssertionsCounter;
   }): Promise<void>;

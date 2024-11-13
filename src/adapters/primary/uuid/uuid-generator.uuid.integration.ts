@@ -1,4 +1,4 @@
-import { isUuid } from "@utils";
+import { isUuid } from "@utils/assertions/is-uuid/is-uuid";
 
 import { UuidGenerator } from "./uuid-generator.uuid";
 

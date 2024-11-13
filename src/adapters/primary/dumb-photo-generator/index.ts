@@ -1,0 +1,1 @@
+export { dumbPhotoGenerator } from "./dumb-photo-generator";

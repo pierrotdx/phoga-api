@@ -2,14 +2,19 @@ import { readFile } from "fs/promises";
 import { clone } from "ramda";
 
 import { IPhoto, Photo } from "@business-logic";
-import { assertPhoto } from "../assertions";
-
 import {
   IDumbPhotoGenerator,
   IDumbPhotoGeneratorOptions,
   ILoremIpsumGenerator,
   IUuidGenerator,
-} from "../models";
+  assertPhoto,
+} from "@utils";
+
+import { LoremIpsumGenerator } from "../lorem-ipsum/lorem-ipsum-generator.lorem-ipsum";
+import { UuidGenerator } from "../uuid/uuid-generator.uuid";
+
+const uuidGenerator = new UuidGenerator();
+const loremIpsumGenerator = new LoremIpsumGenerator();
 
 export class DumbPhotoGenerator implements IDumbPhotoGenerator {
   constructor(
@@ -95,3 +100,8 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     return photo;
   }
 }
+
+export const dumbPhotoGenerator = new DumbPhotoGenerator(
+  uuidGenerator,
+  loremIpsumGenerator,
+);

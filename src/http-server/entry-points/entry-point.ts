@@ -47,6 +47,10 @@ export class EntryPoint implements IEntryPoint {
 
   getFullPathWithParams(params: any) {
     const rawPath = this.getFullPathRaw();
+    return this.getPathWithParams(rawPath, params);
+  }
+
+  private getPathWithParams(rawPath: string, params: any): string {
     let pathWithParams = rawPath;
     Object.entries(params).forEach(([key, value]) => {
       const pathParam = `:${key}`;

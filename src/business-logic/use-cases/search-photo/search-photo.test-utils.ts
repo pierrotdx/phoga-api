@@ -1,24 +1,50 @@
 import { clone } from "ramda";
 
-import { IPhoto, SortDirection } from "@business-logic";
-import { IDbsTestUtilsParams, comparePhotoDates } from "@utils";
+import {
+  IPhoto,
+  IPhotoImageDb,
+  IPhotoMetadataDb,
+  SortDirection,
+} from "@business-logic";
+import {
+  DbsTestUtils,
+  IAssertionsCounter,
+  compareDates,
+  comparePhotoDates,
+} from "@utils";
 
-import { UseCasesSharedTestUtils } from "../use-cases.shared-test-utils";
-
-export class SearchPhotoTestUtils extends UseCasesSharedTestUtils {
+export class SearchPhotoTestUtils {
   private storedPhotos: IPhoto[];
+  private dbsTestUtils: DbsTestUtils;
 
-  constructor(dbsTestUtilsParams: IDbsTestUtilsParams) {
-    super(dbsTestUtilsParams);
+  constructor(
+    public readonly photoMetadataDb: IPhotoMetadataDb,
+    public readonly photoImageDb: IPhotoImageDb,
+  ) {
+    this.testUtilsFactory();
   }
 
-  async init(photos: IPhoto[]): Promise<void> {
+  private testUtilsFactory() {
+    this.dbsTestUtils = new DbsTestUtils(
+      this.photoMetadataDb,
+      this.photoImageDb,
+    );
+  }
+
+  async initStoredPhotos(photos: IPhoto[]): Promise<void> {
     this.setStoredPhotos(photos);
-    await this.insertPhotosInDbs(this.storedPhotos);
+    await this.dbsTestUtils.insertPhotosInDbs(this.storedPhotos);
   }
 
   public setStoredPhotos(photos: IPhoto[]): void {
     this.storedPhotos = clone(photos);
+  }
+
+  async clearStoredPhotos(): Promise<void> {
+    const promises = this.storedPhotos.map(async (photo) => {
+      await this.dbsTestUtils.deletePhotoIfNecessary(photo._id);
+    });
+    await Promise.all(promises);
   }
 
   getStoredPhotos(sortDirection?: SortDirection): IPhoto[] {
@@ -58,5 +84,33 @@ export class SearchPhotoTestUtils extends UseCasesSharedTestUtils {
       }
     });
     expect.assertions(photos.length);
+  }
+
+  expectSearchResultMatchingDateOrdering(
+    searchResult: any[],
+    dateOrdering: SortDirection,
+    assertionsCounter: IAssertionsCounter,
+  ) {
+    const searchResultDates = searchResult.map((data) => {
+      const stringDate = data.metadata?.date;
+      if (stringDate) {
+        return new Date(stringDate);
+      }
+    });
+    const orderedDates = [...searchResultDates].sort(compareDates);
+    if (dateOrdering === SortDirection.Descending) {
+      orderedDates.reverse();
+    }
+    expect(searchResultDates).toEqual(orderedDates);
+    assertionsCounter.increase();
+  }
+
+  expectSearchResultMatchingSize(
+    searchResult: any[],
+    size: number,
+    assertionsCounter: IAssertionsCounter,
+  ) {
+    expect(searchResult.length).toBeLessThanOrEqual(size);
+    assertionsCounter.increase();
   }
 }

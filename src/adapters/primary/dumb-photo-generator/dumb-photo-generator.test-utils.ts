@@ -2,9 +2,11 @@ import { readFile } from "fs/promises";
 import { path } from "ramda";
 
 import { IPhoto } from "@business-logic";
-
-import { isPhoto } from "../assertions";
-import { IAssertionsCounter, IDumbPhotoGeneratorOptions } from "../models";
+import {
+  IAssertionsCounter,
+  IDumbPhotoGeneratorOptions,
+  isPhoto,
+} from "@utils";
 
 export class DumbPhotoGeneratorTestUtils {
   expectAnInstanceOfPhoto(

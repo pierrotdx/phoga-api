@@ -3,32 +3,37 @@ import {
   FakePhotoMetadataDb,
   dumbPhotoGenerator,
 } from "@adapters";
-import { IPhotoImageDb, IPhotoMetadataDb } from "@business-logic/gateways";
 import { IRendering, SortDirection } from "@business-logic/models";
 import { AssertionsCounter, IAssertionsCounter } from "@utils";
 
 import { SearchPhoto } from "./search-photo";
 import { SearchPhotoTestUtils } from "./search-photo.test-utils";
 
-describe("SearchPhoto", () => {
-  let testUtils: SearchPhotoTestUtils;
+describe(`${SearchPhoto.name}`, () => {
+  const photoMetadataDb = new FakePhotoMetadataDb();
+  const photoImageDb = new FakePhotoImageDb();
+  const testUtils = new SearchPhotoTestUtils(photoMetadataDb, photoImageDb);
   let assertionsCounter: IAssertionsCounter;
   let searchPhotos: SearchPhoto;
-  let metadataDb: IPhotoMetadataDb;
-  let imageDb: IPhotoImageDb;
 
   beforeEach(async () => {
-    metadataDb = new FakePhotoMetadataDb();
-    imageDb = new FakePhotoImageDb();
-    testUtils = new SearchPhotoTestUtils({ metadataDb, imageDb });
-    assertionsCounter = new AssertionsCounter();
     const nbStorePhotos = 3;
     const storedPhotos = dumbPhotoGenerator.generatePhotos(nbStorePhotos);
-    await testUtils.init(storedPhotos);
-    searchPhotos = new SearchPhoto(metadataDb, imageDb);
+    await testUtils.initStoredPhotos(storedPhotos);
+
+    searchPhotos = new SearchPhoto(
+      testUtils.photoMetadataDb,
+      testUtils.photoImageDb,
+    );
+
+    assertionsCounter = new AssertionsCounter();
   });
 
-  describe("execute", () => {
+  afterEach(async () => {
+    await testUtils.clearStoredPhotos();
+  });
+
+  describe(`${SearchPhoto.prototype.execute.name}`, () => {
     it("should return the photos stored in database", async () => {
       const searchResult = await searchPhotos.execute();
       testUtils.expectSearchResultToMatchStoredPhotos(searchResult);

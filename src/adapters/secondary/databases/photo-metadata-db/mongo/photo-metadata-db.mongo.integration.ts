@@ -8,35 +8,29 @@ import {
   comparePhotoDates,
 } from "@utils";
 
-import { MongoManager } from "../../mongo";
 import { PhotoMetadataDbMongo } from "./photo-metadata-db.mongo";
 import { PhotoMetadataDbMongoTestUtils } from "./photo-metadata-db.mongo.test-utils";
 
 describe("PhotoMetadataDbMongo", () => {
   const storedPhotos = [...dumbPhotoGenerator.generatePhotos(3)];
+  const testUtils = new PhotoMetadataDbMongoTestUtils(
+    global.__MONGO_URL__,
+    global.__MONGO_DB_NAME__,
+  );
   let photoMetadataDbMongo: PhotoMetadataDbMongo;
-  let mongoManager: MongoManager;
-  let testUtils: PhotoMetadataDbMongoTestUtils;
   let assertionsCounter: IAssertionsCounter;
 
   beforeEach(async () => {
-    mongoManager = new MongoManager(
-      global.__MONGO_URL__,
-      global.__MONGO_DB_NAME__,
-    );
-    await mongoManager.open();
-    photoMetadataDbMongo = new PhotoMetadataDbMongo(mongoManager);
-    testUtils = new PhotoMetadataDbMongoTestUtils({
-      metadataDb: photoMetadataDbMongo,
-    });
+    await testUtils.internalSetup();
     await testUtils.insertPhotosInDbs(storedPhotos);
+    photoMetadataDbMongo = testUtils.photoMetadataDb;
     assertionsCounter = new AssertionsCounter();
   });
 
   afterEach(async () => {
     const storedPhotoIds = storedPhotos.map((photo) => photo._id);
     await testUtils.deletePhotosInDbs(storedPhotoIds);
-    await mongoManager.close();
+    await testUtils.internalTeardown();
   });
 
   describe(`${PhotoMetadataDbMongo.prototype.insert.name}`, () => {
@@ -53,18 +47,11 @@ describe("PhotoMetadataDbMongo", () => {
     it("should insert a doc with the photo metadata and photo id", async () => {
       const docBefore = await testUtils.getDocFromDb(photoToInsert._id);
       await photoMetadataDbMongo.insert(photoToInsert);
-      const docAfter = await testUtils.getDocFromDb(photoToInsert._id);
-      await testUtils.expectDocToHaveBeenInserted(
+      await testUtils.expectDocToBeInsertedWithCorrectId(
         docBefore,
-        docAfter,
-        assertionsCounter,
-      );
-      testUtils.expectDocToMatchExpectedPhoto(
         photoToInsert,
-        docAfter,
         assertionsCounter,
       );
-      assertionsCounter.checkAssertions();
     });
   });
 
@@ -85,18 +72,12 @@ describe("PhotoMetadataDbMongo", () => {
         _id: storedPhoto._id,
       });
       await photoMetadataDbMongo.replace(replacingPhoto);
-      const docAfter = await testUtils.getDocFromDb(storedPhoto._id);
-      testUtils.expectDocToMatchExpectedPhoto(
+      await testUtils.expectPhotoMetadataToReplaceDoc(
         storedPhoto,
+        replacingPhoto,
         docBefore,
         assertionsCounter,
       );
-      testUtils.expectDocToMatchExpectedPhoto(
-        replacingPhoto,
-        docAfter,
-        assertionsCounter,
-      );
-      assertionsCounter.checkAssertions();
     });
   });
 
@@ -105,15 +86,11 @@ describe("PhotoMetadataDbMongo", () => {
       const storedPhoto = storedPhotos[0];
       const docBefore = await testUtils.getDocFromDb(storedPhoto._id);
       await photoMetadataDbMongo.delete(storedPhoto._id);
-      testUtils.expectDocToMatchExpectedPhoto(
+      await testUtils.expectDocToBeDeleted(
         storedPhoto,
         docBefore,
         assertionsCounter,
       );
-      const docAfter = await testUtils.getDocFromDb(storedPhoto._id);
-      expect(docAfter).toBeUndefined();
-      assertionsCounter.increase();
-      assertionsCounter.checkAssertions();
     });
   });
 

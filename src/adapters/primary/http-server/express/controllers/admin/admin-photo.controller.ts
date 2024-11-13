@@ -19,7 +19,10 @@ export class AdminPhotoController {
 
   replacePhotoHandler = async (req: Request, res: Response) => {
     this.validators.replacePhoto.validate(req.body);
-    const photo = this.parsers.replacePhoto.parse(req.body);
+    const photo = this.parsers.replacePhoto.parse({
+      ...req.params,
+      ...req.body,
+    });
     await this.useCases.replacePhoto.execute(photo);
     res.sendStatus(200);
   };
