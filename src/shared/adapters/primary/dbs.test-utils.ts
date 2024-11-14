@@ -1,6 +1,6 @@
 import { IPhoto, IPhotoImageDb, IPhotoMetadataDb, Photo } from "@domain";
 
-import { IDbsTestUtils } from "../core/models";
+import { IDbsTestUtils } from "../../core/models";
 
 export class DbsTestUtils implements IDbsTestUtils {
   constructor(

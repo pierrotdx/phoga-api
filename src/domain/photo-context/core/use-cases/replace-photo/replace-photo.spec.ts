@@ -4,7 +4,10 @@ import {
   dumbPhotoGenerator,
 } from "@shared";
 
-import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
+import {
+  FakePhotoImageDb,
+  FakePhotoMetadataDb,
+} from "../../../adapters/secondary";
 import { ReplacePhoto } from "./replace-photo";
 import { ReplacePhotoTestUtils } from "./replace-photo.test-utils";
 

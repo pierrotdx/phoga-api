@@ -1,4 +1,4 @@
-import { ICounter } from "../../core/models";
+import { ICounter } from "../../../core/models";
 
 export class Counter implements ICounter {
   private count: number = 0;

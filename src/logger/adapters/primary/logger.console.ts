@@ -1,4 +1,4 @@
-import { ILogger } from "../core";
+import { ILogger } from "../../core";
 
 export class LoggerConsole implements ILogger {
   info(message: string, meta?: object): void {

@@ -6,7 +6,7 @@ import winston, {
 } from "winston";
 import "winston-daily-rotate-file";
 
-import { ILogger } from "../core";
+import { ILogger } from "../../core";
 
 export class LoggerWinston implements ILogger {
   private winstonLogger: WLogger;

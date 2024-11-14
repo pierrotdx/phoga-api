@@ -6,7 +6,10 @@ import {
   dumbPhotoGenerator,
 } from "@shared";
 
-import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
+import {
+  FakePhotoImageDb,
+  FakePhotoMetadataDb,
+} from "../../../adapters/secondary";
 import { IPhoto } from "../../models";
 import { AddPhoto } from "./add-photo";
 import { AddPhotoTestUtils } from "./add-photo.test-utils";

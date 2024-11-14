@@ -1,6 +1,6 @@
 import { randomInt } from "crypto";
 
-import { IAssertionsCounter } from "../../core";
+import { IAssertionsCounter } from "../../../core";
 import { AssertionsCounter } from "./assertions-counter";
 
 describe("AssertionsCounter", () => {

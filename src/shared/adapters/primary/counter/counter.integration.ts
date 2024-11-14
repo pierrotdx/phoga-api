@@ -1,4 +1,4 @@
-import { ICounter } from "../../core/models";
+import { ICounter } from "../../../core/models";
 import { Counter } from "./counter";
 
 describe("Counter", () => {

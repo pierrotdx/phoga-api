@@ -4,7 +4,10 @@ import {
   dumbPhotoGenerator,
 } from "@shared";
 
-import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
+import {
+  FakePhotoImageDb,
+  FakePhotoMetadataDb,
+} from "../../../adapters/secondary";
 import { IRendering, SortDirection } from "../../../core";
 import { SearchPhoto } from "./search-photo";
 import { SearchPhotoTestUtils } from "./search-photo.test-utils";

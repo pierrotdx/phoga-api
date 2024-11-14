@@ -1,6 +1,6 @@
 import { Db, MongoClient } from "mongodb";
 
-import { MongoCollection, MongoStore } from "../../core";
+import { MongoCollection, MongoStore } from "../../../core";
 
 export class MongoManager {
   private readonly client: MongoClient;

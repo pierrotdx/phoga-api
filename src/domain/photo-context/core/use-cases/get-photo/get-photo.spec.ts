@@ -6,7 +6,10 @@ import {
   dumbPhotoGenerator,
 } from "@shared";
 
-import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
+import {
+  FakePhotoImageDb,
+  FakePhotoMetadataDb,
+} from "../../../adapters/secondary";
 import { GetPhotoField, IPhoto } from "../../models";
 import { GetPhoto } from "./get-photo";
 import { GetPhotoTestUtils } from "./get-photo.test-utils";

@@ -1,6 +1,6 @@
 import { Collection } from "mongodb";
 
-import { MongoCollection } from "../../core";
+import { MongoCollection } from "../../../core";
 import { MongoManager } from "./mongo-manager";
 
 describe("MongoManager", () => {

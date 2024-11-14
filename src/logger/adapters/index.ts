@@ -1,2 +1,1 @@
-export * from "./logger.console";
-export * from "./logger.winston";
+export * from "./primary";

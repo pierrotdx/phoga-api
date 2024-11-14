@@ -5,7 +5,10 @@ import {
   sharedTestUtils,
 } from "@shared";
 
-import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
+import {
+  FakePhotoImageDb,
+  FakePhotoMetadataDb,
+} from "../../../adapters/secondary";
 import { DeletePhoto } from "./delete-photo";
 import { DeletePhotoTestUtils } from "./delete-photo.test-utils";
 

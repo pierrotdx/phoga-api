@@ -1,5 +1,5 @@
 import { AssertionsCounter } from "..";
-import { IAssertionsCounter } from "../../core";
+import { IAssertionsCounter } from "../../../core";
 import { SharedTestUtils } from "./shared-test-utils";
 
 describe("SharedTestUtils", () => {
