@@ -1,4 +1,4 @@
-import { AssertionsCounter } from "../../adapters";
+import { AssertionsCounter } from "..";
 import { IAssertionsCounter } from "../../core";
 import { SharedTestUtils } from "./shared-test-utils";
 
