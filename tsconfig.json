@@ -9,18 +9,14 @@
     "types": ["node", "@types/jest"],
     "baseUrl": "./",
     "paths": {
-      "@business-logic": ["src/business-logic"],
-      "@business-logic/*": ["src/business-logic/*"],
+      "@domain/*": ["src/domain/*"],
+      "@domain": ["src/domain"],
       "@http-server": ["src/http-server"],
       "@http-server/*": ["src/http-server/*"],
-      "@adapters": ["src/adapters"],
-      "@adapters/databases": ["src/adapters/secondary/databases"],
-      "@adapters/validators": ["src/adapters/primary/validators"],
-      "@adapters/loggers": ["src/adapters/secondary/loggers"],
       "@logger": ["src/logger/"],
       "@logger/*": ["src/logger/*"],
-      "@utils": ["src/utils"],
-      "@utils/*": ["src/utils/*"]
+      "@shared": ["src/shared"],
+      "@shared/*": ["src/shared/*"]
     }
   },
   "lib": ["es2015"],
