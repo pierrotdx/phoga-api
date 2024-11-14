@@ -1,15 +1,15 @@
 import dotenv from "dotenv";
 
 import {
-  ExpressAppHttpServerFactory,
+  IPhotoImageDb,
+  IPhotoMetadataDb,
   MongoManager,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
-} from "@adapters";
-import { IPhotoImageDb, IPhotoMetadataDb } from "@business-logic";
+} from "@domain";
 import { Storage } from "@google-cloud/storage";
-import { AppHttpServer } from "@http-server";
-import { ILogger } from "@logger/models";
+import { AppHttpServer, ExpressAppHttpServerFactory } from "@http-server";
+import { ILogger } from "@logger";
 
 dotenv.config();
 
