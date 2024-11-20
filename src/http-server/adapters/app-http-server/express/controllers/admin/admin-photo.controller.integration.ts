@@ -2,20 +2,18 @@ import { Express } from "express";
 import request from "supertest";
 import TestAgent from "supertest/lib/agent";
 
+import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
 import { FakePhotoImageDb, FakePhotoMetadataDb, IUseCases } from "@domain";
+import { dumbPhotoGenerator } from "@dumb-photo-generator";
 import { AdminPhotoController, EntryPointId, entryPoints } from "@http-server";
-import {
-  AssertionsCounter,
-  IAssertionsCounter,
-  dumbPhotoGenerator,
-  sharedTestUtils,
-} from "@shared";
+import { SharedTestUtils } from "@shared";
 
 import { AdminPhotoControllerTestUtils } from "./admin-photo.controller.test-utils";
 
 describe("adminPhotoController", () => {
   const photoMetadataDb = new FakePhotoMetadataDb();
   const photoImageDb = new FakePhotoImageDb();
+  const sharedTestUtils = new SharedTestUtils();
   let testUtils = new AdminPhotoControllerTestUtils(
     photoMetadataDb,
     photoImageDb,

@@ -1,11 +1,7 @@
+import { IAssertionsCounter } from "@assertions-counter";
 import { IPhoto } from "@domain";
 import { imageBufferEncoding } from "@http-server";
-import {
-  IAssertionsCounter,
-  ILoremIpsumGenerator,
-  IUuidGenerator,
-  isPhoto,
-} from "@shared";
+import { ILoremIpsumGenerator, IUuidGenerator, isPhoto } from "@shared";
 
 export class AddPhotoParserTestUtils {
   constructor(

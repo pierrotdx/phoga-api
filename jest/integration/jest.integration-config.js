@@ -1,5 +1,3 @@
-
-
 const sharedConfig = require("../../jest.config");
 
 /** @type {import('ts-jest').JestConfigWithTsJest} **/

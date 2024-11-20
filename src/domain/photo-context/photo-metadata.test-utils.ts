@@ -1,5 +1,5 @@
+import { IAssertionsCounter } from "@assertions-counter";
 import { IPhoto, IPhotoMetadataDb } from "@domain";
-import { IAssertionsCounter } from "@shared";
 
 export class PhotoMetadataTestUtils {
   constructor(private readonly db: IPhotoMetadataDb) {}

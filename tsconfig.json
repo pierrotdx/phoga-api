@@ -9,6 +9,8 @@
     "types": ["node", "@types/jest"],
     "baseUrl": "./",
     "paths": {
+      "@assertions-counter": ["src/shared/assertions-counter"],
+      "@dumb-photo-generator": ["src/shared/dumb-photo-generator"],
       "@domain/*": ["src/domain/*"],
       "@domain": ["src/domain"],
       "@http-server": ["src/http-server"],

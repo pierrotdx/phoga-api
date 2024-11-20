@@ -1,4 +1,4 @@
-import { AssertionsCounter, IAssertionsCounter } from "@shared";
+import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
 
 import { SearchPhotoParser } from "./search-photo.parser";
 import { SearchPhotoParserTestUtils } from "./search-photo.parser.test-utils";

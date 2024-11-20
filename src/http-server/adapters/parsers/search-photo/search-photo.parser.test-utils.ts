@@ -1,5 +1,6 @@
+import { IAssertionsCounter } from "@assertions-counter";
 import { ISearchPhotoOptions, SortDirection } from "@domain";
-import { Counter, IAssertionsCounter, assertSearchPhotoOptions } from "@shared";
+import { assertSearchPhotoOptions } from "@shared";
 
 export class SearchPhotoParserTestUtils {
   generateInputData(

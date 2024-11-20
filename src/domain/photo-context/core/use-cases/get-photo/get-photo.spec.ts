@@ -1,12 +1,12 @@
 import { pick } from "ramda";
 
-import {
-  AssertionsCounter,
-  IAssertionsCounter,
-  dumbPhotoGenerator,
-} from "@shared";
+import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
+import { dumbPhotoGenerator } from "@dumb-photo-generator";
 
-import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
+import {
+  FakePhotoImageDb,
+  FakePhotoMetadataDb,
+} from "../../../adapters/secondary";
 import { GetPhotoField, IPhoto } from "../../models";
 import { GetPhoto } from "./get-photo";
 import { GetPhotoTestUtils } from "./get-photo.test-utils";

@@ -1,4 +1,5 @@
-import { AssertionsCounter, UuidGenerator } from "@shared";
+import { AssertionsCounter } from "@assertions-counter";
+import { UuidGenerator } from "@shared";
 
 import { GetPhotoSchema, IsoStringDateSchema } from "../../../core";
 import { AjvValidator } from "./ajv-validator";
