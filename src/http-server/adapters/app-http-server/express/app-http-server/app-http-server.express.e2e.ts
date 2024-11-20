@@ -2,14 +2,11 @@ import { type Express } from "express";
 import { omit } from "ramda";
 import request from "supertest";
 
+import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
 import { IPhoto, SortDirection } from "@domain";
 import { EntryPointId, entryPoints } from "@http-server";
 import { ILogger } from "@logger";
-import {
-  AssertionsCounter,
-  IAssertionsCounter,
-  dumbPhotoGenerator,
-} from "@shared";
+import { dumbPhotoGenerator } from "@shared";
 
 import { ExpressHttpServer } from "./app-http-server.express";
 import { AppHttpServerExpressE2eTestUtils } from "./app-http-server.express.e2e-test-utils";

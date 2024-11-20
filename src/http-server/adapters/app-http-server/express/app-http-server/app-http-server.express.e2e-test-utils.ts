@@ -1,5 +1,6 @@
 import { Response } from "supertest";
 
+import { IAssertionsCounter } from "@assertions-counter";
 import {
   AddPhotoTestUtils,
   DeletePhotoTestUtils,
@@ -25,7 +26,7 @@ import {
   Scope,
 } from "@http-server";
 import { ILogger, LoggerWinston } from "@logger";
-import { DbsTestUtils, IAssertionsCounter, MongoManager } from "@shared";
+import { DbsTestUtils, MongoManager } from "@shared";
 
 export class AppHttpServerExpressE2eTestUtils {
   private readonly mongoManager: MongoManager;

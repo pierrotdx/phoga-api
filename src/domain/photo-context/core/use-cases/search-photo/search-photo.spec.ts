@@ -1,10 +1,10 @@
-import {
-  AssertionsCounter,
-  IAssertionsCounter,
-  dumbPhotoGenerator,
-} from "@shared";
+import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
+import { dumbPhotoGenerator } from "@dumb-photo-generator";
 
-import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
+import {
+  FakePhotoImageDb,
+  FakePhotoMetadataDb,
+} from "../../../adapters/secondary";
 import { IRendering, SortDirection } from "../../../core";
 import { SearchPhoto } from "./search-photo";
 import { SearchPhotoTestUtils } from "./search-photo.test-utils";

@@ -1,17 +1,18 @@
-import {
-  AssertionsCounter,
-  IAssertionsCounter,
-  dumbPhotoGenerator,
-  sharedTestUtils,
-} from "@shared";
+import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
+import { dumbPhotoGenerator } from "@dumb-photo-generator";
+import { SharedTestUtils } from "@shared";
 
-import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters";
+import {
+  FakePhotoImageDb,
+  FakePhotoMetadataDb,
+} from "../../../adapters/secondary";
 import { DeletePhoto } from "./delete-photo";
 import { DeletePhotoTestUtils } from "./delete-photo.test-utils";
 
 describe(`${DeletePhoto.name}`, () => {
   const photoMetadataDb = new FakePhotoMetadataDb();
   const photoImageDb = new FakePhotoImageDb();
+  const sharedTestUtils = new SharedTestUtils();
   const testUtils = new DeletePhotoTestUtils(photoMetadataDb, photoImageDb);
   let deletePhoto: DeletePhoto;
   let assertionsCounter: IAssertionsCounter;

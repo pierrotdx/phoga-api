@@ -2,6 +2,7 @@ import { type Express } from "express";
 import request, { Response } from "supertest";
 import TestAgent from "supertest/lib/agent";
 
+import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
 import {
   FakePhotoImageDb,
   FakePhotoMetadataDb,
@@ -9,13 +10,9 @@ import {
   ISearchPhotoOptions,
   IUseCases,
 } from "@domain";
+import { dumbPhotoGenerator } from "@dumb-photo-generator";
 import { EntryPointId, entryPoints } from "@http-server";
-import {
-  AssertionsCounter,
-  IAssertionsCounter,
-  dumbPhotoGenerator,
-  sharedTestUtils,
-} from "@shared";
+import { SharedTestUtils } from "@shared";
 
 import { PhotoController } from "./photo.controller";
 import { PhotoControllerTestUtils } from "./photo.controller.test-utils";
@@ -23,6 +20,7 @@ import { PhotoControllerTestUtils } from "./photo.controller.test-utils";
 describe(`${PhotoController.name}`, () => {
   const photoImageDb = new FakePhotoImageDb();
   const photoMetadataDb = new FakePhotoMetadataDb();
+  const sharedTestUtils = new SharedTestUtils();
   const testUtils = new PhotoControllerTestUtils(photoMetadataDb, photoImageDb);
   let photoController: PhotoController;
   let assertionsCounter: IAssertionsCounter;
