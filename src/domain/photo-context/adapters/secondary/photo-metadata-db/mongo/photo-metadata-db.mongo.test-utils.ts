@@ -1,7 +1,9 @@
 import { omit } from "ramda";
 
+import { IAssertionsCounter } from "@assertions-counter";
 import { IPhoto } from "@domain";
-import { DbsTestUtils, IAssertionsCounter, MongoManager, MongoStore } from "@shared";
+import { DbsTestUtils, MongoManager, MongoStore } from "@shared";
+
 import { PhotoMetadataDbMongo } from "./photo-metadata-db.mongo";
 
 type TDoc = MongoStore<IPhoto["metadata"]>;

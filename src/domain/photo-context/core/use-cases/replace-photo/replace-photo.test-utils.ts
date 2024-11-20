@@ -1,4 +1,5 @@
-import { DbsTestUtils, IAssertionsCounter, SharedTestUtils } from "@shared";
+import { IAssertionsCounter } from "@assertions-counter";
+import { DbsTestUtils, SharedTestUtils } from "@shared";
 
 import { PhotoMetadataTestUtils } from "../../../photo-metadata.test-utils";
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";

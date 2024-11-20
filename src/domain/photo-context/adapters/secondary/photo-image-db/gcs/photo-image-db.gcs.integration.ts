@@ -1,9 +1,6 @@
+import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
 import { IPhoto, IPhotoImageDb } from "@domain";
-import {
-  AssertionsCounter,
-  IAssertionsCounter,
-  dumbPhotoGenerator,
-} from "@shared";
+import { dumbPhotoGenerator } from "@dumb-photo-generator";
 
 import { PhotoImageDbGcsTestUtils } from "./photo-image-db.gcs.test-utils";
 

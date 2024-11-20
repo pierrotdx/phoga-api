@@ -1,4 +1,5 @@
-import { IAssertionsCounter, SharedTestUtils } from "@shared";
+import { IAssertionsCounter } from "@assertions-counter";
+import { SharedTestUtils } from "@shared";
 
 import {
   PhotoImageTestUtils,

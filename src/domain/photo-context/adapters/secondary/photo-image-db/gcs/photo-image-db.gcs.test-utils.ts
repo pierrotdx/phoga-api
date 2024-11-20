@@ -1,8 +1,9 @@
 import { randomInt } from "node:crypto";
 
+import { IAssertionsCounter } from "@assertions-counter";
 import { IPhoto } from "@domain";
 import { Storage } from "@google-cloud/storage";
-import { DbsTestUtils, GcsBucket, IAssertionsCounter } from "@shared";
+import { DbsTestUtils, GcsBucket } from "@shared";
 
 import { PhotoImageDbGcs } from "./photo-image-db.gcs";
 

@@ -1,4 +1,4 @@
-import { IAssertionsCounter } from "@shared";
+import { IAssertionsCounter } from "@assertions-counter";
 
 export class AjvTestUtils {
   public expectCorrectInvocation({

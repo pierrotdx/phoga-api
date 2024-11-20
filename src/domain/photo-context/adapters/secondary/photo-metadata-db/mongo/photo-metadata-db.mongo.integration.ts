@@ -1,12 +1,9 @@
 import { clone } from "ramda";
 
+import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
 import { IPhoto, IRendering, SortDirection } from "@domain";
-import {
-  AssertionsCounter,
-  IAssertionsCounter,
-  comparePhotoDates,
-  dumbPhotoGenerator,
-} from "@shared";
+import { dumbPhotoGenerator } from "@dumb-photo-generator";
+import { comparePhotoDates } from "@shared";
 
 import { PhotoMetadataDbMongo } from "./photo-metadata-db.mongo";
 import { PhotoMetadataDbMongoTestUtils } from "./photo-metadata-db.mongo.test-utils";

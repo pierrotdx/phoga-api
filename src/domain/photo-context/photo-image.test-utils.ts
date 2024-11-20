@@ -1,5 +1,6 @@
+import { IAssertionsCounter } from "@assertions-counter";
 import { IPhoto, IPhotoImageDb } from "@domain";
-import { IAssertionsCounter, SharedTestUtils } from "@shared";
+import { SharedTestUtils } from "@shared";
 
 export class PhotoImageTestUtils {
   constructor(

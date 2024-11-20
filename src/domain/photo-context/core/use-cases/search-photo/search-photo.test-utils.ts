@@ -1,11 +1,7 @@
 import { clone } from "ramda";
 
-import {
-  DbsTestUtils,
-  IAssertionsCounter,
-  compareDates,
-  comparePhotoDates,
-} from "@shared";
+import { IAssertionsCounter } from "@assertions-counter";
+import { DbsTestUtils, compareDates, comparePhotoDates } from "@shared";
 
 import { IPhoto, SortDirection } from "../../../core";
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";

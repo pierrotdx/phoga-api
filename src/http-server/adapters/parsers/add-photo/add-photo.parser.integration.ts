@@ -1,9 +1,5 @@
-import {
-  AssertionsCounter,
-  IAssertionsCounter,
-  LoremIpsumGenerator,
-  UuidGenerator,
-} from "@shared";
+import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
+import { LoremIpsumGenerator, UuidGenerator } from "@shared";
 
 import { AddPhotoParser } from "./add-photo.parser";
 import { AddPhotoParserTestUtils } from "./add-photo.parser.test-utils";

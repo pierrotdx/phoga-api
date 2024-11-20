@@ -8,7 +8,7 @@ import {
   IRendering,
   Photo,
 } from "@domain";
-import { MongoCollection, MongoManager, MongoStore } from "@shared";
+import { MongoCollection, MongoManager, MongoStore } from "@shared/mongo";
 
 export class PhotoMetadataDbMongo implements IPhotoMetadataDb {
   private readonly collection: Collection<MongoStore<IPhotoMetadata>>;
