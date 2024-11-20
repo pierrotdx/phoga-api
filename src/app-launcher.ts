@@ -3,13 +3,13 @@ import dotenv from "dotenv";
 import {
   IPhotoImageDb,
   IPhotoMetadataDb,
-  MongoManager,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
 } from "@domain";
 import { Storage } from "@google-cloud/storage";
 import { AppHttpServer, ExpressAppHttpServerFactory } from "@http-server";
 import { ILogger } from "@logger";
+import { MongoManager } from "@shared";
 
 dotenv.config();
 
