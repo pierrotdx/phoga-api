@@ -18,7 +18,7 @@ export class ExpressAuthHandler implements IAuthHandler {
   ) {
     this._requiresAuth = auth({
       audience: this.audience,
-      issuerBaseURL: `https://${this.issuerBaseURL}`,
+      issuerBaseURL: this.issuerBaseURL,
     });
   }
 
