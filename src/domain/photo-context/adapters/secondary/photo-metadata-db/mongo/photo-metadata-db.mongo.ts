@@ -1,14 +1,15 @@
 import { Collection, FindCursor, Sort } from "mongodb";
 import { isEmpty, omit } from "ramda";
 
+import { MongoCollection, MongoManager, MongoStore } from "@shared/mongo";
+
 import {
   IPhoto,
   IPhotoMetadata,
   IPhotoMetadataDb,
   IRendering,
   Photo,
-} from "@domain";
-import { MongoCollection, MongoManager, MongoStore } from "@shared/mongo";
+} from "../../../../core";
 
 export class PhotoMetadataDbMongo implements IPhotoMetadataDb {
   private readonly collection: Collection<MongoStore<IPhotoMetadata>>;
