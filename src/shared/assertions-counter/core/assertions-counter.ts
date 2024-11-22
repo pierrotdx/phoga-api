@@ -1,5 +1,5 @@
-import { Counter } from "@shared";
 
+import { Counter } from "@shared";
 import { IAssertionsCounter } from "./models";
 
 export class AssertionsCounter extends Counter implements IAssertionsCounter {
