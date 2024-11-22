@@ -71,8 +71,9 @@ export class AppHttpServerExpressE2eTestUtils {
     this.mongoManager = new MongoManager(mongo.url, mongo.dbName);
     this.storage = new Storage(gc);
     this.tokenProvider = new Auth0TokenProvider(tokenProvider);
+    const issuerBaseURL = `https://${tokenProvider.domain}`;
     this.authHandler = new ExpressAuthHandler(
-      `https://${tokenProvider.domain}`,
+      issuerBaseURL,
       tokenProvider.audience,
     );
     this.username = tokenProvider.username;
