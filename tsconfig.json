@@ -22,8 +22,5 @@
     }
   },
   "lib": ["es2015"],
-  "include": ["src/**/*"],
-  "ts-node": {
-    "require": ["tsconfig-paths/register"]
-  }
+  "include": ["src/**/*"]
 }

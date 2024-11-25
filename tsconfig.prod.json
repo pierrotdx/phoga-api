@@ -1,0 +1,13 @@
+{
+  "extends": ["./tsconfig.json"],
+  "compilerOptions": {
+    "types": ["@types/jest"]
+  },
+  "exclude": [
+    "src/**/*.spec.ts",
+    "src/**/*.integration.ts",
+    "src/**/*.e2e.ts",
+    "src/**/shared-test-utils",
+    "src/**/*.test-utils.ts"
+  ]
+}

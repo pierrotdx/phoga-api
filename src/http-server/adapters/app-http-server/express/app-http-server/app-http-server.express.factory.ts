@@ -47,8 +47,9 @@ export class ExpressAppHttpServerFactory implements Factory<AppHttpServer> {
   }
 
   private getAuthHandler(): ExpressAuthHandler {
-    const issuerBaseUrl = process.env.OAUTH2_ISSUER_BASE_URL;
+    const domain = process.env.OAUTH2_AUTHORIZATION_SERVER_DOMAIN;
+    const issuerBaseURL = `https://${domain}`;
     const audience = process.env.OAUTH2_AUDIENCE;
-    return new ExpressAuthHandler(issuerBaseUrl, audience);
+    return new ExpressAuthHandler(issuerBaseURL, audience);
   }
 }

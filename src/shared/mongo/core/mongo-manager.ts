@@ -1,8 +1,8 @@
 import { Db, MongoClient } from "mongodb";
 
-import { MongoCollection, MongoStore } from "./models";
+import { IMongoManager, MongoCollection, MongoStore } from "./models";
 
-export class MongoManager {
+export class MongoManager implements IMongoManager {
   private readonly client: MongoClient;
   private db: Db;
 
