@@ -14,6 +14,7 @@ module.exports = {
     "@assertions-counter": "<rootDir>/src/shared/assertions-counter",
     "@dumb-photo-generator": "<rootDir>/src/shared/dumb-photo-generator",
     "@domain": "<rootDir>/src/domain",
+    "@domain/*": "<rootDir>/src/domain/*",
     "@http-server": "<rootDir>/src/http-server",
     "@http-server/*": "<rootDir>/src/http-server/*",
     "@logger": "<rootDir>/src/logger/",

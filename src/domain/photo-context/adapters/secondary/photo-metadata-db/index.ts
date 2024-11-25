@@ -1,2 +1,2 @@
-export * from "./fake/fake-photo-metadata-db";
+export * from "./fake";
 export * from "./mongo";

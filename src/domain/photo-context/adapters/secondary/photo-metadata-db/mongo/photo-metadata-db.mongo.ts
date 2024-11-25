@@ -1,7 +1,7 @@
 import { Collection, FindCursor, Sort } from "mongodb";
 import { isEmpty, omit } from "ramda";
 
-import { MongoCollection, MongoManager, MongoStore } from "@shared/mongo";
+import { MongoCollection, MongoManager, MongoStore } from "@shared";
 
 import {
   IPhoto,
