@@ -6,7 +6,7 @@ export const SearchPhotoSchema: TSchema = {
   properties: {
     rendering: RenderingSchema,
     excludeImages: {
-      type: "boolean",
+      type: "string",
     },
   },
 };
