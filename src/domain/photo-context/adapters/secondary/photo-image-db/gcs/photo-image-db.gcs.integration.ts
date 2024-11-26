@@ -4,7 +4,10 @@ import { dumbPhotoGenerator } from "@dumb-photo-generator";
 
 import { PhotoImageDbGcsTestUtils } from "./photo-image-db.gcs.test-utils";
 
-const assetImagesPaths = ["assets/test-img-1.jpg", "assets/test-img-2.jpg"];
+const assetImagesPaths = [
+  "assets/test-img-1_536x354.jpg",
+  "assets/test-img-2_536x354.jpg",
+];
 
 describe("PhotoImageDbGcs", () => {
   let assertionsCounter: IAssertionsCounter;

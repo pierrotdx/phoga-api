@@ -1,7 +1,13 @@
 import { clone } from "ramda";
 
 import { IAssertionsCounter } from "@assertions-counter";
-import { DbsTestUtils, compareDates, comparePhotoDates } from "@shared";
+import {
+  DbsTestUtils,
+  IImageEditor,
+  ImageSize,
+  compareDates,
+  comparePhotoDates,
+} from "@shared";
 
 import { IPhoto, SortDirection } from "../../../core";
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
@@ -13,6 +19,7 @@ export class SearchPhotoTestUtils {
   constructor(
     public readonly photoMetadataDb: IPhotoMetadataDb,
     public readonly photoImageDb: IPhotoImageDb,
+    private readonly imageEditor: IImageEditor,
   ) {
     this.testUtilsFactory();
   }
@@ -38,6 +45,10 @@ export class SearchPhotoTestUtils {
       await this.dbsTestUtils.deletePhotoIfNecessary(photo._id);
     });
     await Promise.all(promises);
+  }
+
+  async deletePhotosInDb(ids: IPhoto["_id"][]): Promise<void> {
+    await this.dbsTestUtils.deletePhotosInDbs(ids);
   }
 
   getStoredPhotos(sortDirection?: SortDirection): IPhoto[] {
@@ -105,5 +116,19 @@ export class SearchPhotoTestUtils {
   ) {
     expect(searchResult.length).toBeLessThanOrEqual(size);
     assertionsCounter.increase();
+  }
+
+  async expectPhotosImagesSize(
+    photos: IPhoto[],
+    expectedSize: ImageSize,
+    assertionsCounter: IAssertionsCounter,
+  ) {
+    const promises = photos.map((photo) => {
+      const imageSize = this.imageEditor.getSize(photo.imageBuffer);
+      expect(imageSize).toEqual(expectedSize);
+      assertionsCounter.increase();
+    });
+    await Promise.all(promises);
+    assertionsCounter.checkAssertions();
   }
 }

@@ -26,7 +26,7 @@ import {
   Scope,
 } from "@http-server";
 import { ILogger, LoggerWinston } from "@logger";
-import { DbsTestUtils, MongoManager } from "@shared";
+import { DbsTestUtils, ImageEditor, MongoManager } from "@shared";
 
 export class AppHttpServerExpressE2eTestUtils {
   private readonly mongoManager: MongoManager;
@@ -107,9 +107,11 @@ export class AppHttpServerExpressE2eTestUtils {
       this.photoMetadataDb,
       this.photoImageDbGcs,
     );
+    const imageEditor = new ImageEditor();
     this.searchPhotoTestUtils = new SearchPhotoTestUtils(
       this.photoMetadataDb,
       this.photoImageDbGcs,
+      imageEditor,
     );
     this.replacePhotoTestUtils = new ReplacePhotoTestUtils(
       this.photoMetadataDb,

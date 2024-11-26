@@ -89,8 +89,8 @@ describe("dumbPhotoGenerator", () => {
   describe("generatePhotoFromAssets", () => {
     it.each`
       path
-      ${"assets/test-img-1.jpg"}
-      ${"assets/test-img-2.jpg"}
+      ${"assets/test-img-1_536x354.jpg"}
+      ${"assets/test-img-2_536x354.jpg"}
     `(
       "should generate a photo where the image buffer matches the image from path",
       async ({ path }: { path: string }) => {

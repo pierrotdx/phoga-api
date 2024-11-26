@@ -1,4 +1,4 @@
-import { Factory } from "@shared";
+import { Factory, ImageEditor } from "@shared";
 
 import { IPhotoImageDb, IPhotoMetadataDb } from "../gateways";
 import { IUseCases } from "../models";
@@ -15,12 +15,13 @@ export class UseCasesFactory implements Factory<IUseCases> {
   ) {}
 
   create(): IUseCases {
+    const imageEditor = new ImageEditor();
     return {
-      getPhoto: new GetPhoto(this.metadataDb, this.imageDb),
+      getPhoto: new GetPhoto(this.metadataDb, this.imageDb, imageEditor),
       addPhoto: new AddPhoto(this.metadataDb, this.imageDb),
       replacePhoto: new ReplacePhoto(this.metadataDb, this.imageDb),
       deletePhoto: new DeletePhoto(this.metadataDb, this.imageDb),
-      searchPhoto: new SearchPhoto(this.metadataDb, this.imageDb),
+      searchPhoto: new SearchPhoto(this.metadataDb, this.imageDb, imageEditor),
     };
   }
 }

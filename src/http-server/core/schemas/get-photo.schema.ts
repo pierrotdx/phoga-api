@@ -6,5 +6,11 @@ export const GetPhotoSchema: TSchema = {
   required: ["id"],
   properties: {
     id: UuidSchema,
+    width: {
+      type: "string",
+    },
+    height: {
+      type: "string",
+    },
   },
 };

@@ -1,20 +1,33 @@
+import { readFile } from "fs/promises";
+
 import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
 import { dumbPhotoGenerator } from "@dumb-photo-generator";
+import { ImageEditor, ImageSize } from "@shared";
 
 import {
   FakePhotoImageDb,
   FakePhotoMetadataDb,
 } from "../../../adapters/secondary";
-import { IRendering, SortDirection } from "../../../core";
+import { IPhoto, IRendering, SortDirection } from "../../../core";
 import { SearchPhoto } from "./search-photo";
 import { SearchPhotoTestUtils } from "./search-photo.test-utils";
 
 describe(`${SearchPhoto.name}`, () => {
   const photoMetadataDb = new FakePhotoMetadataDb();
   const photoImageDb = new FakePhotoImageDb();
-  const testUtils = new SearchPhotoTestUtils(photoMetadataDb, photoImageDb);
+  const imageEditor = new ImageEditor();
+  const testUtils = new SearchPhotoTestUtils(
+    photoMetadataDb,
+    photoImageDb,
+    imageEditor,
+  );
   let assertionsCounter: IAssertionsCounter;
   let searchPhotos: SearchPhoto;
+
+  const imagePaths = [
+    "assets/test-img-1_536x354.jpg",
+    "assets/test-img-2_536x354.jpg",
+  ];
 
   beforeEach(async () => {
     const nbStorePhotos = 3;
@@ -24,6 +37,7 @@ describe(`${SearchPhoto.name}`, () => {
     searchPhotos = new SearchPhoto(
       testUtils.photoMetadataDb,
       testUtils.photoImageDb,
+      imageEditor,
     );
 
     assertionsCounter = new AssertionsCounter();
@@ -109,6 +123,46 @@ describe(`${SearchPhoto.name}`, () => {
           testUtils.expectImagesToBeInSearchResultIfRequired(
             photos,
             excludeImages,
+          );
+        },
+      );
+    });
+
+    describe("+ options.imageSize", () => {
+      let images: Buffer[];
+      let sizedPhotos: IPhoto[];
+
+      beforeEach(async () => {
+        await testUtils.clearStoredPhotos();
+        images = await Promise.all(
+          imagePaths.map(async (path) => await readFile(path)),
+        );
+        sizedPhotos = images.map((imageBuffer) =>
+          dumbPhotoGenerator.generatePhoto({ imageBuffer }),
+        );
+        await testUtils.initStoredPhotos(sizedPhotos);
+      });
+
+      afterEach(async () => {
+        const ids = sizedPhotos.map((p) => p._id);
+        await testUtils.deletePhotosInDb(ids);
+      });
+
+      it.each`
+        expectedSize
+        ${{ width: 156, height: 984 }}
+        ${{ width: 651, height: 545 }}
+        ${{ width: 387, height: 159 }}
+      `(
+        "should return images with the expected size",
+        async ({ expectedSize }: { expectedSize: ImageSize }) => {
+          const photos = await searchPhotos.execute({
+            imageSize: expectedSize,
+          });
+          await testUtils.expectPhotosImagesSize(
+            photos,
+            expectedSize,
+            assertionsCounter,
           );
         },
       );

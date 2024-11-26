@@ -3,6 +3,7 @@ export * from "./compare-dates";
 export * from "./counter";
 export * from "./dbs-test-utils";
 export * from "./dumb-photo-generator";
+export * from "./image-editor/core";
 export * from "./lorem-ipsum";
 export * from "./models";
 export * from "./mongo";
