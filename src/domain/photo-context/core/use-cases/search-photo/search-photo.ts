@@ -1,5 +1,5 @@
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
-import { IPhoto, IRendering, ISearchPhotoOptions } from "../../models";
+import { IPhoto, ISearchPhotoOptions } from "../../models";
 
 export class SearchPhoto {
   private photos: IPhoto[] = [];
