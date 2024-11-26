@@ -82,6 +82,6 @@ export class LoggerWinston implements ILogger {
   error(err: Error | string): void {
     const error = new Error();
     error.stack = err instanceof Error ? err.stack : err;
-    this.winstonLogger.error(error.stack);
+    this.winstonLogger.error(JSON.stringify(error.stack));
   }
 }
