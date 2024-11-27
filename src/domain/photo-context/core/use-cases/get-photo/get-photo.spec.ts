@@ -30,7 +30,7 @@ describe(`${GetPhoto.name}`, () => {
     );
     assertionsCounter = new AssertionsCounter();
     const imageBuffer = await readFile("assets/test-img-1_536x354.jpg");
-    photo = dumbPhotoGenerator.generatePhoto({ imageBuffer });
+    photo = await dumbPhotoGenerator.generatePhoto({ imageBuffer });
     await testUtils.insertPhotoInDbs(photo);
   });
 

@@ -36,7 +36,7 @@ describe("PhotoImageDbGcs", () => {
 
   describe("insert", () => {
     it("should upload the photo image to the cloud", async () => {
-      const photo = dumbPhotoGenerator.generatePhoto();
+      const photo = await dumbPhotoGenerator.generatePhoto();
       await photoImageDbGcs.insert(photo);
       await testUtils.expectImageToBeUploaded(photo);
     });
@@ -85,7 +85,7 @@ describe("PhotoImageDbGcs", () => {
     let storedPhotos: IPhoto[];
 
     beforeEach(async () => {
-      storedPhotos = dumbPhotoGenerator.generatePhotos(nbPhotos);
+      storedPhotos = await dumbPhotoGenerator.generatePhotos(nbPhotos);
       await testUtils.insertPhotosInDbs(storedPhotos);
     });
 

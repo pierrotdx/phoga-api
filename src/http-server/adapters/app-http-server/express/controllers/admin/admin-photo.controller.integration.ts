@@ -3,7 +3,12 @@ import request from "supertest";
 import TestAgent from "supertest/lib/agent";
 
 import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
-import { FakePhotoImageDb, FakePhotoMetadataDb, IUseCases } from "@domain";
+import {
+  FakePhotoImageDb,
+  FakePhotoMetadataDb,
+  IPhoto,
+  IUseCases,
+} from "@domain";
 import { dumbPhotoGenerator } from "@dumb-photo-generator";
 import { AdminPhotoController, EntryPointId, entryPoints } from "@http-server";
 import { SharedTestUtils } from "@shared";
@@ -26,9 +31,10 @@ describe("adminPhotoController", () => {
   let assertionsCounter: IAssertionsCounter;
 
   const _id = "1684a61d-de2f-43c0-a83b-6f8981a31e0c";
-  const photo = dumbPhotoGenerator.generatePhoto({ _id });
+  let photo: IPhoto;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    photo = await dumbPhotoGenerator.generatePhoto({ _id });
     testUtils.internalSetup();
     adminPhotoController = testUtils.getAdminPhotoController();
     useCases = testUtils.getUseCases();
@@ -70,7 +76,9 @@ describe("adminPhotoController", () => {
     });
 
     it("should call the replace-photo use case with the appropriate arguments and respond with status 200", async () => {
-      const initPhoto = dumbPhotoGenerator.generatePhoto({ _id: photo._id });
+      const initPhoto = await dumbPhotoGenerator.generatePhoto({
+        _id: photo._id,
+      });
       await testUtils.insertPhotoInDbs(initPhoto);
       const executeSpy = jest.spyOn(useCases.replacePhoto, "execute");
 
@@ -92,7 +100,12 @@ describe("adminPhotoController", () => {
   describe("deletePhotoHandler", () => {
     const entryPoint = entryPoints.get(EntryPointId.DeletePhoto);
     const path = entryPoint.getFullPathRaw();
-    const url = entryPoint.getFullPathWithParams({ id: photo._id });
+    let url: string;
+
+    beforeAll(() => {
+      url = entryPoint.getFullPathWithParams({ id: photo._id });
+    });
+
     beforeEach(() => {
       app.delete(path, adminPhotoController.deletePhotoHandler);
     });

@@ -47,10 +47,6 @@ export class SearchPhotoTestUtils {
     await Promise.all(promises);
   }
 
-  async deletePhotosInDb(ids: IPhoto["_id"][]): Promise<void> {
-    await this.dbsTestUtils.deletePhotosInDbs(ids);
-  }
-
   getStoredPhotos(sortDirection?: SortDirection): IPhoto[] {
     if (!sortDirection) {
       return this.storedPhotos;

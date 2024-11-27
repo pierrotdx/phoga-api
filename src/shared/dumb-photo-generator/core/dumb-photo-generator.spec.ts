@@ -31,8 +31,8 @@ describe("dumbPhotoGenerator", () => {
   describe("generate", () => {
     const nbTests = 5;
     for (let index = 0; index < nbTests; index++) {
-      it("should generate a valid photo", () => {
-        const photo = dumbPhotoGenerator.generatePhoto();
+      it("should generate a valid photo", async () => {
+        const photo = await dumbPhotoGenerator.generatePhoto();
         testUtils.expectAnInstanceOfPhoto(photo, assertionsCounter);
         assertionsCounter.checkAssertions();
       });
@@ -48,14 +48,14 @@ describe("dumbPhotoGenerator", () => {
       ${["metadata", "description"]} | ${{ description: "dumb description" }}
     `(
       "should generate a photo matching the input metadata.location",
-      ({
+      async ({
         fieldPath,
         options,
       }: {
         fieldPath: string[];
         options: IDumbPhotoGeneratorOptions;
       }) => {
-        const photo = dumbPhotoGenerator.generatePhoto(options);
+        const photo = await dumbPhotoGenerator.generatePhoto(options);
         testUtils.expectAnInstanceOfPhoto(photo, assertionsCounter);
         testUtils.expectMatchingValues({
           fieldPath,
@@ -74,8 +74,8 @@ describe("dumbPhotoGenerator", () => {
       ${5}
     `(
       "should generate the required nb of photos ($nbPhotos)",
-      ({ nbPhotos }: { nbPhotos: number }) => {
-        const result = dumbPhotoGenerator.generatePhotos(nbPhotos);
+      async ({ nbPhotos }: { nbPhotos: number }) => {
+        const result = await dumbPhotoGenerator.generatePhotos(nbPhotos);
         expect(result.length).toBe(nbPhotos);
         assertionsCounter.increase();
         result.forEach((r) => {

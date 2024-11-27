@@ -5,6 +5,7 @@ import {
   FakePhotoImageDb,
   FakePhotoMetadataDb,
 } from "../../../adapters/secondary";
+import { IPhoto } from "../../models";
 import { ReplacePhoto } from "./replace-photo";
 import { ReplacePhotoTestUtils } from "./replace-photo.test-utils";
 
@@ -12,11 +13,12 @@ describe(`${ReplacePhoto.name}`, () => {
   const photoMetadataDb = new FakePhotoMetadataDb();
   const photoImageDb = new FakePhotoImageDb();
   const testUtils = new ReplacePhotoTestUtils(photoMetadataDb, photoImageDb);
-  const photo = dumbPhotoGenerator.generatePhoto();
+  let photo: IPhoto;
   let replacePhoto: ReplacePhoto;
   let assertionsCounter: IAssertionsCounter;
 
   beforeEach(async () => {
+    photo = await dumbPhotoGenerator.generatePhoto();
     replacePhoto = new ReplacePhoto(
       testUtils.photoMetadataDb,
       testUtils.photoImageDb,
@@ -28,7 +30,7 @@ describe(`${ReplacePhoto.name}`, () => {
   describe(`${ReplacePhoto.prototype.execute.name}`, () => {
     it("should replace photo metadata and image in their respective DBs", async () => {
       const dbPhotoBefore = await testUtils.getPhotoFromDb(photo._id);
-      const replacingPhoto = dumbPhotoGenerator.generatePhoto({
+      const replacingPhoto = await dumbPhotoGenerator.generatePhoto({
         _id: photo._id,
       });
       await replacePhoto.execute(replacingPhoto);
@@ -44,7 +46,7 @@ describe(`${ReplacePhoto.name}`, () => {
       const photoBefore = await testUtils.getPhotoFromDb(photo._id);
       const dbMetadataBefore = photoBefore.metadata;
 
-      const replacingPhoto = dumbPhotoGenerator.generatePhoto({
+      const replacingPhoto = await dumbPhotoGenerator.generatePhoto({
         _id: photo._id,
       });
       await replacePhoto.execute(replacingPhoto);

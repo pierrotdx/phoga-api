@@ -1,5 +1,3 @@
-import { readFile } from "fs/promises";
-
 import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
 import { dumbPhotoGenerator } from "@dumb-photo-generator";
 import { ImageEditor, ImageSize } from "@shared";
@@ -8,7 +6,7 @@ import {
   FakePhotoImageDb,
   FakePhotoMetadataDb,
 } from "../../../adapters/secondary";
-import { IPhoto, IRendering, SortDirection } from "../../../core";
+import { IRendering, SortDirection } from "../../../core";
 import { SearchPhoto } from "./search-photo";
 import { SearchPhotoTestUtils } from "./search-photo.test-utils";
 
@@ -24,14 +22,9 @@ describe(`${SearchPhoto.name}`, () => {
   let assertionsCounter: IAssertionsCounter;
   let searchPhotos: SearchPhoto;
 
-  const imagePaths = [
-    "assets/test-img-1_536x354.jpg",
-    "assets/test-img-2_536x354.jpg",
-  ];
-
   beforeEach(async () => {
     const nbStorePhotos = 3;
-    const storedPhotos = dumbPhotoGenerator.generatePhotos(nbStorePhotos);
+    const storedPhotos = await dumbPhotoGenerator.generatePhotos(nbStorePhotos);
     await testUtils.initStoredPhotos(storedPhotos);
 
     searchPhotos = new SearchPhoto(
@@ -129,25 +122,6 @@ describe(`${SearchPhoto.name}`, () => {
     });
 
     describe("+ options.imageSize", () => {
-      let images: Buffer[];
-      let sizedPhotos: IPhoto[];
-
-      beforeEach(async () => {
-        await testUtils.clearStoredPhotos();
-        images = await Promise.all(
-          imagePaths.map(async (path) => await readFile(path)),
-        );
-        sizedPhotos = images.map((imageBuffer) =>
-          dumbPhotoGenerator.generatePhoto({ imageBuffer }),
-        );
-        await testUtils.initStoredPhotos(sizedPhotos);
-      });
-
-      afterEach(async () => {
-        const ids = sizedPhotos.map((p) => p._id);
-        await testUtils.deletePhotosInDb(ids);
-      });
-
       it.each`
         expectedSize
         ${{ width: 156, height: 984 }}

@@ -25,7 +25,7 @@ describe(`${AddPhoto.name}`, () => {
 
   describe(`${AddPhoto.prototype.execute.name}`, () => {
     it("should upload photo image and metadata to their respective DBs", async () => {
-      const photo = dumbPhotoGenerator.generatePhoto();
+      const photo = await dumbPhotoGenerator.generatePhoto();
       await addPhoto.execute(photo);
       await testUtils.expectPhotoToBeUploaded(photo, assertionsCounter);
     });
@@ -38,7 +38,7 @@ describe(`${AddPhoto.name}`, () => {
     `(
       "should throw if image buffer is `$case` and not upload metadata",
       async ({ imageBuffer }) => {
-        const photo = dumbPhotoGenerator.generatePhoto();
+        const photo = await dumbPhotoGenerator.generatePhoto();
         const photoWithInvalidImage = omit(["imageBuffer"], photo) as IPhoto;
         photoWithInvalidImage.imageBuffer = imageBuffer;
 
