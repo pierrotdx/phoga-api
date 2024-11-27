@@ -1,5 +1,5 @@
 import { IAssertionsCounter } from "@assertions-counter";
-import { SharedTestUtils } from "@shared";
+import { ImageEditor, SharedTestUtils } from "@shared";
 
 import {
   PhotoImageTestUtils,
@@ -16,6 +16,7 @@ export class AddPhotoTestUtils {
   constructor(
     public readonly photoMetadataDb: IPhotoMetadataDb,
     public readonly photoImageDb: IPhotoImageDb,
+    private readonly imageEditor: ImageEditor,
   ) {
     this.testUtilsFactory();
   }
@@ -23,6 +24,7 @@ export class AddPhotoTestUtils {
   private testUtilsFactory(): void {
     this.photoMetadataTestUtils = new PhotoMetadataTestUtils(
       this.photoMetadataDb,
+      this.imageEditor,
     );
     this.sharedTestUtils = new SharedTestUtils();
     this.photoImageTestUtils = new PhotoImageTestUtils(
@@ -67,5 +69,15 @@ export class AddPhotoTestUtils {
       assertionsCounter,
     );
     assertionsCounter.checkAssertions();
+  }
+
+  async expectThumbnailToBeInDb(
+    photo: IPhoto,
+    assertionsCounter: IAssertionsCounter,
+  ): Promise<void> {
+    await this.photoMetadataTestUtils.expectThumbnailToBeInDb(
+      photo,
+      assertionsCounter,
+    );
   }
 }

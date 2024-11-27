@@ -3,4 +3,5 @@ export interface IPhotoMetadata {
   description?: string;
   location?: string;
   titles?: string[];
+  thumbnail?: Buffer;
 }

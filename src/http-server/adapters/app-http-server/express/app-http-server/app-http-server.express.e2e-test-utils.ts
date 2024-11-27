@@ -26,7 +26,7 @@ import {
   Scope,
 } from "@http-server";
 import { ILogger, LoggerWinston } from "@logger";
-import { DbsTestUtils, ImageEditor, MongoManager } from "@shared";
+import { DbsTestUtils, IImageEditor, ImageEditor, MongoManager } from "@shared";
 
 export class AppHttpServerExpressE2eTestUtils {
   private readonly mongoManager: MongoManager;
@@ -49,6 +49,7 @@ export class AppHttpServerExpressE2eTestUtils {
   private searchPhotoTestUtils: SearchPhotoTestUtils;
   private replacePhotoTestUtils: ReplacePhotoTestUtils;
   private deletePhotoTestUtils: DeletePhotoTestUtils;
+  private imageEditor: IImageEditor;
 
   private expressHttpServer: ExpressHttpServer;
 
@@ -99,9 +100,11 @@ export class AppHttpServerExpressE2eTestUtils {
       this.photoImageDbGcs,
     );
     this.expressSharedTestUtils = new ExpressSharedTestUtils();
+    this.imageEditor = new ImageEditor();
     this.addPhotoTestUtils = new AddPhotoTestUtils(
       this.photoMetadataDb,
       this.photoImageDbGcs,
+      this.imageEditor,
     );
     this.getPhotoTestUtils = new GetPhotoTestUtils(
       this.photoMetadataDb,
@@ -116,6 +119,7 @@ export class AppHttpServerExpressE2eTestUtils {
     this.replacePhotoTestUtils = new ReplacePhotoTestUtils(
       this.photoMetadataDb,
       this.photoImageDbGcs,
+      this.imageEditor,
     );
     this.deletePhotoTestUtils = new DeletePhotoTestUtils(
       this.photoMetadataDb,
