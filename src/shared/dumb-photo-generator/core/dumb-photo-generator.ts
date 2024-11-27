@@ -1,4 +1,5 @@
 import { readFile } from "fs/promises";
+import fetch from "node-fetch";
 import { clone } from "ramda";
 
 import { IPhoto, Photo } from "@domain";
@@ -12,19 +13,20 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     private readonly loremIpsumGenerator: ILoremIpsumGenerator,
   ) {}
 
-  generatePhoto(options?: IDumbPhotoGeneratorOptions): IPhoto {
+  async generatePhoto(options?: IDumbPhotoGeneratorOptions): Promise<IPhoto> {
     const id = clone(options?._id) || this.uuidGenerator.generate();
     const imageBuffer =
-      clone(options?.imageBuffer) || this.generateImageBuffer();
+      clone(options?.imageBuffer) || (await this.generateImageBuffer());
     const metadata = this.generateMetadata(options);
     const photo = new Photo(id, { imageBuffer, metadata });
     assertPhoto(photo);
     return photo;
   }
 
-  private generateImageBuffer(): Buffer {
-    const data = this.loremIpsumGenerator.generateSentences(1)[0];
-    return Buffer.from(data);
+  private async generateImageBuffer(): Promise<Buffer> {
+    const response = await fetch("https://picsum.photos/seed/picsum/200/300");
+    const arrayBuffer = await response.arrayBuffer();
+    return Buffer.from(arrayBuffer);
   }
 
   private generateMetadata(
@@ -69,14 +71,11 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     return description;
   }
 
-  generatePhotos(nbPhotos: number): IPhoto[] {
+  async generatePhotos(nbPhotos: number): Promise<IPhoto[]> {
     const photos: IPhoto[] = [];
-    for (let index = 0; index < nbPhotos; index++) {
-      photos.push(
-        this.generatePhoto({
-          imageBuffer: Buffer.from("dumb image buffer"),
-        }),
-      );
+    while (photos.length < nbPhotos) {
+      const photo = await this.generatePhoto();
+      photos.push(photo);
     }
     return photos;
   }

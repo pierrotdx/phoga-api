@@ -14,5 +14,11 @@ export const RenderingSchema: TSchema = {
     dateOrder: {
       enum: Object.values(SortDirection),
     },
+    width: {
+      type: "string",
+    },
+    height: {
+      type: "string",
+    },
   },
 };

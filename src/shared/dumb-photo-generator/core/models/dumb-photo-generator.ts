@@ -1,8 +1,8 @@
 import { IPhoto } from "@domain";
 
 export interface IDumbPhotoGenerator {
-  generatePhoto(params?: IDumbPhotoGeneratorOptions): IPhoto;
-  generatePhotos(nbPhotos: number): IPhoto[];
+  generatePhoto(params?: IDumbPhotoGeneratorOptions): Promise<IPhoto>;
+  generatePhotos(nbPhotos: number): Promise<IPhoto[]>;
   generatePhotoFromPath(
     imagePath: string,
     _id?: IPhoto["_id"],

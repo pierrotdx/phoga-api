@@ -14,23 +14,24 @@ export class PhotoController implements IPhotoController {
   ) {}
 
   getMetadata = async (req: Request, res: Response) => {
-    const id = this.validateAndParseGetPhoto(req);
-    const photo = await this.useCases.getPhoto.execute(id, {
+    const { _id } = this.validateAndParseGetPhoto(req);
+    const photo = await this.useCases.getPhoto.execute(_id, {
       fields: [GetPhotoField.Metadata],
     });
     res.json(photo);
   };
 
   private validateAndParseGetPhoto(req: Request) {
-    this.validators.getPhoto.validate(req.params);
-    const id = this.parsers.getPhoto.parse(req.params);
-    return id;
+    const reqData = { ...req.params, ...req.query };
+    this.validators.getPhoto.validate(reqData);
+    return this.parsers.getPhoto.parse(reqData);
   }
 
   getImage = async (req: Request, res: Response) => {
-    const id = this.validateAndParseGetPhoto(req);
-    const photo = await this.useCases.getPhoto.execute(id, {
+    const { _id, imageSize } = this.validateAndParseGetPhoto(req);
+    const photo = await this.useCases.getPhoto.execute(_id, {
       fields: [GetPhotoField.ImageBuffer],
+      imageSize,
     });
     const imageStream = Readable.from(photo.imageBuffer);
     res.setHeader("Content-Type", "image/jpeg");

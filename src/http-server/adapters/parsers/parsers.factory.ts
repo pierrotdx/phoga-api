@@ -4,6 +4,7 @@ import { Factory } from "@shared";
 import { AddPhotoParser } from "./add-photo/add-photo.parser";
 import { GetPhotoParser } from "./get-photo/get-photo.parser";
 import { SearchPhotoParser } from "./search-photo/search-photo.parser";
+import { DeletePhotoParser } from "./delete-photo/delete-photo.parser";
 
 export class ParsersFactory implements Factory<IParsers> {
   create(): IParsers {
@@ -11,7 +12,7 @@ export class ParsersFactory implements Factory<IParsers> {
       getPhoto: new GetPhotoParser(),
       addPhoto: new AddPhotoParser(),
       replacePhoto: new AddPhotoParser(),
-      deletePhoto: new GetPhotoParser(),
+      deletePhoto: new DeletePhotoParser(),
       searchPhoto: new SearchPhotoParser(),
     };
   }

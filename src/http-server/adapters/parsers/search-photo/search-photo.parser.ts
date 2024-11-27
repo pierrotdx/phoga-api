@@ -2,7 +2,7 @@ import { isEmpty } from "ramda";
 
 import { IRendering, ISearchPhotoOptions } from "@domain";
 import { ISearchPhotoParser } from "@http-server";
-import { assertSearchPhotoOptions } from "@shared";
+import { ImageSize, assertSearchPhotoOptions } from "@shared";
 
 export class SearchPhotoParser implements ISearchPhotoParser {
   parse(data: any): ISearchPhotoOptions {
@@ -26,7 +26,7 @@ export class SearchPhotoParser implements ISearchPhotoParser {
   }
 
   private setRendering(data: any, searchOptions: ISearchPhotoOptions): void {
-    const { size, from, dateOrder } = data || {};
+    const { size, from, dateOrder, width, height } = data || {};
     const rendering: IRendering = {};
     if (size) {
       rendering.size = parseInt(size as string);
@@ -39,6 +39,16 @@ export class SearchPhotoParser implements ISearchPhotoParser {
     }
     if (!isEmpty(rendering)) {
       searchOptions.rendering = rendering;
+    }
+    const imageSize: ImageSize = {};
+    if (width) {
+      imageSize.width = parseInt(width as string);
+    }
+    if (height) {
+      imageSize.height = parseInt(height as string);
+    }
+    if (!isEmpty(imageSize)) {
+      searchOptions.imageSize = imageSize;
     }
   }
 }
