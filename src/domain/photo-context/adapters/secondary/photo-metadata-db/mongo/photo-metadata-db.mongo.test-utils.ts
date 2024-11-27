@@ -1,8 +1,13 @@
-import { omit } from "ramda";
+import { clone, omit } from "ramda";
 
 import { IAssertionsCounter } from "@assertions-counter";
-import { IPhoto } from "@domain";
-import { DbsTestUtils, MongoManager, MongoStore } from "@shared";
+import { IPhoto, SortDirection } from "@domain";
+import {
+  DbsTestUtils,
+  MongoManager,
+  MongoStore,
+  comparePhotoDates,
+} from "@shared";
 
 import { PhotoMetadataDbMongo } from "./photo-metadata-db.mongo";
 
@@ -152,5 +157,12 @@ export class PhotoMetadataDbMongoTestUtils {
     expect(docAfter).toBeUndefined();
     assertionsCounter.increase();
     assertionsCounter.checkAssertions();
+  }
+
+  getPhotosSortedByDate(photos: IPhoto[], direction: SortDirection): IPhoto[] {
+    const ascendingPhotos = clone(photos).sort(comparePhotoDates);
+    return direction === SortDirection.Ascending
+      ? ascendingPhotos
+      : ascendingPhotos.reverse();
   }
 }

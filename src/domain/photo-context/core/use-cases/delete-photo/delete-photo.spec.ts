@@ -6,6 +6,7 @@ import {
   FakePhotoImageDb,
   FakePhotoMetadataDb,
 } from "../../../adapters/secondary";
+import { IPhoto } from "../../models";
 import { DeletePhoto } from "./delete-photo";
 import { DeletePhotoTestUtils } from "./delete-photo.test-utils";
 
@@ -16,9 +17,10 @@ describe(`${DeletePhoto.name}`, () => {
   const testUtils = new DeletePhotoTestUtils(photoMetadataDb, photoImageDb);
   let deletePhoto: DeletePhoto;
   let assertionsCounter: IAssertionsCounter;
-  const photo = dumbPhotoGenerator.generatePhoto();
+  let photo: IPhoto;
 
   beforeEach(async () => {
+    photo = await dumbPhotoGenerator.generatePhoto();
     deletePhoto = new DeletePhoto(
       testUtils.photoMetadataDb,
       testUtils.photoImageDb,

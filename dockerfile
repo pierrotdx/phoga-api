@@ -1,6 +1,6 @@
 # https://docs.docker.com/language/nodejs/containerize/
 
-ARG NODE_VERSION=20.0.0
+ARG NODE_VERSION=20.3.0
 
 FROM node:${NODE_VERSION}-alpine
 

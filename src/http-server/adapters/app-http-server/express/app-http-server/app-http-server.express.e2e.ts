@@ -21,7 +21,7 @@ const deletePhotoPath = entryPoints.getFullPathRaw(EntryPointId.DeletePhoto);
 const searchPhotoPath = entryPoints.getFullPathRaw(EntryPointId.SearchPhoto);
 
 describe("ExpressHttpServer", () => {
-  const storedPhoto = dumbPhotoGenerator.generatePhoto();
+  let storedPhoto: IPhoto;
   const testUtils = new AppHttpServerExpressE2eTestUtils({
     mongo: {
       url: global.__MONGO_URL__,
@@ -51,6 +51,7 @@ describe("ExpressHttpServer", () => {
     app = expressHttpServer.app;
     logger = testUtils.getLogger();
 
+    storedPhoto = await dumbPhotoGenerator.generatePhoto();
     await testUtils.insertPhotoInDbs(storedPhoto);
     assertionsCounter = new AssertionsCounter();
   });
@@ -65,11 +66,12 @@ describe("ExpressHttpServer", () => {
   });
 
   describe(`POST ${addPhotoPath}`, () => {
-    const photoToAdd = dumbPhotoGenerator.generatePhoto();
     const requiredScopes = entryPoints.getScopes(EntryPointId.AddPhoto);
+    let photoToAdd: IPhoto;
     let payload: ReturnType<typeof testUtils.getPayloadFromPhoto>;
 
-    beforeEach(() => {
+    beforeEach(async () => {
+      photoToAdd = await dumbPhotoGenerator.generatePhoto();
       payload = testUtils.getPayloadFromPhoto(photoToAdd);
     });
 
@@ -104,9 +106,10 @@ describe("ExpressHttpServer", () => {
   });
 
   describe(`GET ${getMetadataPath}`, () => {
-    const expectedPhoto: IPhoto = omit(["imageBuffer"], storedPhoto);
+    let expectedPhoto: IPhoto;
 
     beforeEach(async () => {
+      expectedPhoto = omit(["imageBuffer"], storedPhoto);
       await testUtils.insertPhotoInDbs(expectedPhoto);
     });
 
@@ -131,9 +134,10 @@ describe("ExpressHttpServer", () => {
   });
 
   describe(`GET ${getImagePath}`, () => {
-    const expectedPhoto: IPhoto = omit(["metadata"], storedPhoto);
+    let expectedPhoto: IPhoto;
 
     beforeEach(async () => {
+      expectedPhoto = omit(["metadata"], storedPhoto);
       await testUtils.insertPhotoInDbs(expectedPhoto);
     });
 
@@ -193,17 +197,18 @@ describe("ExpressHttpServer", () => {
   });
 
   describe(`PUT ${replacePhotoPath}`, () => {
-    let replacingPhoto: IPhoto;
-    let replacePhotoUrl = entryPoints
-      .get(EntryPointId.ReplacePhoto)
-      .getFullPathWithParams({ id: storedPhoto._id });
     const requiredScopes = entryPoints.getScopes(EntryPointId.ReplacePhoto);
+    let replacingPhoto: IPhoto;
+    let replacePhotoUrl: string;
     let payload: ReturnType<typeof testUtils.getPayloadFromPhoto>;
 
-    beforeEach(() => {
-      replacingPhoto = dumbPhotoGenerator.generatePhoto({
+    beforeEach(async () => {
+      replacingPhoto = await dumbPhotoGenerator.generatePhoto({
         _id: storedPhoto._id,
       });
+      replacePhotoUrl = entryPoints
+        .get(EntryPointId.ReplacePhoto)
+        .getFullPathWithParams({ id: storedPhoto._id });
       payload = testUtils.getPayloadFromPhoto(replacingPhoto);
     });
 
@@ -233,12 +238,12 @@ describe("ExpressHttpServer", () => {
   });
 
   describe(`DELETE ${deletePhotoPath}`, () => {
-    let photoToDelete: IPhoto;
     const requiredScopes = entryPoints.getScopes(EntryPointId.DeletePhoto);
+    let photoToDelete: IPhoto;
     let url: string;
 
     beforeEach(async () => {
-      photoToDelete = dumbPhotoGenerator.generatePhoto();
+      photoToDelete = await dumbPhotoGenerator.generatePhoto();
       url = entryPoints.getFullPathWithParams(EntryPointId.DeletePhoto, {
         id: photoToDelete._id,
       });

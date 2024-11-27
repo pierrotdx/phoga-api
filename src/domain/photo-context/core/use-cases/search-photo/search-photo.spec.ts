@@ -1,5 +1,6 @@
 import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
 import { dumbPhotoGenerator } from "@dumb-photo-generator";
+import { ImageEditor, ImageSize } from "@shared";
 
 import {
   FakePhotoImageDb,
@@ -12,18 +13,24 @@ import { SearchPhotoTestUtils } from "./search-photo.test-utils";
 describe(`${SearchPhoto.name}`, () => {
   const photoMetadataDb = new FakePhotoMetadataDb();
   const photoImageDb = new FakePhotoImageDb();
-  const testUtils = new SearchPhotoTestUtils(photoMetadataDb, photoImageDb);
+  const imageEditor = new ImageEditor();
+  const testUtils = new SearchPhotoTestUtils(
+    photoMetadataDb,
+    photoImageDb,
+    imageEditor,
+  );
   let assertionsCounter: IAssertionsCounter;
   let searchPhotos: SearchPhoto;
 
   beforeEach(async () => {
     const nbStorePhotos = 3;
-    const storedPhotos = dumbPhotoGenerator.generatePhotos(nbStorePhotos);
+    const storedPhotos = await dumbPhotoGenerator.generatePhotos(nbStorePhotos);
     await testUtils.initStoredPhotos(storedPhotos);
 
     searchPhotos = new SearchPhoto(
       testUtils.photoMetadataDb,
       testUtils.photoImageDb,
+      imageEditor,
     );
 
     assertionsCounter = new AssertionsCounter();
@@ -109,6 +116,27 @@ describe(`${SearchPhoto.name}`, () => {
           testUtils.expectImagesToBeInSearchResultIfRequired(
             photos,
             excludeImages,
+          );
+        },
+      );
+    });
+
+    describe("+ options.imageSize", () => {
+      it.each`
+        expectedSize
+        ${{ width: 156, height: 984 }}
+        ${{ width: 651, height: 545 }}
+        ${{ width: 387, height: 159 }}
+      `(
+        "should return images with the expected size",
+        async ({ expectedSize }: { expectedSize: ImageSize }) => {
+          const photos = await searchPhotos.execute({
+            imageSize: expectedSize,
+          });
+          await testUtils.expectPhotosImagesSize(
+            photos,
+            expectedSize,
+            assertionsCounter,
           );
         },
       );
