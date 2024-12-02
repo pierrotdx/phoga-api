@@ -12,7 +12,9 @@ export class AddPhoto {
 
   async execute(photo: IPhoto): Promise<void> {
     await this.uploadImage(photo);
-    await this.thumbnailSetter.set(photo);
+    if (!photo.metadata?.thumbnail) {
+      await this.thumbnailSetter.set(photo);
+    }
     await this.photoMetadataDb.insert(photo);
   }
 

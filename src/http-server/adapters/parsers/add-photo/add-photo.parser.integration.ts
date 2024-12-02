@@ -18,8 +18,8 @@ describe("AddPhotoParser", () => {
   });
 
   describe("parse", () => {
-    it("should parse input data into photo", () => {
-      const inputData = testUtils.generateValidData();
+    it("should parse input data into photo", async () => {
+      const inputData = await testUtils.generateValidData();
       const parsedData = addPhotoParser.parse(inputData);
       testUtils.expectParsedDataToBeAValidPhotoWithInputFields(
         inputData,
@@ -29,8 +29,8 @@ describe("AddPhotoParser", () => {
       assertionsCounter.checkAssertions();
     });
 
-    it("should throw if the parsed data is not a photo", () => {
-      const invalidData = testUtils.generateValidData();
+    it("should throw if the parsed data is not a photo", async () => {
+      const invalidData = await testUtils.generateValidData();
       invalidData.location = ["test", "test2"] as any;
       expect(() => {
         addPhotoParser.parse(invalidData);

@@ -6,7 +6,7 @@ import {
   FakePhotoImageDb,
   FakePhotoMetadataDb,
 } from "../../../adapters/secondary";
-import { IPhoto, thumbnailSize } from "../../models";
+import { IPhoto } from "../../models";
 import { ThumbnailSetter } from "../../thumbnail-setter";
 import { ReplacePhoto } from "./replace-photo";
 import { ReplacePhotoTestUtils } from "./replace-photo.test-utils";
@@ -15,11 +15,7 @@ describe(`${ReplacePhoto.name}`, () => {
   const photoMetadataDb = new FakePhotoMetadataDb();
   const photoImageDb = new FakePhotoImageDb();
   const imageEditor = new ImageEditor();
-  const testUtils = new ReplacePhotoTestUtils(
-    photoMetadataDb,
-    photoImageDb,
-    imageEditor,
-  );
+  const testUtils = new ReplacePhotoTestUtils(photoMetadataDb, photoImageDb);
   const thumbnailSetter = new ThumbnailSetter(imageEditor);
   let photo: IPhoto;
   let replacePhoto: ReplacePhoto;
@@ -34,6 +30,10 @@ describe(`${ReplacePhoto.name}`, () => {
     );
     assertionsCounter = new AssertionsCounter();
     await testUtils.insertPhotoInDb(photo);
+  });
+
+  afterEach(async () => {
+    await testUtils.deletePhotoIfNecessary(photo._id);
   });
 
   describe(`${ReplacePhoto.prototype.execute.name}`, () => {
@@ -69,10 +69,15 @@ describe(`${ReplacePhoto.name}`, () => {
       assertionsCounter.checkAssertions();
     });
 
-    it(`should always have at least a thumbnail in the metadata with size \'${JSON.stringify(thumbnailSize)}\'`, async () => {
-      delete photo.metadata;
-      await replacePhoto.execute(photo);
-      await testUtils.expectThumbnailToBeInDb(photo, assertionsCounter);
+    it(`should generate a thumbnail in the metadata if not provided`, async () => {
+      const replacingPhoto = await dumbPhotoGenerator.generatePhoto({
+        _id: photo._id,
+      });
+      const setThumbnailSpy = jest.spyOn(thumbnailSetter, "set");
+      delete replacingPhoto.metadata;
+      await replacePhoto.execute(replacingPhoto);
+      expect(setThumbnailSpy).toHaveBeenCalledTimes(1);
+      expect.assertions(1);
     });
 
     it.each`

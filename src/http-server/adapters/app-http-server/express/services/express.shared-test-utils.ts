@@ -1,8 +1,7 @@
 import { Response } from "supertest";
 
 import { IPhoto, Photo } from "@domain";
-import { imageBufferEncoding } from "@http-server";
-import { isUuid } from "@shared";
+import { imageBufferEncoding, isUuid } from "@shared";
 
 export class ExpressSharedTestUtils {
   getPayloadFromPhoto(photo: IPhoto, encoding = imageBufferEncoding) {
@@ -13,6 +12,7 @@ export class ExpressSharedTestUtils {
       description: photo.metadata?.description,
       titles: photo.metadata?.titles,
       date: photo.metadata?.date?.toISOString(),
+      thumbnail: photo.metadata?.thumbnail?.toString(encoding),
     };
   }
 
@@ -26,6 +26,9 @@ export class ExpressSharedTestUtils {
     const { _id, metadata } = res.body;
     if (metadata?.date) {
       metadata.date = new Date(metadata.date);
+    }
+    if (metadata?.thumbnail) {
+      metadata.thumbnail = Buffer.from(metadata.thumbnail, imageBufferEncoding);
     }
     return new Photo(_id, { metadata });
   }

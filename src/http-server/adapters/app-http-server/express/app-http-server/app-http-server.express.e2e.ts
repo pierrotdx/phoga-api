@@ -162,11 +162,36 @@ describe("ExpressHttpServer", () => {
   });
 
   describe(`GET ${searchPhotoPath}`, () => {
+    let storedPhotos: IPhoto[];
+    const timeout = 10000;
+
+    beforeEach(async () => {
+      await testUtils.deletePhotoIfNecessary(storedPhoto._id);
+      storedPhotos = await Promise.all([
+        await dumbPhotoGenerator.generatePhoto(),
+        await dumbPhotoGenerator.generatePhoto(),
+        await dumbPhotoGenerator.generatePhoto(),
+      ]);
+      await Promise.all(
+        storedPhotos.map(
+          async (photo) => await testUtils.insertPhotoInDbs(photo),
+        ),
+      );
+    }, timeout);
+
+    afterEach(async () => {
+      await Promise.all(
+        storedPhotos.map(
+          async (photo) => await testUtils.deletePhotoIfNecessary(photo._id),
+        ),
+      );
+    }, timeout);
+
     it.each`
       queryParams
       ${{ size: 1 }}
       ${{ size: 2, dateOrder: SortDirection.Ascending }}
-      ${{ size: 2, dateOrder: SortDirection.Descending }}
+      ${{ size: 3, dateOrder: SortDirection.Descending }}
     `(
       "should return the photos matching the query params: $queryParams",
       async ({ queryParams }) => {

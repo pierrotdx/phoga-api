@@ -14,6 +14,7 @@ describe("PhotoMetadataDbMongo", () => {
   );
   let photoMetadataDbMongo: PhotoMetadataDbMongo;
   let assertionsCounter: IAssertionsCounter;
+  const timeout = 10000; // generating multiple stored photos
 
   beforeEach(async () => {
     await testUtils.internalSetup();
@@ -21,7 +22,7 @@ describe("PhotoMetadataDbMongo", () => {
     storedPhotos = [...(await dumbPhotoGenerator.generatePhotos(3))];
     await testUtils.insertPhotosInDbs(storedPhotos);
     assertionsCounter = new AssertionsCounter();
-  });
+  }, timeout);
 
   afterEach(async () => {
     const storedPhotoIds = storedPhotos.map((photo) => photo._id);

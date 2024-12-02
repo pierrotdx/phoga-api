@@ -83,16 +83,17 @@ describe("PhotoImageDbGcs", () => {
   describe("getByIds", () => {
     const nbPhotos = 6;
     let storedPhotos: IPhoto[];
+    const timeout = 10000;
 
     beforeEach(async () => {
       storedPhotos = await dumbPhotoGenerator.generatePhotos(nbPhotos);
       await testUtils.insertPhotosInDbs(storedPhotos);
-    });
+    }, timeout);
 
     afterEach(async () => {
       const photoIds = storedPhotos.map((p) => p._id);
       await testUtils.deletePhotosInDbs(photoIds);
-    });
+    }, timeout);
 
     const nbTests = 3;
     for (let i = 0; i < nbTests; i++) {

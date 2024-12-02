@@ -100,26 +100,23 @@ export class AppHttpServerExpressE2eTestUtils {
       this.photoImageDbGcs,
     );
     this.expressSharedTestUtils = new ExpressSharedTestUtils();
-    this.imageEditor = new ImageEditor();
     this.addPhotoTestUtils = new AddPhotoTestUtils(
       this.photoMetadataDb,
       this.photoImageDbGcs,
-      this.imageEditor,
     );
     this.getPhotoTestUtils = new GetPhotoTestUtils(
       this.photoMetadataDb,
       this.photoImageDbGcs,
     );
-    const imageEditor = new ImageEditor();
+    this.imageEditor = new ImageEditor();
     this.searchPhotoTestUtils = new SearchPhotoTestUtils(
       this.photoMetadataDb,
       this.photoImageDbGcs,
-      imageEditor,
+      this.imageEditor,
     );
     this.replacePhotoTestUtils = new ReplacePhotoTestUtils(
       this.photoMetadataDb,
       this.photoImageDbGcs,
-      this.imageEditor,
     );
     this.deletePhotoTestUtils = new DeletePhotoTestUtils(
       this.photoMetadataDb,
