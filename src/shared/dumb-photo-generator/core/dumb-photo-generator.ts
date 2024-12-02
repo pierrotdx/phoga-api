@@ -3,7 +3,12 @@ import fetch from "node-fetch";
 import { clone } from "ramda";
 
 import { IPhoto, Photo } from "@domain";
-import { ILoremIpsumGenerator, IUuidGenerator, assertPhoto } from "@shared";
+import {
+  ILoremIpsumGenerator,
+  IUuidGenerator,
+  ImageSize,
+  assertPhoto,
+} from "@shared";
 
 import { IDumbPhotoGenerator, IDumbPhotoGeneratorOptions } from "./models";
 
@@ -17,21 +22,24 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     const id = clone(options?._id) || this.uuidGenerator.generate();
     const imageBuffer =
       clone(options?.imageBuffer) || (await this.generateImageBuffer());
-    const metadata = this.generateMetadata(options);
+    const metadata = await this.generateMetadata(options);
     const photo = new Photo(id, { imageBuffer, metadata });
     assertPhoto(photo);
     return photo;
   }
 
-  private async generateImageBuffer(): Promise<Buffer> {
-    const response = await fetch("https://picsum.photos/seed/picsum/200/300");
-    const arrayBuffer = await response.arrayBuffer();
-    return Buffer.from(arrayBuffer);
+  private async generateImageBuffer(
+    size: ImageSize = { width: 200, height: 300 },
+  ): Promise<Buffer> {
+    const response = await fetch(
+      `https://picsum.photos/seed/picsum/${size.width}/${size.height}`,
+    );
+    return await response.buffer();
   }
 
-  private generateMetadata(
+  private async generateMetadata(
     options?: IDumbPhotoGeneratorOptions,
-  ): IPhoto["metadata"] {
+  ): Promise<IPhoto["metadata"]> {
     const date = clone(options?.date) || this.randomDate();
     const titles = clone(options?.titles) || this.generateTitles();
     const location =
@@ -39,7 +47,11 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
       this.loremIpsumGenerator.generateWords(2).join(" ");
     const description =
       clone(options?.description) || this.generateDescription();
-    return { date, titles, location, description };
+    const thumbnail = await this.generateImageBuffer({
+      width: 300,
+      height: 300,
+    });
+    return { date, titles, location, description, thumbnail };
   }
 
   // https://stackoverflow.com/a/9035732/6281776

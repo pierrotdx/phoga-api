@@ -1,4 +1,5 @@
-import { imageBufferEncoding } from "../constants.http-server";
+import { imageBufferEncoding } from "@shared";
+
 import { TSchema } from "../schema";
 import { IsoStringDateSchema } from "./date.schema";
 import { UuidSchema } from "./uuid.schema";
@@ -20,6 +21,10 @@ export const AddPhotoSchema: TSchema = {
     titles: {
       type: "array",
       items: { type: "string" },
+    },
+    thumbnail: {
+      type: "string",
+      contentEncoding: imageBufferEncoding,
     },
   },
 };

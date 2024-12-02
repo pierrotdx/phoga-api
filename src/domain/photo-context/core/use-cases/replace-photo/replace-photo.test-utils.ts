@@ -1,10 +1,5 @@
 import { IAssertionsCounter } from "@assertions-counter";
-import {
-  DbsTestUtils,
-  IImageEditor,
-  ImageEditor,
-  SharedTestUtils,
-} from "@shared";
+import { DbsTestUtils, SharedTestUtils } from "@shared";
 
 import { PhotoMetadataTestUtils } from "../../../photo-metadata.test-utils";
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
@@ -18,17 +13,16 @@ export class ReplacePhotoTestUtils {
   constructor(
     public readonly photoMetadataDb: IPhotoMetadataDb,
     public readonly photoImageDb: IPhotoImageDb,
-    private readonly imageEditor: ImageEditor,
   ) {
     this.testUtilsFactory();
   }
 
   private testUtilsFactory(): void {
+    this.sharedTestUtils = new SharedTestUtils();
     this.photoMetadataTestUtils = new PhotoMetadataTestUtils(
       this.photoMetadataDb,
-      this.imageEditor,
+      this.sharedTestUtils,
     );
-    this.sharedTestUtils = new SharedTestUtils();
     this.dbsTestUtils = new DbsTestUtils(
       this.photoMetadataDb,
       this.photoImageDb,
@@ -47,6 +41,10 @@ export class ReplacePhotoTestUtils {
     return await this.photoMetadataDb.delete(id);
   }
 
+  async deletePhotoIfNecessary(id: IPhoto["_id"]): Promise<void> {
+    return await this.dbsTestUtils.deletePhotoIfNecessary(id);
+  }
+
   async expectPhotoToBeReplacedInDb(
     dbPhotoBefore: IPhoto,
     expectedPhoto: IPhoto,
@@ -56,8 +54,12 @@ export class ReplacePhotoTestUtils {
     expect(dbPhotoBefore).toBeDefined();
     expect(dbPhotoAfter).toBeDefined();
     expect(dbPhotoAfter).not.toEqual(dbPhotoBefore);
-    expect(dbPhotoAfter).toEqual(expectedPhoto);
-    assertionsCounter.increase(4);
+    assertionsCounter.increase(3);
+    this.sharedTestUtils.expectMatchingPhotos(
+      dbPhotoAfter,
+      expectedPhoto,
+      assertionsCounter,
+    );
     assertionsCounter.checkAssertions();
   }
 
@@ -97,16 +99,6 @@ export class ReplacePhotoTestUtils {
   ): Promise<void> {
     return await this.photoMetadataTestUtils.expectPhotoMetadataToBeInDb(
       ...params,
-    );
-  }
-
-  async expectThumbnailToBeInDb(
-    photo: IPhoto,
-    assertionsCounter: IAssertionsCounter,
-  ): Promise<void> {
-    await this.photoMetadataTestUtils.expectThumbnailToBeInDb(
-      photo,
-      assertionsCounter,
     );
   }
 }

@@ -12,7 +12,9 @@ export class ReplacePhoto {
 
   async execute(photo: IPhoto): Promise<void> {
     await this.replaceImage(photo);
-    await this.thumbnailSetter.set(photo);
+    if (!photo.metadata?.thumbnail) {
+      await this.thumbnailSetter.set(photo);
+    }
     await this.photoMetadataDb.replace(photo);
   }
 

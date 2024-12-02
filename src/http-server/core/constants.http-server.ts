@@ -1,1 +1,0 @@
-export const imageBufferEncoding: BufferEncoding = "base64";
