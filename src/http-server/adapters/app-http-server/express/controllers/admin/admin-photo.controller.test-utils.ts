@@ -34,7 +34,10 @@ export class AdminPhotoControllerTestUtils {
 
   private testUtilsFactory() {
     this.controllersTestUtils = new ControllersTestUtils();
-    this.dbsTestUtils = new DbsTestUtils();
+    this.dbsTestUtils = new DbsTestUtils(
+      this.photoMetadataDb,
+      this.photoImageDb,
+    );
   }
 
   private setAdminPhotoController() {

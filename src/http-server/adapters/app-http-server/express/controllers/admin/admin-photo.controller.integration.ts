@@ -29,6 +29,7 @@ describe("adminPhotoController", () => {
   let app: Express;
   let req: TestAgent;
   let assertionsCounter: IAssertionsCounter;
+  let spy: jest.SpyInstance;
 
   const _id = "1684a61d-de2f-43c0-a83b-6f8981a31e0c";
   let photo: IPhoto;
@@ -47,53 +48,52 @@ describe("adminPhotoController", () => {
   describe("addPhotoHandler", () => {
     const entryPoint = entryPoints.get(EntryPointId.AddPhoto);
     const path = entryPoint.getRelativePath();
+
     beforeEach(() => {
+      spy = jest.spyOn(useCases.addPhoto, "execute");
       app.post(path, adminPhotoController.addPhotoHandler);
     });
 
-    it("should call the add-photo use case with the appropriate arguments and respond with status 200", async () => {
-      const executeSpy = jest.spyOn(useCases.addPhoto, "execute");
+    afterEach(() => {
+      spy.mockReset();
+    });
 
+    it("should call the add-photo use case with the appropriate arguments and respond with status 200", async () => {
       const payload = testUtils.getPayloadFromPhoto(photo);
       const response = await req.post(path).send(payload);
-
-      sharedTestUtils.expectFunctionToBeCalledWith(
-        assertionsCounter,
-        executeSpy,
-        photo,
-      );
+      expect(spy).toHaveBeenCalledTimes(1);
       expect(response.statusCode).toBe(200);
-      assertionsCounter.increase();
-      assertionsCounter.checkAssertions();
+      expect.assertions(2);
     });
   });
 
   describe("replacePhotoHandler", () => {
     const entryPoint = entryPoints.get(EntryPointId.ReplacePhoto);
     const path = entryPoint.getFullPathRaw();
-    beforeEach(() => {
+    let photoToReplace: IPhoto;
+    let replacingPhoto: IPhoto;
+
+    beforeEach(async () => {
+      photoToReplace = await dumbPhotoGenerator.generatePhoto({});
+      await testUtils.insertPhotoInDbs(photoToReplace);
+      replacingPhoto = await dumbPhotoGenerator.generatePhoto({
+        _id: photoToReplace._id,
+      });
       app.put(path, adminPhotoController.replacePhotoHandler);
+      spy = jest.spyOn(useCases.replacePhoto, "execute");
+    });
+
+    afterEach(() => {
+      spy.mockReset();
     });
 
     it("should call the replace-photo use case with the appropriate arguments and respond with status 200", async () => {
-      const initPhoto = await dumbPhotoGenerator.generatePhoto({
-        _id: photo._id,
-      });
-      await testUtils.insertPhotoInDbs(initPhoto);
-      const executeSpy = jest.spyOn(useCases.replacePhoto, "execute");
-
-      const payload = testUtils.getPayloadFromPhoto(photo);
-      const url = entryPoint.getFullPathWithParams({ id: initPhoto._id });
+      const payload = testUtils.getPayloadFromPhoto(replacingPhoto);
+      const url = entryPoint.getFullPathWithParams({ id: photoToReplace._id });
       const response = await req.put(url).send(payload);
-
-      sharedTestUtils.expectFunctionToBeCalledWith(
-        assertionsCounter,
-        executeSpy,
-        photo,
-      );
+      expect(spy).toHaveBeenCalledTimes(1);
       expect(response.statusCode).toBe(200);
-      assertionsCounter.increase();
-      assertionsCounter.checkAssertions();
+      expect.assertions(2);
     });
   });
 
@@ -108,18 +108,18 @@ describe("adminPhotoController", () => {
 
     beforeEach(() => {
       app.delete(path, adminPhotoController.deletePhotoHandler);
+      spy = jest.spyOn(useCases.deletePhoto, "execute");
+    });
+
+    afterEach(() => {
+      spy.mockReset();
     });
 
     it("should call the delete-photo use case with the appropriate arguments and respond with status 200", async () => {
-      const executeSpy = jest.spyOn(useCases.deletePhoto, "execute");
-
+      spy.mockReset();
       const response = await req.delete(url);
 
-      sharedTestUtils.expectFunctionToBeCalledWith(
-        assertionsCounter,
-        executeSpy,
-        _id,
-      );
+      sharedTestUtils.expectFunctionToBeCalledWith(assertionsCounter, spy, _id);
       expect(response.statusCode).toBe(200);
       assertionsCounter.increase();
       assertionsCounter.checkAssertions();

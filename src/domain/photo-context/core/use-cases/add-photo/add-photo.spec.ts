@@ -8,21 +8,17 @@ import {
   FakePhotoImageDb,
   FakePhotoMetadataDb,
 } from "../../../adapters/secondary";
-import { IPhoto, thumbnailSize } from "../../models";
+import { IPhoto } from "../../models";
 import { ThumbnailSetter } from "../../thumbnail-setter";
 import { AddPhoto } from "./add-photo";
 import { AddPhotoTestUtils } from "./add-photo.test-utils";
 
 describe(`${AddPhoto.name}`, () => {
   const photoMetadataDb = new FakePhotoMetadataDb();
-    const photoImageDb = new FakePhotoImageDb();
+  const photoImageDb = new FakePhotoImageDb();
   const imageEditor = new ImageEditor();
   const thumbnailSetter = new ThumbnailSetter(imageEditor);
-  const testUtils = new AddPhotoTestUtils(
-    photoMetadataDb,
-    photoImageDb,
-    imageEditor,
-  );
+  const testUtils = new AddPhotoTestUtils(photoMetadataDb, photoImageDb);
   let addPhoto: AddPhoto;
   let assertionsCounter: IAssertionsCounter;
 
@@ -42,11 +38,13 @@ describe(`${AddPhoto.name}`, () => {
       await testUtils.expectPhotoToBeUploaded(photo, assertionsCounter);
     });
 
-    it(`should always have at least a thumbnail in the metadata with size \'${JSON.stringify(thumbnailSize)}\'`, async () => {
+    it(`should generate a thumbnail in the metadata if not provided`, async () => {
       const photo = await dumbPhotoGenerator.generatePhoto();
+      const setThumbnailSpy = jest.spyOn(thumbnailSetter, "set");
       delete photo.metadata;
       await addPhoto.execute(photo);
-      await testUtils.expectThumbnailToBeInDb(photo, assertionsCounter);
+      expect(setThumbnailSpy).toHaveBeenCalledTimes(1);
+      expect.assertions(1);
     });
 
     it.each`

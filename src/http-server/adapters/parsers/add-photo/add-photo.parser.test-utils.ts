@@ -1,6 +1,7 @@
+import fetch from "node-fetch";
+
 import { IAssertionsCounter } from "@assertions-counter";
 import { IPhoto } from "@domain";
-import { imageBufferEncoding } from "@http-server";
 import { ILoremIpsumGenerator, IUuidGenerator, isPhoto } from "@shared";
 
 export class AddPhotoParserTestUtils {
@@ -9,13 +10,11 @@ export class AddPhotoParserTestUtils {
     private readonly loremIpsum: ILoremIpsumGenerator,
   ) {}
 
-  generateValidData() {
+  async generateValidData() {
+    const imageBuffer = await this.generateImageBuffer();
     return {
       _id: this.uuidGenerator.generate(),
-      imageBuffer: Buffer.from(
-        this.loremIpsum.generateSentences(1).join(),
-        imageBufferEncoding,
-      ),
+      imageBuffer,
       date: new Date().toISOString(),
       description: this.loremIpsum.generateSentences(4).join(" "),
       location: this.loremIpsum.generateWords(1).join(),
@@ -23,8 +22,13 @@ export class AddPhotoParserTestUtils {
     };
   }
 
+  private async generateImageBuffer(): Promise<Buffer> {
+    const response = await fetch("https://picsum.photos/seed/picsum/200/300");
+    return await response.buffer();
+  }
+
   expectParsedDataToBeAValidPhotoWithInputFields(
-    inputData: ReturnType<typeof this.generateValidData>,
+    inputData: Awaited<ReturnType<typeof this.generateValidData>>,
     parsedData: unknown,
     assertionsCounter: IAssertionsCounter,
   ) {
@@ -43,7 +47,7 @@ export class AddPhotoParserTestUtils {
   }
 
   private expectPhotoToMatchInputFields(
-    inputData: ReturnType<typeof this.generateValidData>,
+    inputData: Awaited<ReturnType<typeof this.generateValidData>>,
     photo: IPhoto,
     assertionsCounter: IAssertionsCounter,
   ) {

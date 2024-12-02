@@ -53,5 +53,4 @@ export class DbsTestUtils implements IDbsTestUtils {
     const metadata = await this.getPhotoMetadataFromDb(id);
     return new Photo(id, { imageBuffer, metadata });
   }
-  
 }

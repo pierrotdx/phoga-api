@@ -1,7 +1,7 @@
 import { Collection, FindCursor, Sort } from "mongodb";
 import { isEmpty, omit } from "ramda";
 
-import { MongoCollection, MongoManager, MongoStore } from "@shared";
+import { MongoCollection, MongoManager, imageBufferEncoding } from "@shared";
 
 import {
   IPhoto,
@@ -10,13 +10,14 @@ import {
   IRendering,
   Photo,
 } from "../../../../core";
+import { IMongoPhotoMetadata } from "./models";
 
 export class PhotoMetadataDbMongo implements IPhotoMetadataDb {
-  private readonly collection: Collection<MongoStore<IPhotoMetadata>>;
+  private readonly collection: Collection<IMongoPhotoMetadata>;
   private readonly defaultSize = 20;
 
   constructor(private readonly mongoManager: MongoManager) {
-    this.collection = this.mongoManager.getCollection<IPhotoMetadata>(
+    this.collection = this.mongoManager.getCollection<IMongoPhotoMetadata>(
       MongoCollection.PhotoMetadata,
     );
   }
@@ -25,7 +26,25 @@ export class PhotoMetadataDbMongo implements IPhotoMetadataDb {
     const storePhotoMetadata = await this.collection.findOne({
       _id: id,
     });
-    return storePhotoMetadata ? omit(["_id"], storePhotoMetadata) : undefined;
+    return !storePhotoMetadata
+      ? undefined
+      : this.getPhotoMetadataFromStore(storePhotoMetadata);
+  }
+
+  private getPhotoMetadataFromStore(
+    storePhotoMetadata: IMongoPhotoMetadata,
+  ): IPhoto["metadata"] {
+    const photoMetadata: IPhoto["metadata"] = omit(
+      ["_id", "thumbnail"],
+      storePhotoMetadata,
+    );
+    if (storePhotoMetadata.thumbnail) {
+      photoMetadata.thumbnail = Buffer.from(
+        storePhotoMetadata.thumbnail,
+        imageBufferEncoding,
+      );
+    }
+    return photoMetadata;
   }
 
   async insert(photo: IPhoto): Promise<void> {
@@ -43,8 +62,10 @@ export class PhotoMetadataDbMongo implements IPhotoMetadataDb {
     });
   }
 
-  private getStorePhotoMetadata(photo: IPhoto): MongoStore<IPhoto["metadata"]> {
-    return { _id: photo._id, ...photo.metadata };
+  private getStorePhotoMetadata(photo: IPhoto): IMongoPhotoMetadata {
+    const thumbnail = photo.metadata.thumbnail.toString(imageBufferEncoding);
+    const metadata = { ...photo.metadata, thumbnail };
+    return { _id: photo._id, ...metadata };
   }
 
   async delete(_id: IPhoto["_id"]): Promise<void> {
@@ -57,7 +78,9 @@ export class PhotoMetadataDbMongo implements IPhotoMetadataDb {
     }
     const cursor = this.collection.find();
     this.setCursorRendering(cursor, rendering);
-    const photos = await cursor.map(this.getPhotoFromStore).toArray();
+    const photos = await cursor
+      .map((doc) => this.getPhotoFromStore(doc))
+      .toArray();
     return photos;
   }
 
@@ -79,10 +102,8 @@ export class PhotoMetadataDbMongo implements IPhotoMetadataDb {
     }
   }
 
-  private getPhotoFromStore(
-    storePhotoMetadata: MongoStore<IPhoto["metadata"]>,
-  ): IPhoto {
-    const metadata: IPhoto["metadata"] = omit(["_id"], storePhotoMetadata);
+  private getPhotoFromStore(storePhotoMetadata: IMongoPhotoMetadata): IPhoto {
+    const metadata = this.getPhotoMetadataFromStore(storePhotoMetadata);
     return new Photo(storePhotoMetadata._id, { metadata });
   }
 }

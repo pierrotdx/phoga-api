@@ -1,9 +1,9 @@
 import { isEmpty } from "ramda";
 
 import { IPhoto, IPhotoMetadata, Photo } from "@domain";
-import { assertPhoto } from "@shared";
+import { assertPhoto, imageBufferEncoding } from "@shared";
 
-import { IAddPhotoParser, imageBufferEncoding } from "../../../core";
+import { IAddPhotoParser } from "../../../core";
 
 export class AddPhotoParser implements IAddPhotoParser {
   private photo: IPhoto;
@@ -24,7 +24,10 @@ export class AddPhotoParser implements IAddPhotoParser {
   }
 
   private addMetadata(data: any) {
-    const { date, description, location } = data as Record<string, string>;
+    const { date, description, location, thumbnail } = data as Record<
+      string,
+      string
+    >;
     const metadata: IPhotoMetadata = {};
     if (date) {
       metadata.date = new Date(date);
@@ -38,6 +41,9 @@ export class AddPhotoParser implements IAddPhotoParser {
     const titles = data.titles as string[];
     if (titles?.length) {
       metadata.titles = titles;
+    }
+    if (thumbnail) {
+      metadata.thumbnail = Buffer.from(thumbnail, imageBufferEncoding);
     }
     if (!isEmpty(metadata)) {
       this.photo.metadata = metadata;
