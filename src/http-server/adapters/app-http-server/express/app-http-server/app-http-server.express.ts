@@ -1,4 +1,5 @@
 import bodyParser from "body-parser";
+import cors from "cors";
 import express, {
   type Express,
   type NextFunction,
@@ -41,6 +42,7 @@ export class ExpressHttpServer implements AppHttpServer {
   }
 
   private initExpress() {
+    this.app.use(cors());
     this.app.use(helmet());
     this.app.use(bodyParser.json());
     this.initLogger();
