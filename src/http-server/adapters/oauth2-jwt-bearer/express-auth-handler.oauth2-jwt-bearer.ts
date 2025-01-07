@@ -1,8 +1,5 @@
 import { Handler } from "express";
-import {
-  auth,
-  requiredScopes as checkRequiredScopes,
-} from "express-oauth2-jwt-bearer";
+import { auth, claimCheck } from "express-oauth2-jwt-bearer";
 
 import { IAuthHandler, Scope } from "@http-server";
 
@@ -23,6 +20,15 @@ export class ExpressAuthHandler implements IAuthHandler {
   }
 
   requiredScopes(requiredScopes: Scope | Scope[]): Handler {
-    return checkRequiredScopes(requiredScopes);
+    return claimCheck((claims) => {
+      const reqScopes = Array.isArray(requiredScopes)
+        ? requiredScopes
+        : [requiredScopes];
+      const claimPermissions = claims.permissions as string[];
+      const hasAllRequiredScopes = !reqScopes.some(
+        (scope) => !claimPermissions.includes(scope),
+      );
+      return hasAllRequiredScopes;
+    });
   }
 }
