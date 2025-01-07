@@ -11,18 +11,15 @@ export class AdminPhotoController {
   ) {}
 
   addPhotoHandler = async (req: Request, res: Response) => {
-    this.validators.addPhoto.validate(req.body);
-    const photo = this.parsers.addPhoto.parse(req.body);
+    const photo = await this.parsers.addPhoto.parse(req);
+    this.validators.addPhoto.validate(photo);
     await this.useCases.addPhoto.execute(photo);
     res.sendStatus(200);
   };
 
   replacePhotoHandler = async (req: Request, res: Response) => {
-    this.validators.replacePhoto.validate(req.body);
-    const photo = this.parsers.replacePhoto.parse({
-      ...req.params,
-      ...req.body,
-    });
+    const photo = await this.parsers.replacePhoto.parse(req);
+    this.validators.replacePhoto.validate(photo);
     await this.useCases.replacePhoto.execute(photo);
     res.sendStatus(200);
   };

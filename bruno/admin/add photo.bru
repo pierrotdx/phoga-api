@@ -6,7 +6,7 @@ meta {
 
 post {
   url: {{baseUrl}}/admin/photo
-  body: json
+  body: multipartForm
   auth: none
 }
 
@@ -25,6 +25,10 @@ body:json {
 }
 
 body:multipart-form {
-  _id: 3154ce8c-f4c6-41bc-88ed-37ba0ea6ea15
+  _id: 3154ce8c-f4c6-41bc-88ed-37ba0ea6ea20
   description: test description
+  titles: title 1, title 2
+  location: Metz
+  date: 2004-08-14
+  imageBuffer: @file(C:\Users\pierr\Desktop\samples\IMG_4077.JPG)
 }
