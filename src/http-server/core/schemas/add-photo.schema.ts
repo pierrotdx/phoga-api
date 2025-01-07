@@ -10,21 +10,22 @@ export const AddPhotoSchema: TSchema = {
   properties: {
     _id: UuidSchema,
     imageBuffer: {
-      type: "string",
-      contentEncoding: imageBufferEncoding,
+      type: "object",
     },
-    date: IsoStringDateSchema,
-    description: {
-      type: "string",
-    },
-    location: { type: "string" },
-    titles: {
-      type: "array",
-      items: { type: "string" },
-    },
-    thumbnail: {
-      type: "string",
-      contentEncoding: imageBufferEncoding,
+    metadata: {
+      properties: {
+        date: {
+          type: "object",
+        },
+        description: {
+          type: "string",
+        },
+        location: { type: "string" },
+        titles: {
+          type: "array",
+          items: { type: "string" },
+        },
+      },
     },
   },
 };
