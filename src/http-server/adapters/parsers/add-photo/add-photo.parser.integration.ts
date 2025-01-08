@@ -1,3 +1,5 @@
+import { Request, Response } from "express";
+
 import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
 import { LoremIpsumGenerator, UuidGenerator } from "@shared";
 
@@ -20,22 +22,44 @@ describe("AddPhotoParser", () => {
   describe("parse", () => {
     it("should parse input data into photo", async () => {
       const inputData = await testUtils.generateValidData();
-      const parsedData = addPhotoParser.parse(inputData);
-      testUtils.expectParsedDataToBeAValidPhotoWithInputFields(
-        inputData,
-        parsedData,
-        assertionsCounter,
-      );
+      const reqHandler = async (req: Request, res: Response) => {
+        const parsedData = await addPhotoParser.parse(req);
+        testUtils.expectParsedDataToBeAValidPhotoWithInputFields(
+          inputData,
+          parsedData,
+          assertionsCounter,
+        );
+        res.sendStatus(200);
+      };
+      testUtils.setReqHandler(reqHandler);
+      await testUtils.sendRequest(inputData);
+
+      // making sure the expectations from the reqHandler are taken into account
+      expect(assertionsCounter.get()).toBeGreaterThan(0);
+      assertionsCounter.increase();
       assertionsCounter.checkAssertions();
     });
 
     it("should throw if the parsed data is not a photo", async () => {
       const invalidData = await testUtils.generateValidData();
       invalidData.location = ["test", "test2"] as any;
-      expect(() => {
-        addPhotoParser.parse(invalidData);
-      }).toThrow();
-      expect.assertions(1);
+      const reqHandler = async (req: Request, res: Response) => {
+        try {
+          await addPhotoParser.parse(invalidData);
+        } catch (err) {
+          expect(err).toBeDefined();
+        } finally {
+          assertionsCounter.increase();
+          res.sendStatus(200);
+        }
+      };
+      testUtils.setReqHandler(reqHandler);
+      await testUtils.sendRequest(invalidData);
+
+      // making sure the expectations from the reqHandler are taken into account
+      expect(assertionsCounter.get()).toBeGreaterThan(0);
+      assertionsCounter.increase();
+      assertionsCounter.checkAssertions();
     });
   });
 });

@@ -51,7 +51,7 @@ export class AddPhotoParser implements IAddPhotoParser {
     if (location) {
       metadata.location = location;
     }
-    const titles = data.titles?.[0].split(",") as string[];
+    const titles = data.titles;
     if (titles?.length) {
       metadata.titles = titles;
     }
