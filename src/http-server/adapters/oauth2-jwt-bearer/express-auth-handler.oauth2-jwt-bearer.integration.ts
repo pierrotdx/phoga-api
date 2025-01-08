@@ -1,7 +1,7 @@
 import express, { type Express } from "express";
 import request from "supertest";
 
-import { Scope } from "../../core";
+import { Permission } from "../../core";
 import { FakeTokenProvider } from "../token-provider";
 import { ExpressAuthHandler } from "./express-auth-handler.oauth2-jwt-bearer";
 import {
@@ -50,28 +50,29 @@ describe("ExpressAuthHandler", () => {
     });
   });
 
-  describe("requiredScores", () => {
-    const requiredScopes: Scope | Scope[] = [
-      Scope.PhotosWrite,
-      Scope.PhotosRead,
+  describe("requiredPermissions", () => {
+    const requiredPermissions: Permission[] = [
+      Permission.PhotosWrite,
+      Permission.PhotosRead,
     ];
 
     beforeEach(async () => {
-      const scopesHandler = authHandler.requiredScopes(requiredScopes);
-      dumbApp.get(restrictedRoute, scopesHandler, dumbReqHandler);
+      const permissionsHandler =
+        authHandler.requirePermissions(requiredPermissions);
+      dumbApp.get(restrictedRoute, permissionsHandler, dumbReqHandler);
     });
 
     it.each`
-      case                         | value                                        | expectedStatus
-      ${"does not have any of"}    | ${undefined}                                 | ${403}
-      ${"does not contain all of"} | ${requiredScopes.slice(0, 1)}                | ${403}
-      ${"does contain all of"}     | ${requiredScopes}                            | ${200}
-      ${"does contain more than"}  | ${[...requiredScopes, Scope.RestrictedRead]} | ${200}
+      case                         | value                                                  | expectedStatus
+      ${"does not have any of"}    | ${[undefined]}                                         | ${401}
+      ${"does not contain all of"} | ${requiredPermissions.slice(0, 1)}                     | ${401}
+      ${"does contain all of"}     | ${requiredPermissions}                                 | ${200}
+      ${"does contain more than"}  | ${[...requiredPermissions, Permission.RestrictedRead]} | ${200}
     `(
-      "should respond with the status code $expectedStatus if the request $case the required scopes",
+      "should respond with the status code $expectedStatus if the request $case the required permissions",
       async ({ value, expectedStatus }) => {
         const token = await tokenProvider.getToken({
-          scope: value,
+          permissions: value,
         });
         const response = await request(dumbApp)
           .get(restrictedRoute)

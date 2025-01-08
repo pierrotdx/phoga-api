@@ -1,14 +1,40 @@
+import express, { Express, NextFunction, Request, Response } from "express";
 import fetch from "node-fetch";
+import request from "supertest";
 
 import { IAssertionsCounter } from "@assertions-counter";
 import { IPhoto } from "@domain";
 import { ILoremIpsumGenerator, IUuidGenerator, isPhoto } from "@shared";
 
 export class AddPhotoParserTestUtils {
+  private app: Express;
+  private readonly url = "/";
+
   constructor(
     private readonly uuidGenerator: IUuidGenerator,
     private readonly loremIpsum: ILoremIpsumGenerator,
   ) {}
+
+  setReqHandler = (
+    handler: (req: Request, res: Response, next: NextFunction) => Promise<void>,
+  ) => {
+    this.app = express();
+    this.app.post(this.url, handler);
+  };
+
+  async sendRequest(data: Awaited<ReturnType<typeof this.generateValidData>>) {
+    const testReq = request(this.app)
+      .post(this.url)
+      .set("Accept", "multipart/form-data")
+      .expect(200);
+    Object.entries(data).forEach(([key, value]) => {
+      if (key !== "imageBuffer") {
+        testReq.field(key, value);
+      }
+    });
+    testReq.attach("image", data.imageBuffer);
+    return testReq;
+  }
 
   async generateValidData() {
     const imageBuffer = await this.generateImageBuffer();
@@ -23,8 +49,12 @@ export class AddPhotoParserTestUtils {
   }
 
   private async generateImageBuffer(): Promise<Buffer> {
-    const response = await fetch("https://picsum.photos/seed/picsum/200/300");
-    return await response.buffer();
+    try {
+      const response = await fetch("https://picsum.photos/seed/picsum/200/300");
+      return await response.buffer();
+    } catch (err) {
+      throw err;
+    }
   }
 
   expectParsedDataToBeAValidPhotoWithInputFields(

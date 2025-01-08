@@ -17,7 +17,6 @@ export class Auth0TokenProvider implements ITokenProvider {
     username: string;
     password: string;
     audience: string;
-    scope: string;
   }): Promise<string> {
     const token = await this.auth0.oauth.passwordGrant(args);
     return token.data.access_token;

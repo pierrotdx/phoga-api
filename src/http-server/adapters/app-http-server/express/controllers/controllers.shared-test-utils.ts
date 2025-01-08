@@ -1,5 +1,9 @@
 import bodyParser from "body-parser";
 import express, { Express, Router } from "express";
+import { Test } from "supertest";
+
+import { IPhoto } from "@domain";
+import { imageBufferEncoding } from "@shared";
 
 import { ExpressSharedTestUtils } from "../services";
 
@@ -11,5 +15,34 @@ export class ControllersTestUtils extends ExpressSharedTestUtils {
       app.use(router);
     }
     return app;
+  }
+
+  addFormDataToReq(req: Test, photo: IPhoto): void {
+    req.field("_id", photo._id);
+    if (photo.imageBuffer) {
+      req.attach("image", photo.imageBuffer);
+    }
+    if (!photo.metadata) {
+      return;
+    }
+    if (photo.metadata.date) {
+      const stringDate = photo.metadata.date.toISOString();
+      req.field("date", stringDate);
+    }
+    if (photo.metadata.location) {
+      req.field("location", photo.metadata.location);
+    }
+    if (photo.metadata.description) {
+      req.field("description", photo.metadata.description);
+    }
+    if (photo.metadata.titles?.length) {
+      req.field("titles", photo.metadata.titles);
+    }
+    if (photo.metadata.thumbnail) {
+      req.field(
+        "thumbnail",
+        photo.metadata.thumbnail.toString(imageBufferEncoding),
+      );
+    }
   }
 }

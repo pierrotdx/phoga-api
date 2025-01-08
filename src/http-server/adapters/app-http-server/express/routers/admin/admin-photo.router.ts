@@ -21,39 +21,39 @@ export class AdminPhotoRouter extends ExpressRouter {
   private setAddPhotoRoute() {
     const entryPoint = entryPoints.get(EntryPointId.AddPhoto);
     const path = entryPoint.getRelativePath();
-    const scopesHandler = this.getScopesHandler(entryPoint);
+    const permissionsHandler = this.getPermissionsHandler(entryPoint);
     const requestHandler = this.getRequestHandler(
       this.adminPhotoController.addPhotoHandler,
     );
-    this.router.post(path, scopesHandler, requestHandler);
+    this.router.post(path, permissionsHandler, requestHandler);
   }
 
-  private getScopesHandler(entryPoint: IEntryPoint): Handler {
-    const scopes = entryPoint.getScopes();
-    if (scopes?.length) {
-      const scopesHandler = this.authHandler.requiredScopes(scopes);
-      return scopesHandler;
+  private getPermissionsHandler(entryPoint: IEntryPoint): Handler {
+    const permissions = entryPoint.getPermissions();
+    if (permissions?.length) {
+      const permissionsHandler = this.authHandler.requirePermissions(permissions);
+      return permissionsHandler;
     }
   }
 
   private setReplacePhotoRoute() {
     const entryPoint = entryPoints.get(EntryPointId.ReplacePhoto);
     const path = entryPoint.getRelativePath();
-    const scopesHandler = this.getScopesHandler(entryPoint);
+    const permissionsHandler = this.getPermissionsHandler(entryPoint);
     const requestHandler = this.getRequestHandler(
       this.adminPhotoController.replacePhotoHandler,
     );
-    this.router.put(path, scopesHandler, requestHandler);
+    this.router.put(path, permissionsHandler, requestHandler);
   }
 
   private setDeletePhotoRoute() {
     const entryPoint = entryPoints.get(EntryPointId.DeletePhoto);
     const path = entryPoint.getRelativePath();
-    const scopesHandler = this.getScopesHandler(entryPoint);
+    const permissionsHandler = this.getPermissionsHandler(entryPoint);
     const requestHandler = this.getRequestHandler(
       this.adminPhotoController.deletePhotoHandler,
     );
-    this.router.delete(path, scopesHandler, requestHandler);
+    this.router.delete(path, permissionsHandler, requestHandler);
   }
 
   private getRequestHandler<T>(

@@ -3,6 +3,5 @@ export interface ITokenProvider {
     username?: string;
     password?: string;
     audience?: string;
-    scope?: string;
   }): Promise<string>;
 }

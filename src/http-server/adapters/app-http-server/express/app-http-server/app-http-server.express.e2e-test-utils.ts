@@ -1,4 +1,4 @@
-import { Response } from "supertest";
+import { Response, Test } from "supertest";
 
 import { IAssertionsCounter } from "@assertions-counter";
 import {
@@ -19,11 +19,12 @@ import { Storage } from "@google-cloud/storage";
 import {
   AjvValidatorsFactory,
   Auth0TokenProvider,
+  ControllersTestUtils,
   ExpressAuthHandler,
   ExpressHttpServer,
   ExpressSharedTestUtils,
   ParsersFactory,
-  Scope,
+  Permission,
 } from "@http-server";
 import { ILogger, LoggerWinston } from "@logger";
 import { DbsTestUtils, IImageEditor, ImageEditor, MongoManager } from "@shared";
@@ -43,6 +44,7 @@ export class AppHttpServerExpressE2eTestUtils {
   private photoImageDbGcs: IPhotoImageDb;
 
   private expressSharedTestUtils: ExpressSharedTestUtils;
+  private controllersTestUtils: ControllersTestUtils;
   private dbsTestUtils: DbsTestUtils;
   private addPhotoTestUtils: AddPhotoTestUtils;
   private getPhotoTestUtils: GetPhotoTestUtils;
@@ -104,6 +106,7 @@ export class AppHttpServerExpressE2eTestUtils {
       this.photoMetadataDb,
       this.photoImageDbGcs,
     );
+    this.controllersTestUtils = new ControllersTestUtils();
     this.getPhotoTestUtils = new GetPhotoTestUtils(
       this.photoMetadataDb,
       this.photoImageDbGcs,
@@ -161,13 +164,11 @@ export class AppHttpServerExpressE2eTestUtils {
     return this.logger;
   }
 
-  async getToken(scopes?: Scope[]): Promise<string> {
-    const scope = scopes?.join(" ");
+  async getToken(): Promise<string> {
     return await this.tokenProvider.getToken({
       username: this.username,
       password: this.password,
       audience: this.audience,
-      scope,
     });
   }
 
@@ -185,6 +186,10 @@ export class AppHttpServerExpressE2eTestUtils {
 
   getPayloadFromPhoto(photo: IPhoto) {
     return this.expressSharedTestUtils.getPayloadFromPhoto(photo);
+  }
+
+  addFormDataToReq(req: Test, photo: IPhoto): void {
+    this.controllersTestUtils.addFormDataToReq(req, photo);
   }
 
   getPhotoFromResponse(res: Response): IPhoto {

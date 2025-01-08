@@ -1,3 +1,4 @@
+import { buffer } from "node:stream/consumers";
 import { omit } from "ramda";
 
 import { IAssertionsCounter } from "@assertions-counter";
