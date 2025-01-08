@@ -2,7 +2,7 @@ import formidable, { Fields } from "formidable";
 import { isEmpty } from "ramda";
 
 import { IPhoto, IPhotoMetadata, Photo } from "@domain";
-import { assertPhoto } from "@shared";
+import { assertPhoto, imageBufferEncoding } from "@shared";
 
 import { IAddPhotoParser } from "../../../core";
 import { ImageBufferParser } from "../image-buffer-parser";
@@ -54,6 +54,10 @@ export class AddPhotoParser implements IAddPhotoParser {
     const titles = data.titles;
     if (titles?.length) {
       metadata.titles = titles;
+    }
+    const thumbnail = data.thumbnail?.[0];
+    if (thumbnail) {
+      metadata.thumbnail = Buffer.from(thumbnail, imageBufferEncoding);
     }
     if (!isEmpty(metadata)) {
       this.photo.metadata = metadata;

@@ -1,4 +1,4 @@
-import { Scope } from "../scope";
+import { Permission } from "../permission";
 import { EntryPoint } from "./entry-point";
 
 describe(`${EntryPoint.name}`, () => {
@@ -23,12 +23,15 @@ describe(`${EntryPoint.name}`, () => {
     });
   });
 
-  describe(`${EntryPoint.prototype.getScopes.name}`, () => {
-    it("should return the entry point's scopes", () => {
-      const scopes: Scope[] = [Scope.PhotosRead, Scope.RestrictedRead];
-      const entryPoint = new EntryPoint(relativePath, { scopes });
-      const result = entryPoint.getScopes();
-      expect(result).toEqual(scopes);
+  describe(`${EntryPoint.prototype.getPermissions.name}`, () => {
+    it("should return the entry point's permissions", () => {
+      const permissions: Permission[] = [
+        Permission.PhotosRead,
+        Permission.RestrictedRead,
+      ];
+      const entryPoint = new EntryPoint(relativePath, { permissions });
+      const result = entryPoint.getPermissions();
+      expect(result).toEqual(permissions);
       expect.assertions(1);
     });
   });

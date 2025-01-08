@@ -31,10 +31,14 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
   private async generateImageBuffer(
     size: ImageSize = { width: 200, height: 300 },
   ): Promise<Buffer> {
-    const response = await fetch(
-      `https://picsum.photos/seed/picsum/${size.width}/${size.height}`,
-    );
-    return await response.buffer();
+    try {
+      const response = await fetch(
+        `https://picsum.photos/seed/picsum/${size.width}/${size.height}`,
+      );
+      return await response.buffer();
+    } catch (err) {
+      throw err;
+    }
   }
 
   private async generateMetadata(

@@ -1,10 +1,7 @@
 import { Handler } from "express";
-import {
-  auth,
-  requiredScopes as checkRequiredScopes,
-} from "express-oauth2-jwt-bearer";
+import { JWTPayload, auth, claimCheck } from "express-oauth2-jwt-bearer";
 
-import { IAuthHandler, Scope } from "@http-server";
+import { IAuthHandler, Permission } from "@http-server";
 
 export class ExpressAuthHandler implements IAuthHandler {
   private _requiresAuth: Handler;
@@ -22,7 +19,14 @@ export class ExpressAuthHandler implements IAuthHandler {
     });
   }
 
-  requiredScopes(requiredScopes: Scope | Scope[]): Handler {
-    return checkRequiredScopes(requiredScopes);
+  requirePermissions(requiredPermissions: Permission[] = []): Handler {
+    return claimCheck((payload: JWTPayload) => {
+      const tokenPermissions = (payload.permissions as string[]) || [];
+      const tokenHasMissingPermission = requiredPermissions.some(
+        (reqPerm) => !tokenPermissions.includes(reqPerm),
+      );
+      const hasAllRequiredPermissions = !tokenHasMissingPermission;
+      return hasAllRequiredPermissions;
+    });
   }
 }
