@@ -1,7 +1,4 @@
-import { imageBufferEncoding } from "@shared";
-
 import { TSchema } from "../schema";
-import { IsoStringDateSchema } from "./date.schema";
 import { UuidSchema } from "./uuid.schema";
 
 export const AddPhotoSchema: TSchema = {
@@ -13,6 +10,7 @@ export const AddPhotoSchema: TSchema = {
       type: "object",
     },
     metadata: {
+      type: "object",
       properties: {
         date: {
           type: "object",

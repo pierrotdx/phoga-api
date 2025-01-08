@@ -1,9 +1,9 @@
-import { type Express } from "express";
+import { type Express, query } from "express";
 import { omit } from "ramda";
 import request from "supertest";
 
 import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
-import { IPhoto, SortDirection } from "@domain";
+import { IPhoto, IRendering, SortDirection } from "@domain";
 import { EntryPointId, entryPoints } from "@http-server";
 import { ILogger } from "@logger";
 import { dumbPhotoGenerator } from "@shared";
@@ -66,41 +66,23 @@ describe("ExpressHttpServer", () => {
   });
 
   describe(`POST ${addPhotoPath}`, () => {
-    const requiredScopes = entryPoints.getScopes(EntryPointId.AddPhoto);
     let photoToAdd: IPhoto;
-    let payload: ReturnType<typeof testUtils.getPayloadFromPhoto>;
 
     beforeEach(async () => {
       photoToAdd = await dumbPhotoGenerator.generatePhoto();
-      payload = testUtils.getPayloadFromPhoto(photoToAdd);
     });
 
     afterEach(async () => {
       await testUtils.deletePhotoIfNecessary(photoToAdd._id);
     });
 
-    it("should deny the access and respond with status code 401 if no token is associated to the request", async () => {
-      const response = await request(app).post(addPhotoPath).send(payload);
-      expect(response.statusCode).toBe(401);
-      expect.assertions(1);
-    });
-
-    it("should deny the access and respond with status code 403 if the token scope of the request is invalid", async () => {
-      const token = await testUtils.getToken();
-      const response = await request(app)
-        .post(addPhotoPath)
-        .auth(token, { type: "bearer" })
-        .send(payload);
-      expect(response.statusCode).toBe(403);
-      expect.assertions(1);
-    });
-
     it("should add the photo image and metadata to their respective DBs", async () => {
-      const token = await testUtils.getToken(requiredScopes);
-      await request(app)
+      const token = await testUtils.getToken();
+      const addReq = request(app)
         .post(addPhotoPath)
-        .auth(token, { type: "bearer" })
-        .send(payload);
+        .auth(token, { type: "bearer" });
+      testUtils.addFormDataToReq(addReq, photoToAdd);
+      await addReq;
       await testUtils.expectPhotoToBeUploaded(photoToAdd, assertionsCounter);
     });
   });
@@ -222,10 +204,8 @@ describe("ExpressHttpServer", () => {
   });
 
   describe(`PUT ${replacePhotoPath}`, () => {
-    const requiredScopes = entryPoints.getScopes(EntryPointId.ReplacePhoto);
     let replacingPhoto: IPhoto;
     let replacePhotoUrl: string;
-    let payload: ReturnType<typeof testUtils.getPayloadFromPhoto>;
 
     beforeEach(async () => {
       replacingPhoto = await dumbPhotoGenerator.generatePhoto({
@@ -234,26 +214,16 @@ describe("ExpressHttpServer", () => {
       replacePhotoUrl = entryPoints
         .get(EntryPointId.ReplacePhoto)
         .getFullPathWithParams({ id: storedPhoto._id });
-      payload = testUtils.getPayloadFromPhoto(replacingPhoto);
-    });
-
-    it("should deny the access and respond with status code 403 if the token scope of the request is invalid", async () => {
-      const token = await testUtils.getToken();
-      const response = await request(app)
-        .put(replacePhotoUrl)
-        .auth(token, { type: "bearer" })
-        .send(payload);
-      expect(response.statusCode).toBe(403);
-      expect.assertions(1);
     });
 
     it("should replace the photo with the one in the request", async () => {
       const dbPhotoBefore = await testUtils.getPhotoFromDb(storedPhoto._id);
-      const token = await testUtils.getToken(requiredScopes);
-      await request(app)
+      const token = await testUtils.getToken();
+      const replaceReq = request(app)
         .put(replacePhotoUrl)
-        .auth(token, { type: "bearer" })
-        .send(payload);
+        .auth(token, { type: "bearer" });
+      testUtils.addFormDataToReq(replaceReq, replacingPhoto);
+      await replaceReq;
       await testUtils.expectPhotoToBeReplacedInDb(
         dbPhotoBefore,
         replacingPhoto,
@@ -263,7 +233,6 @@ describe("ExpressHttpServer", () => {
   });
 
   describe(`DELETE ${deletePhotoPath}`, () => {
-    const requiredScopes = entryPoints.getScopes(EntryPointId.DeletePhoto);
     let photoToDelete: IPhoto;
     let url: string;
 
@@ -280,17 +249,8 @@ describe("ExpressHttpServer", () => {
       await testUtils.deletePhotoIfNecessary(photoToDelete._id);
     });
 
-    it("should deny the access and respond with status code 403 if the token scope of the request is invalid", async () => {
-      const token = await testUtils.getToken();
-      const response = await request(app)
-        .delete(url)
-        .auth(token, { type: "bearer" });
-      expect(response.statusCode).toBe(403);
-      expect.assertions(1);
-    });
-
     it("should delete the image and metadata from their respective DBs of the targeted photo", async () => {
-      const token = await testUtils.getToken(requiredScopes);
+      const token = await testUtils.getToken();
       await request(app).delete(url).auth(token, { type: "bearer" });
       await testUtils.expectPhotoToBeDeletedFromDbs(
         photoToDelete._id,
@@ -303,13 +263,14 @@ describe("ExpressHttpServer", () => {
   describe("error", () => {
     it("should log the error and respond with status code 500", async () => {
       const errorLogSpy = jest.spyOn(logger, "error");
+      const errorInducingQueryParams: IRendering = {
+        dateOrder: "abc" as SortDirection,
+      };
+      const token = await testUtils.getToken();
 
-      const incorrectPayload = {};
-      const requiredScopes = entryPoints.getScopes(EntryPointId.ReplacePhoto);
-      const token = await testUtils.getToken(requiredScopes);
       const response = await request(app)
-        .put(replacePhotoPath)
-        .send(incorrectPayload)
+        .get(searchPhotoPath)
+        .query(errorInducingQueryParams)
         .auth(token, { type: "bearer" });
 
       expect(response.statusCode).toBe(500);

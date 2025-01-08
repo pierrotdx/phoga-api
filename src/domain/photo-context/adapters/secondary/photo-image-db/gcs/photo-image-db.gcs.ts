@@ -23,7 +23,7 @@ export class PhotoImageDbGcs implements IPhotoImageDb {
 
   private async save(photo: IPhoto) {
     const file = this.bucket.file(photo._id);
-    await file.save(photo.imageBuffer);
+    await file.save(photo.imageBuffer, { contentType: "image/jpeg" });
   }
 
   async checkExists(id: IPhoto["_id"]): Promise<boolean> {

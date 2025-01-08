@@ -2,10 +2,10 @@ import { OAuth2Server } from "oauth2-mock-server";
 import { isEmpty } from "ramda";
 import { post } from "superagent";
 
-import { ITokenProvider, Scope } from "../../core";
+import { ITokenProvider, Permission } from "../../core";
 
 type TokenCustomization = {
-  scope?: Scope | Scope[];
+  permissions?: Permission | Permission[];
   aud?: string;
 };
 
@@ -42,10 +42,10 @@ export class FakeTokenProvider implements ITokenProvider {
     username?: string;
     password?: string;
     audience?: string;
-    scope?: string;
+    permissions?: Permission[]
   }): Promise<string> {
     const tokenCustomization: TokenCustomization = {
-      scope: args?.scope as Scope,
+      permissions: args?.permissions,
       aud: args?.audience,
     };
     if (!isEmpty(tokenCustomization)) {
@@ -77,12 +77,14 @@ export class FakeTokenProvider implements ITokenProvider {
 
   private customizeToken(customization: TokenCustomization) {
     return (token: any, req: unknown) => {
-      const { aud, scope } = customization;
+      const { aud, permissions } = customization;
       if (aud) {
         token.payload.aud = aud;
       }
-      if (scope) {
-        token.payload.scope = Array.isArray(scope) ? scope.join(" ") : scope;
+      if (permissions) {
+        token.payload.permissions = Array.isArray(permissions)
+          ? permissions.join(" ")
+          : permissions;
       }
     };
   }

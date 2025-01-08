@@ -1,5 +1,5 @@
 import { EntryPointId, IEntryPoints } from "../models";
-import { Scope } from "../scope";
+import { Permission } from "../permission";
 import { EntryPoint } from "./entry-point";
 
 class EntryPoints implements IEntryPoints {
@@ -7,15 +7,15 @@ class EntryPoints implements IEntryPoints {
 
   private readonly photoBase = new EntryPoint("/photo", {
     parent: this.base,
-    scopes: [Scope.PhotosRead],
+    permissions: [Permission.PhotosRead],
   });
   private readonly getPhotoImage = new EntryPoint("/:id/image", {
     parent: this.photoBase,
-    scopes: [Scope.PhotosRead],
+    permissions: [Permission.PhotosRead],
   });
   private readonly getPhotoMetadata = new EntryPoint("/:id/metadata", {
     parent: this.photoBase,
-    scopes: [Scope.PhotosRead],
+    permissions: [Permission.PhotosRead],
   });
   private readonly searchPhoto = new EntryPoint("/", {
     parent: this.photoBase,
@@ -23,7 +23,7 @@ class EntryPoints implements IEntryPoints {
 
   private readonly adminBase = new EntryPoint("/admin", {
     parent: this.base,
-    scopes: [Scope.RestrictedRead],
+    permissions: [Permission.RestrictedRead],
   });
 
   private readonly adminPhotoBase = new EntryPoint("/photo", {
@@ -31,15 +31,15 @@ class EntryPoints implements IEntryPoints {
   });
   private readonly replacePhoto = new EntryPoint("/", {
     parent: this.adminPhotoBase,
-    scopes: [Scope.PhotosWrite],
+    permissions: [Permission.PhotosWrite],
   });
   private readonly addPhoto = new EntryPoint("/", {
     parent: this.adminPhotoBase,
-    scopes: [Scope.PhotosWrite],
+    permissions: [Permission.PhotosWrite],
   });
   private readonly deletePhoto = new EntryPoint("/:id", {
     parent: this.adminPhotoBase,
-    scopes: [Scope.PhotosWrite],
+    permissions: [Permission.PhotosWrite],
   });
 
   private readonly entryPoints: Record<EntryPointId, EntryPoint> = {
@@ -71,8 +71,8 @@ class EntryPoints implements IEntryPoints {
     return this.entryPoints[id].getFullPathWithParams(params);
   }
 
-  getScopes(id: EntryPointId): Scope[] {
-    return this.entryPoints[id].getScopes();
+  getPermissions(id: EntryPointId): Permission[] {
+    return this.entryPoints[id].getPermissions();
   }
 }
 

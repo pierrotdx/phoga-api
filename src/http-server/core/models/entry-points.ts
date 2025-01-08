@@ -1,4 +1,4 @@
-import { Scope } from "../scope";
+import { Permission } from "../permission";
 import { EntryPointId, IEntryPoint } from "./";
 
 export interface IEntryPoints {
@@ -6,5 +6,5 @@ export interface IEntryPoints {
   getRelativePath(id: EntryPointId): string;
   getFullPathRaw(id: EntryPointId): string;
   getFullPathWithParams<T>(id: EntryPointId, params: T): string;
-  getScopes(id: EntryPointId): Scope[];
+  getPermissions(id: EntryPointId): Permission[];
 }

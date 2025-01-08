@@ -59,8 +59,9 @@ describe("adminPhotoController", () => {
     });
 
     it("should call the add-photo use case with the appropriate arguments and respond with status 200", async () => {
-      const payload = testUtils.getPayloadFromPhoto(photo);
-      const response = await req.post(path).send(payload);
+      const addReq = req.post(path);
+      testUtils.addFormDataToReq(addReq, photo);
+      const response = await addReq;
       expect(spy).toHaveBeenCalledTimes(1);
       expect(response.statusCode).toBe(200);
       expect.assertions(2);
@@ -88,9 +89,10 @@ describe("adminPhotoController", () => {
     });
 
     it("should call the replace-photo use case with the appropriate arguments and respond with status 200", async () => {
-      const payload = testUtils.getPayloadFromPhoto(replacingPhoto);
       const url = entryPoint.getFullPathWithParams({ id: photoToReplace._id });
-      const response = await req.put(url).send(payload);
+      const replaceReq = req.put(url);
+      testUtils.addFormDataToReq(replaceReq, replacingPhoto);
+      const response = await replaceReq;
       expect(spy).toHaveBeenCalledTimes(1);
       expect(response.statusCode).toBe(200);
       expect.assertions(2);

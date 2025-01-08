@@ -1,14 +1,14 @@
-import { Scope } from "../scope";
+import { Permission } from "../permission";
 
 export interface IEntryPoint {
   getFullPathRaw(): string;
   getFullPathWithParams(params: any): string;
   getRelativePath(): string;
-  getScopes(): Scope[];
+  getPermissions(): Permission[];
   getParent(): IEntryPoint;
 }
 
 export interface IEntryPointOptions {
   parent?: IEntryPoint;
-  scopes?: Scope[];
+  permissions?: Permission[];
 }

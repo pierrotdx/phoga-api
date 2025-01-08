@@ -1,4 +1,5 @@
 import { Express } from "express";
+import { Test } from "supertest";
 
 import {
   IPhoto,
@@ -73,5 +74,9 @@ export class AdminPhotoControllerTestUtils {
 
   getPayloadFromPhoto(photo: IPhoto) {
     return this.controllersTestUtils.getPayloadFromPhoto(photo);
+  }
+
+  addFormDataToReq(req: Test, photo: IPhoto): void {
+    this.controllersTestUtils.addFormDataToReq(req, photo);
   }
 }
