@@ -57,7 +57,8 @@ export abstract class JestGlobalManager {
     projectConfig.globals.__GCS_PROJECT_ID__ = this.env.GCS_PROJECT_ID;
     projectConfig.globals.__GOOGLE_APPLICATION_CREDENTIALS__ =
       this.env.GOOGLE_APPLICATION_CREDENTIALS;
-    projectConfig.globals.__PHOTO_IMAGE_BUCKET__ = this.env.PHOTO_IMAGE_BUCKET;
+    projectConfig.globals.__GC_PHOTO_IMAGE_BUCKET__ =
+      this.env.GC_PHOTO_IMAGE_BUCKET;
 
     projectConfig.globals.__OAUTH2_AUTHORIZATION_SERVER_DOMAIN__ =
       this.env.OAUTH2_AUTHORIZATION_SERVER_DOMAIN;

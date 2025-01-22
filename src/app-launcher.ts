@@ -53,7 +53,7 @@ export class AppLauncher {
     const storage = new Storage();
     this.photoImageDb = new PhotoImageDbGcs(
       storage,
-      process.env.PHOTO_IMAGE_BUCKET,
+      process.env.GC_PHOTO_IMAGE_BUCKET,
     );
   }
 }
