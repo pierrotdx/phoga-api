@@ -2,15 +2,17 @@ import { buffer } from "node:stream/consumers";
 
 import { IPhoto, IPhotoImageDb } from "@domain";
 import { Bucket, Storage } from "@google-cloud/storage";
-import { GcsBucket } from "@shared";
 
 import { GetByIds } from "./get-by-ids";
 
 export class PhotoImageDbGcs implements IPhotoImageDb {
   private readonly bucket: Bucket;
 
-  constructor(private readonly storage: Storage) {
-    this.bucket = this.storage.bucket(GcsBucket.PhotoImages);
+  constructor(
+    private readonly storage: Storage,
+    private readonly bucketName: string,
+  ) {
+    this.bucket = this.storage.bucket(this.bucketName);
   }
 
   async insert(photo: IPhoto): Promise<void> {

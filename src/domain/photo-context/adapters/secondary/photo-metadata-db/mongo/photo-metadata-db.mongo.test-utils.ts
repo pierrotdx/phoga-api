@@ -4,6 +4,7 @@ import { IAssertionsCounter } from "@assertions-counter";
 import { IPhoto, SortDirection } from "@domain";
 import {
   DbsTestUtils,
+  IMongoCollections,
   MongoManager,
   MongoStore,
   comparePhotoDates,
@@ -18,8 +19,8 @@ export class PhotoMetadataDbMongoTestUtils {
   private dbsTestUtils: DbsTestUtils;
   public photoMetadataDb: PhotoMetadataDbMongo;
 
-  constructor(mongoUrl: string, mongoDbName: string) {
-    this.mongoManager = new MongoManager(mongoUrl, mongoDbName);
+  constructor(mongoUrl: string, mongoDbName: string, collections: IMongoCollections) {
+    this.mongoManager = new MongoManager(mongoUrl, mongoDbName, collections);
   }
 
   async internalSetup(): Promise<void> {

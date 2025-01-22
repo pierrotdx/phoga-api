@@ -3,7 +3,7 @@ import { randomInt } from "node:crypto";
 import { IAssertionsCounter } from "@assertions-counter";
 import { IPhoto } from "@domain";
 import { Storage } from "@google-cloud/storage";
-import { DbsTestUtils, GcsBucket } from "@shared";
+import { DbsTestUtils } from "@shared";
 
 import { PhotoImageDbGcs } from "./photo-image-db.gcs";
 
@@ -12,7 +12,11 @@ export class PhotoImageDbGcsTestUtils {
   private dbsTestUtils: DbsTestUtils;
   public photoImageDbGcs: PhotoImageDbGcs;
 
-  constructor(apiEndpoint: string, projectId: string) {
+  constructor(
+    apiEndpoint: string,
+    projectId: string,
+    private readonly photoImageBucket: string,
+  ) {
     this.storage = new Storage({
       apiEndpoint: apiEndpoint,
       projectId: projectId,
@@ -20,7 +24,10 @@ export class PhotoImageDbGcsTestUtils {
   }
 
   async internalSetup(): Promise<void> {
-    this.photoImageDbGcs = new PhotoImageDbGcs(this.storage);
+    this.photoImageDbGcs = new PhotoImageDbGcs(
+      this.storage,
+      this.photoImageBucket,
+    );
     this.testUtilsFactory();
     await this.deleteAllImages();
   }
@@ -31,13 +38,13 @@ export class PhotoImageDbGcsTestUtils {
 
   async deleteAllImages(): Promise<void> {
     await this.deleteAllFiles(
-      GcsBucket.PhotoImages,
+      this.photoImageBucket,
       this.onDeleteAllImagesError,
     );
   }
 
   private async deleteAllFiles(
-    bucketName: GcsBucket,
+    bucketName: string,
     errorCallbackFn?: (err: any) => Promise<void>,
   ) {
     try {
@@ -50,7 +57,7 @@ export class PhotoImageDbGcsTestUtils {
 
   private onDeleteAllImagesError = async (err: any) => {
     if (err.message.includes("Not Found")) {
-      await this.storage.createBucket(GcsBucket.PhotoImages);
+      await this.storage.createBucket(this.photoImageBucket);
     } else {
       throw err;
     }
