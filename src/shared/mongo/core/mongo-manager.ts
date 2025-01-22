@@ -1,6 +1,6 @@
 import { Db, MongoClient } from "mongodb";
 
-import { IMongoManager, MongoCollection, MongoStore } from "./models";
+import { IMongoCollections, IMongoManager, MongoStore } from "./models";
 
 export class MongoManager implements IMongoManager {
   private readonly client: MongoClient;
@@ -9,6 +9,7 @@ export class MongoManager implements IMongoManager {
   constructor(
     private readonly mongoUrl: string,
     private readonly mongoDbName: string,
+    public readonly collections: IMongoCollections,
   ) {
     this.client = new MongoClient(this.mongoUrl);
   }
@@ -22,7 +23,7 @@ export class MongoManager implements IMongoManager {
     await this.client.close();
   }
 
-  getCollection<T>(collectionName: MongoCollection) {
+  getCollection<T>(collectionName: string) {
     return this.db.collection<MongoStore<T>>(collectionName);
   }
 }

@@ -11,6 +11,7 @@ describe("PhotoMetadataDbMongo", () => {
   const testUtils = new PhotoMetadataDbMongoTestUtils(
     global.__MONGO_URL__,
     global.__MONGO_DB_NAME__,
+    { PhotoMetadata: global.__MONGO_PHOTO_METADATA_COLLECTION__ },
   );
   let photoMetadataDbMongo: PhotoMetadataDbMongo;
   let assertionsCounter: IAssertionsCounter;

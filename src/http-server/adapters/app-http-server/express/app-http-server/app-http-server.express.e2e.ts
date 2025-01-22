@@ -26,9 +26,13 @@ describe("ExpressHttpServer", () => {
     mongo: {
       url: global.__MONGO_URL__,
       dbName: global.__MONGO_DB_NAME__,
+      collections: {
+        PhotoMetadata: global.__MONGO_PHOTO_METADATA_COLLECTION__,
+      },
     },
     gc: {
       keyFile: global.__GOOGLE_APPLICATION_CREDENTIALS__,
+      photoImageBucket: global.__GC_PHOTO_IMAGE_BUCKET__,
     },
     tokenProvider: {
       domain: global.__OAUTH2_AUTHORIZATION_SERVER_DOMAIN__,
