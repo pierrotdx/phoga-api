@@ -32,7 +32,7 @@ describe("ExpressHttpServer", () => {
     },
     gc: {
       keyFile: global.__GOOGLE_APPLICATION_CREDENTIALS__,
-      photoImageBucket: global.__GC_PHOTO_IMAGE_BUCKET__,
+      photoImageBucket: global.__GC_PHOTO_IMAGES_BUCKET__,
     },
     tokenProvider: {
       domain: global.__OAUTH2_AUTHORIZATION_SERVER_DOMAIN__,
