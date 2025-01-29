@@ -43,6 +43,7 @@ export class AppLauncher {
     const mongoManager = new MongoManager(
       process.env.MONGO_URL,
       process.env.MONGO_DB,
+      { PhotoMetadata: process.env.MONGO_PHOTO_METADATA_COLLECTION },
     );
     await mongoManager.open();
     this.photoMetadataDb = new PhotoMetadataDbMongo(mongoManager);
@@ -50,6 +51,9 @@ export class AppLauncher {
 
   private async setPhotoImageDb() {
     const storage = new Storage();
-    this.photoImageDb = new PhotoImageDbGcs(storage);
+    this.photoImageDb = new PhotoImageDbGcs(
+      storage,
+      process.env.GC_PHOTO_IMAGES_BUCKET,
+    );
   }
 }

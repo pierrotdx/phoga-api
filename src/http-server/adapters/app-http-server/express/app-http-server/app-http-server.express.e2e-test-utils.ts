@@ -24,10 +24,9 @@ import {
   ExpressHttpServer,
   ExpressSharedTestUtils,
   ParsersFactory,
-  Permission,
 } from "@http-server";
 import { ILogger, LoggerWinston } from "@logger";
-import { DbsTestUtils, IImageEditor, ImageEditor, MongoManager } from "@shared";
+import { DbsTestUtils, IImageEditor, ImageEditor, IMongoCollections, MongoManager } from "@shared";
 
 export class AppHttpServerExpressE2eTestUtils {
   private readonly mongoManager: MongoManager;
@@ -39,6 +38,8 @@ export class AppHttpServerExpressE2eTestUtils {
   private readonly username: string;
   private readonly password: string;
   private readonly audience: string;
+
+  private readonly photoImageBucket: string;
 
   private photoMetadataDb: IPhotoMetadataDb;
   private photoImageDbGcs: IPhotoImageDb;
@@ -60,8 +61,8 @@ export class AppHttpServerExpressE2eTestUtils {
     gc,
     tokenProvider,
   }: {
-    mongo: { url: string; dbName: string };
-    gc: { keyFile: string };
+    mongo: { url: string; dbName: string, collections: IMongoCollections };
+    gc: { keyFile: string; photoImageBucket: string };
     tokenProvider: {
       domain: string;
       clientId: string;
@@ -71,7 +72,7 @@ export class AppHttpServerExpressE2eTestUtils {
       audience: string;
     };
   }) {
-    this.mongoManager = new MongoManager(mongo.url, mongo.dbName);
+    this.mongoManager = new MongoManager(mongo.url, mongo.dbName, mongo.collections);
     this.storage = new Storage(gc);
     this.tokenProvider = new Auth0TokenProvider(tokenProvider);
     const issuerBaseURL = `https://${tokenProvider.domain}`;
@@ -82,6 +83,7 @@ export class AppHttpServerExpressE2eTestUtils {
     this.username = tokenProvider.username;
     this.password = tokenProvider.password;
     this.audience = tokenProvider.audience;
+    this.photoImageBucket = gc.photoImageBucket;
   }
 
   async internalSetup(): Promise<void> {
@@ -93,7 +95,10 @@ export class AppHttpServerExpressE2eTestUtils {
 
   private setupDbs(): void {
     this.photoMetadataDb = new PhotoMetadataDbMongo(this.mongoManager);
-    this.photoImageDbGcs = new PhotoImageDbGcs(this.storage);
+    this.photoImageDbGcs = new PhotoImageDbGcs(
+      this.storage,
+      this.photoImageBucket,
+    );
   }
 
   private testUtilsFactory() {

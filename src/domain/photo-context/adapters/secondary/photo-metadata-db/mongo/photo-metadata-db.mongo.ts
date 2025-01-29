@@ -1,7 +1,7 @@
 import { Collection, FindCursor, Sort } from "mongodb";
 import { isEmpty, omit } from "ramda";
 
-import { MongoCollection, MongoManager, imageBufferEncoding } from "@shared";
+import { MongoManager, imageBufferEncoding } from "@shared";
 
 import {
   IPhoto,
@@ -17,8 +17,9 @@ export class PhotoMetadataDbMongo implements IPhotoMetadataDb {
   private readonly defaultSize = 20;
 
   constructor(private readonly mongoManager: MongoManager) {
+    const photoMetadataCollection = this.mongoManager.collections.PhotoMetadata;
     this.collection = this.mongoManager.getCollection<IMongoPhotoMetadata>(
-      MongoCollection.PhotoMetadata,
+      photoMetadataCollection,
     );
   }
 

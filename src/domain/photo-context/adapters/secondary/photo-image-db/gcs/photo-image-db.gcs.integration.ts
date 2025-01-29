@@ -14,6 +14,7 @@ describe("PhotoImageDbGcs", () => {
   const testUtils = new PhotoImageDbGcsTestUtils(
     global.__GCS_API_ENDPOINT__,
     global.__GCS_PROJECT_ID__,
+    global.__GC_PHOTO_IMAGES_BUCKET__,
   );
   let photoImageDbGcs: IPhotoImageDb;
 
