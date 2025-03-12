@@ -12,7 +12,7 @@ As such, some choices of architecture or libraries are not based on efficiency b
 
 ### Current state
 
-The API is still under development and not ready for production.
+The project is still under development and not ready for production. The staging version of the client can be previewed [here](https://staging-dot-phoga-client-dot-phoga-449314.ew.r.appspot.com) (initial loading may be a bit slow).
 
 ## Dependencies
 
