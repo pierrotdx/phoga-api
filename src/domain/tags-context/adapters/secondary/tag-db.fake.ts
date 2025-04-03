@@ -15,4 +15,12 @@ export class TagDbFake implements ITagDb {
   async delete(id: ITag["_id"]): Promise<void> {
     this.tags = this.tags.filter((t) => t._id === id);
   }
+
+  async replace(tag: ITag): Promise<void> {
+    const tagIndex = this.tags.findIndex((t) => t._id === tag._id);
+    if (tagIndex < 0) {
+      return await this.insert(tag);
+    }
+    this.tags[tagIndex] = tag;
+  }
 }
