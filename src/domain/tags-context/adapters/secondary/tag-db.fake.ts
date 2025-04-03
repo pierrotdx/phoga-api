@@ -2,7 +2,7 @@ import { ITag } from "@domain/tags-context/core";
 import { ITagDb } from "@domain/tags-context/core/gateways";
 
 export class TagDbFake implements ITagDb {
-  private tags: ITag[] = [];
+  private readonly tags: ITag[] = [];
 
   async insert(tag: ITag): Promise<void> {
     this.tags.push(tag);
@@ -13,11 +13,18 @@ export class TagDbFake implements ITagDb {
   }
 
   async delete(id: ITag["_id"]): Promise<void> {
-    this.tags = this.tags.filter((t) => t._id === id);
+    const tagIndex = this.getTagIndex(id);
+    if (tagIndex >= 0) {
+      this.tags.splice(tagIndex, 1);
+    }
+  }
+
+  private getTagIndex(id: ITag["_id"]): number {
+    return this.tags.findIndex((t) => t._id === id);
   }
 
   async replace(tag: ITag): Promise<void> {
-    const tagIndex = this.tags.findIndex((t) => t._id === tag._id);
+    const tagIndex = this.getTagIndex(tag._id);
     if (tagIndex < 0) {
       return await this.insert(tag);
     }
