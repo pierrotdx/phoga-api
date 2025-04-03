@@ -13,7 +13,7 @@ export class GetTagTestUtils {
   private readonly assertionsCounter: IAssertionsCounter;
   private readonly tagsTestUtils: TagsTestUtils;
 
-  readonly dumbTag: ITag = { _id: "dumb-id", value: "dumb-value" };
+  readonly dumbTag: ITag = { _id: "dumb-id", name: "dumb-value" };
 
   constructor(private readonly tagDb: ITagDb) {
     this.useCase = new GetTag(this.tagDb);

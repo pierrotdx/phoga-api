@@ -10,7 +10,7 @@ describe("TagDbMongo", () => {
   });
 
   describe("insert", () => {
-    const tagToInsert: ITag = { _id: "tag-1", value: "tag to insert" };
+    const tagToInsert: ITag = { _id: "tag-1", name: "tag to insert" };
 
     afterEach(async () => {
       await testUtils.deleteDoc(tagToInsert._id);
@@ -27,7 +27,7 @@ describe("TagDbMongo", () => {
     describe("when there is already a tag with the same id", () => {
       const tagAlreadyInDb: ITag = {
         _id: tagToInsert._id,
-        value: "tag already in db",
+        name: "tag already in db",
       };
 
       beforeEach(async () => {
@@ -45,7 +45,7 @@ describe("TagDbMongo", () => {
   });
 
   describe("getById", () => {
-    const tagToGet: ITag = { _id: "tag-id", value: "tag to get" };
+    const tagToGet: ITag = { _id: "tag-id", name: "tag to get" };
 
     describe("when the requested tag is not in the db", () => {
       it("should throw an error", async () => {
@@ -71,7 +71,7 @@ describe("TagDbMongo", () => {
   });
 
   describe("replace", () => {
-    const newTag: ITag = { _id: "new-tag", value: "new tag" };
+    const newTag: ITag = { _id: "new-tag", name: "new tag" };
 
     afterEach(async () => {
       await testUtils.deleteDoc(newTag._id);
@@ -86,7 +86,7 @@ describe("TagDbMongo", () => {
     });
 
     describe("when there is a tag with the same id in db", () => {
-      const tagAlreadyInDb: ITag = { _id: newTag._id, value: "old value" };
+      const tagAlreadyInDb: ITag = { _id: newTag._id, name: "old value" };
 
       beforeEach(async () => {
         await testUtils.insertDoc(tagAlreadyInDb);
@@ -101,7 +101,7 @@ describe("TagDbMongo", () => {
   });
 
   describe("delete", () => {
-    const tagToDelete: ITag = { _id: "tag-to-delete", value: "tag to delete" };
+    const tagToDelete: ITag = { _id: "tag-to-delete", name: "tag to delete" };
 
     beforeEach(async () => {
       await testUtils.insertDoc(tagToDelete);

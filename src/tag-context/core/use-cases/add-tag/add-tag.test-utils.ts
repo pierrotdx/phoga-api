@@ -9,7 +9,7 @@ import { TagsTestUtils } from "../tag.test-utils";
 import { AddTag } from "./add-tag";
 
 export class AddTagTestUtils {
-  readonly dumbTags: ITag[] = [{ _id: "dumb-id-1", value: "test-1" }];
+  readonly dumbTags: ITag[] = [{ _id: "dumb-id-1", name: "test-1" }];
 
   private readonly useCase: AddTag;
   private readonly tagsTestUtils: TagsTestUtils;

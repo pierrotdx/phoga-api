@@ -9,7 +9,7 @@ import { TagsTestUtils } from "../tag.test-utils";
 import { DeleteTag } from "./delete-tag";
 
 export class DeleteTagTestUtils {
-  readonly tagToDelete: ITag = { _id: "dumb-id", value: "the tag to delete" };
+  readonly tagToDelete: ITag = { _id: "dumb-id", name: "the tag to delete" };
 
   private readonly useCase: DeleteTag;
   private readonly tagsTestUtils: TagsTestUtils;

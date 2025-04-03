@@ -13,8 +13,8 @@ export class ReplaceTagTestUtils {
   private readonly tagsTestUtils: TagsTestUtils;
   private readonly assertionsCounter: IAssertionsCounter;
 
-  readonly tagToReplace: ITag = { _id: "dumb-id", value: "tag to replace" };
-  readonly newTag: ITag = { _id: this.tagToReplace._id, value: "new tag" };
+  readonly tagToReplace: ITag = { _id: "dumb-id", name: "tag to replace" };
+  readonly newTag: ITag = { _id: this.tagToReplace._id, name: "new tag" };
 
   constructor(private readonly tagDb: ITagDb) {
     this.useCase = new ReplaceTag(this.tagDb);
