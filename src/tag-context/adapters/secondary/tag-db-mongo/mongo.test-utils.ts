@@ -5,7 +5,7 @@ import {
   MongoDoc,
   MongoManager,
   MongoStore,
-} from "@shared/mongo";
+} from "#shared/mongo";
 
 export class MongoTestUtils {
   readonly mongoManager: MongoManager;

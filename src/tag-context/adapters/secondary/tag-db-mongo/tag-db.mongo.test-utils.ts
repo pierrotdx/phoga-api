@@ -1,5 +1,8 @@
-import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
-import { MongoDoc, MongoManager } from "@shared";
+import {
+  AssertionsCounter,
+  IAssertionsCounter,
+} from "#shared/assertions-counter";
+import { MongoDoc } from "#shared/mongo";
 
 import { ITag } from "../../../core";
 import { MongoTestUtils } from "./mongo.test-utils";

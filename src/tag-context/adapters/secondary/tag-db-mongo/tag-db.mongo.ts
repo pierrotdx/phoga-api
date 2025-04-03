@@ -1,9 +1,7 @@
+import { MongoDoc, MongoManager, MongoStore } from "#shared/mongo";
 import { Collection } from "mongodb";
 
-import { ITag } from "@domain/tags-context/core";
-import { MongoDoc, MongoManager, MongoStore } from "@shared";
-
-import { ITagDb } from "../../../core/gateways";
+import { ITag, ITagDb } from "../../../core";
 
 export class TagDbMongo implements ITagDb {
   private readonly tagCollection: Collection<MongoStore<MongoDoc>>;

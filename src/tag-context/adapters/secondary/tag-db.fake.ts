@@ -1,5 +1,4 @@
-import { ITag } from "@domain/tags-context/core";
-import { ITagDb } from "@domain/tags-context/core/gateways";
+import { ITag, ITagDb } from "../../core";
 
 export class TagDbFake implements ITagDb {
   private readonly tags: ITag[] = [];
