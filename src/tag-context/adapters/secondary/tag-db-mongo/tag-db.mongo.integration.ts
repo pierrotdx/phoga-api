@@ -9,6 +9,10 @@ describe("TagDbMongo", () => {
     await testUtils.globalBeforeEach();
   });
 
+  afterEach(async () => {
+    await testUtils.globalAfterEach();
+  });
+
   describe("insert", () => {
     const tagToInsert: ITag = { _id: "tag-1", name: "tag to insert" };
 

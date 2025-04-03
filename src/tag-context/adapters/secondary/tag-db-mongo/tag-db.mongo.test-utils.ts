@@ -28,6 +28,10 @@ export class TagDbMongoTestUtils {
     this.testedClass = new TagDbMongo(this.mongoTestUtils.mongoManager);
   }
 
+  async globalAfterEach(): Promise<void> {
+    await this.mongoTestUtils.closeMongoConnection();
+  }
+
   async deleteDoc(id: MongoDoc["_id"]): Promise<void> {
     await this.mongoTestUtils.deleteDoc(id);
   }

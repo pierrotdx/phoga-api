@@ -41,6 +41,10 @@ export class MongoTestUtils {
     this.tagCollection = this.setTagCollection();
   }
 
+  async closeMongoConnection(): Promise<void> {
+    await this.mongoManager.close();
+  }
+
   private setTagCollection() {
     const tagCollectionName = this.mongoManager.collections.Tag;
     return this.mongoManager.getCollection(tagCollectionName);
