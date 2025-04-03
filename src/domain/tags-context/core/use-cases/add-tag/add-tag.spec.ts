@@ -16,7 +16,7 @@ describe("AddTag", () => {
     await testUtils.cleanDbFromDumbTags();
   });
 
-  it("should add a tag to the database", async () => {
+  it("should add the requested tag to the database", async () => {
     const tagToAdd = testUtils.dumbTags[0];
 
     await testUtils.executeUseCase(tagToAdd);
