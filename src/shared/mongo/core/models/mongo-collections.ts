@@ -1,3 +1,4 @@
 export interface IMongoCollections {
-  PhotoMetadata: string;
+  PhotoMetadata?: string;
+  Tag?: string;
 }

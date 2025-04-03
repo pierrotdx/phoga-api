@@ -1,1 +1,1 @@
-export * from "./secondary/tag-db.fake";
+export * from "./secondary";
