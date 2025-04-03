@@ -1,4 +1,4 @@
-import { type Express, query } from "express";
+import { type Express } from "express";
 import { omit } from "ramda";
 import request from "supertest";
 
