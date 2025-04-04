@@ -28,10 +28,9 @@ export class PhotoController implements IPhotoController {
   }
 
   getImage = async (req: Request, res: Response) => {
-    const { _id, imageSize } = this.validateAndParseGetPhoto(req);
+    const { _id } = this.validateAndParseGetPhoto(req);
     const photo = await this.useCases.getPhoto.execute(_id, {
-      fields: [GetPhotoField.ImageBuffer],
-      imageSize,
+      fields: [GetPhotoField.ImageBuffer]
     });
     const imageStream = Readable.from(photo.imageBuffer);
     res.setHeader("Content-Type", "image/jpeg");

@@ -1,22 +1,18 @@
 import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
 import { dumbPhotoGenerator } from "@dumb-photo-generator";
-import { ImageEditor } from "@shared";
 
 import {
   FakePhotoImageDb,
   FakePhotoMetadataDb,
 } from "../../../adapters/secondary";
 import { IPhoto } from "../../models";
-import { ThumbnailSetter } from "../../thumbnail-setter";
 import { ReplacePhoto } from "./replace-photo";
 import { ReplacePhotoTestUtils } from "./replace-photo.test-utils";
 
 describe(`${ReplacePhoto.name}`, () => {
   const photoMetadataDb = new FakePhotoMetadataDb();
   const photoImageDb = new FakePhotoImageDb();
-  const imageEditor = new ImageEditor();
   const testUtils = new ReplacePhotoTestUtils(photoMetadataDb, photoImageDb);
-  const thumbnailSetter = new ThumbnailSetter(imageEditor);
   let photo: IPhoto;
   let replacePhoto: ReplacePhoto;
   let assertionsCounter: IAssertionsCounter;
@@ -26,7 +22,6 @@ describe(`${ReplacePhoto.name}`, () => {
     replacePhoto = new ReplacePhoto(
       testUtils.photoMetadataDb,
       testUtils.photoImageDb,
-      thumbnailSetter,
     );
     assertionsCounter = new AssertionsCounter();
     await testUtils.insertPhotoInDb(photo);
@@ -67,17 +62,6 @@ describe(`${ReplacePhoto.name}`, () => {
         assertionsCounter,
       );
       assertionsCounter.checkAssertions();
-    });
-
-    it(`should generate a thumbnail in the metadata if not provided`, async () => {
-      const replacingPhoto = await dumbPhotoGenerator.generatePhoto({
-        _id: photo._id,
-      });
-      const setThumbnailSpy = jest.spyOn(thumbnailSetter, "set");
-      delete replacingPhoto.metadata;
-      await replacePhoto.execute(replacingPhoto);
-      expect(setThumbnailSpy).toHaveBeenCalledTimes(1);
-      expect.assertions(1);
     });
 
     it.each`

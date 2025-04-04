@@ -26,7 +26,7 @@ import {
   ParsersFactory,
 } from "@http-server";
 import { ILogger, LoggerWinston } from "@logger";
-import { DbsTestUtils, IImageEditor, ImageEditor, IMongoCollections, MongoManager } from "@shared";
+import { DbsTestUtils, IMongoCollections, MongoManager } from "@shared";
 
 export class AppHttpServerExpressE2eTestUtils {
   private readonly mongoManager: MongoManager;
@@ -52,7 +52,6 @@ export class AppHttpServerExpressE2eTestUtils {
   private searchPhotoTestUtils: SearchPhotoTestUtils;
   private replacePhotoTestUtils: ReplacePhotoTestUtils;
   private deletePhotoTestUtils: DeletePhotoTestUtils;
-  private imageEditor: IImageEditor;
 
   private expressHttpServer: ExpressHttpServer;
 
@@ -61,7 +60,7 @@ export class AppHttpServerExpressE2eTestUtils {
     gc,
     tokenProvider,
   }: {
-    mongo: { url: string; dbName: string, collections: IMongoCollections };
+    mongo: { url: string; dbName: string; collections: IMongoCollections };
     gc: { keyFile: string; photoImageBucket: string };
     tokenProvider: {
       domain: string;
@@ -72,7 +71,11 @@ export class AppHttpServerExpressE2eTestUtils {
       audience: string;
     };
   }) {
-    this.mongoManager = new MongoManager(mongo.url, mongo.dbName, mongo.collections);
+    this.mongoManager = new MongoManager(
+      mongo.url,
+      mongo.dbName,
+      mongo.collections,
+    );
     this.storage = new Storage(gc);
     this.tokenProvider = new Auth0TokenProvider(tokenProvider);
     const issuerBaseURL = `https://${tokenProvider.domain}`;
@@ -116,11 +119,9 @@ export class AppHttpServerExpressE2eTestUtils {
       this.photoMetadataDb,
       this.photoImageDbGcs,
     );
-    this.imageEditor = new ImageEditor();
     this.searchPhotoTestUtils = new SearchPhotoTestUtils(
       this.photoMetadataDb,
       this.photoImageDbGcs,
-      this.imageEditor,
     );
     this.replacePhotoTestUtils = new ReplacePhotoTestUtils(
       this.photoMetadataDb,

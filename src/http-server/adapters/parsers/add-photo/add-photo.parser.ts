@@ -55,10 +55,6 @@ export class AddPhotoParser implements IAddPhotoParser {
     if (titles?.length) {
       metadata.titles = titles;
     }
-    const thumbnail = data.thumbnail?.[0];
-    if (thumbnail) {
-      metadata.thumbnail = Buffer.from(thumbnail, imageBufferEncoding);
-    }
     if (!isEmpty(metadata)) {
       this.photo.metadata = metadata;
     }

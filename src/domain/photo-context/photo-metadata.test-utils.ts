@@ -13,11 +13,6 @@ export class PhotoMetadataTestUtils {
     assertionsCounter: IAssertionsCounter,
   ): Promise<void> {
     const dbMetadata = await this.db.getById(photo._id);
-    expect(dbMetadata.thumbnail).toBeDefined();
-    assertionsCounter.increase();
-    if (!photo.metadata?.thumbnail) {
-      dbMetadata.thumbnail = undefined;
-    }
     this.sharedTestUtils.expectMatchingPhotosMetadata(
       photo.metadata,
       dbMetadata,

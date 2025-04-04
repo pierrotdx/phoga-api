@@ -38,11 +38,5 @@ export class ControllersTestUtils extends ExpressSharedTestUtils {
     if (photo.metadata.titles?.length) {
       req.field("titles", photo.metadata.titles);
     }
-    if (photo.metadata.thumbnail) {
-      req.field(
-        "thumbnail",
-        photo.metadata.thumbnail.toString(imageBufferEncoding),
-      );
-    }
   }
 }

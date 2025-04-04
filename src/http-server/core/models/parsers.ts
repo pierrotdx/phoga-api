@@ -1,10 +1,10 @@
 import { IPhoto, ISearchPhotoOptions, Photo } from "@domain";
-import { ImageSize } from "@shared";
+
 
 import { IParser, IParserAsync } from "./parser";
 
 export interface IGetPhotoParser
-  extends IParser<{ _id: Photo["_id"]; imageSize?: ImageSize }> {}
+  extends IParser<{ _id: Photo["_id"]; }> {}
 export interface IDeletePhotoParser extends IParser<IPhoto["_id"]> {}
 export interface IAddPhotoParser extends IParserAsync<IPhoto> {}
 export interface IReplacePhotoParser extends IAddPhotoParser {}

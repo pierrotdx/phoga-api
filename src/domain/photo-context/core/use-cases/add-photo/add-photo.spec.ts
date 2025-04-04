@@ -2,22 +2,18 @@ import { omit } from "ramda";
 
 import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
 import { dumbPhotoGenerator } from "@dumb-photo-generator";
-import { ImageEditor } from "@shared";
 
 import {
   FakePhotoImageDb,
   FakePhotoMetadataDb,
 } from "../../../adapters/secondary";
 import { IPhoto } from "../../models";
-import { ThumbnailSetter } from "../../thumbnail-setter";
 import { AddPhoto } from "./add-photo";
 import { AddPhotoTestUtils } from "./add-photo.test-utils";
 
 describe(`${AddPhoto.name}`, () => {
   const photoMetadataDb = new FakePhotoMetadataDb();
   const photoImageDb = new FakePhotoImageDb();
-  const imageEditor = new ImageEditor();
-  const thumbnailSetter = new ThumbnailSetter(imageEditor);
   const testUtils = new AddPhotoTestUtils(photoMetadataDb, photoImageDb);
   let addPhoto: AddPhoto;
   let assertionsCounter: IAssertionsCounter;
@@ -26,7 +22,6 @@ describe(`${AddPhoto.name}`, () => {
     addPhoto = new AddPhoto(
       testUtils.photoMetadataDb,
       testUtils.photoImageDb,
-      thumbnailSetter,
     );
     assertionsCounter = new AssertionsCounter();
   });
@@ -36,15 +31,6 @@ describe(`${AddPhoto.name}`, () => {
       const photo = await dumbPhotoGenerator.generatePhoto();
       await addPhoto.execute(photo);
       await testUtils.expectPhotoToBeUploaded(photo, assertionsCounter);
-    });
-
-    it(`should generate a thumbnail in the metadata if not provided`, async () => {
-      const photo = await dumbPhotoGenerator.generatePhoto();
-      const setThumbnailSpy = jest.spyOn(thumbnailSetter, "set");
-      delete photo.metadata;
-      await addPhoto.execute(photo);
-      expect(setThumbnailSpy).toHaveBeenCalledTimes(1);
-      expect.assertions(1);
     });
 
     it.each`

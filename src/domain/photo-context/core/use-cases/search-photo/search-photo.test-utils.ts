@@ -1,13 +1,7 @@
 import { clone } from "ramda";
 
 import { IAssertionsCounter } from "@assertions-counter";
-import {
-  DbsTestUtils,
-  IImageEditor,
-  ImageSize,
-  compareDates,
-  comparePhotoDates,
-} from "@shared";
+import { DbsTestUtils, compareDates, comparePhotoDates } from "@shared";
 
 import { IPhoto, SortDirection } from "../../../core";
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
@@ -19,7 +13,6 @@ export class SearchPhotoTestUtils {
   constructor(
     public readonly photoMetadataDb: IPhotoMetadataDb,
     public readonly photoImageDb: IPhotoImageDb,
-    private readonly imageEditor: IImageEditor,
   ) {
     this.testUtilsFactory();
   }
@@ -112,19 +105,5 @@ export class SearchPhotoTestUtils {
   ) {
     expect(searchResult.length).toBeLessThanOrEqual(size);
     assertionsCounter.increase();
-  }
-
-  async expectPhotosImagesSize(
-    photos: IPhoto[],
-    expectedSize: ImageSize,
-    assertionsCounter: IAssertionsCounter,
-  ) {
-    const promises = photos.map((photo) => {
-      const imageSize = this.imageEditor.getSize(photo.imageBuffer);
-      expect(imageSize).toEqual(expectedSize);
-      assertionsCounter.increase();
-    });
-    await Promise.all(promises);
-    assertionsCounter.checkAssertions();
   }
 }

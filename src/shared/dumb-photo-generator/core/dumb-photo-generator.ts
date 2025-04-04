@@ -3,12 +3,7 @@ import fetch from "node-fetch";
 import { clone } from "ramda";
 
 import { IPhoto, Photo } from "@domain";
-import {
-  ILoremIpsumGenerator,
-  IUuidGenerator,
-  ImageSize,
-  assertPhoto,
-} from "@shared";
+import { ILoremIpsumGenerator, IUuidGenerator, assertPhoto } from "@shared";
 
 import { IDumbPhotoGenerator, IDumbPhotoGeneratorOptions } from "./models";
 
@@ -29,7 +24,7 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
   }
 
   private async generateImageBuffer(
-    size: ImageSize = { width: 200, height: 300 },
+    size: { width: number; height: number } = { width: 200, height: 200 },
   ): Promise<Buffer> {
     try {
       const response = await fetch(
@@ -51,11 +46,7 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
       this.loremIpsumGenerator.generateWords(2).join(" ");
     const description =
       clone(options?.description) || this.generateDescription();
-    const thumbnail = await this.generateImageBuffer({
-      width: 300,
-      height: 300,
-    });
-    return { date, titles, location, description, thumbnail };
+    return { date, titles, location, description };
   }
 
   // https://stackoverflow.com/a/9035732/6281776

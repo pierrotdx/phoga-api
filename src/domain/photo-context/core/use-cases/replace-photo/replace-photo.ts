@@ -1,20 +1,17 @@
 import { isEmpty, isNil } from "ramda";
 
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
-import { IPhoto, IThumbnailSetter, Photo } from "../../models";
+import { IPhoto, Photo } from "../../models";
 
 export class ReplacePhoto {
   constructor(
     private readonly photoMetadataDb: IPhotoMetadataDb,
     private readonly photoImageDb: IPhotoImageDb,
-    private readonly thumbnailSetter: IThumbnailSetter,
   ) {}
 
   async execute(photo: IPhoto): Promise<void> {
     await this.replaceImage(photo);
-    if (!photo.metadata?.thumbnail) {
-      await this.thumbnailSetter.set(photo);
-    }
+
     await this.photoMetadataDb.replace(photo);
   }
 

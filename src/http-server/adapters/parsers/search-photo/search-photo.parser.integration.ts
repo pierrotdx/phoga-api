@@ -33,19 +33,5 @@ describe("SearchPhotoParser", () => {
         assertionsCounter.checkAssertions();
       },
     );
-
-    it.each`
-      inputData                      | expectedData
-      ${{ width: 15 }}               | ${{ imageSize: { width: 15 } }}
-      ${{ height: 654 }}             | ${{ imageSize: { height: 654 } }}
-      ${{ width: 752, height: 984 }} | ${{ imageSize: { width: 752, height: 984 } }}
-    `(
-      "should extract `imageSize` correctly from $inputData",
-      ({ expectedData, inputData }) => {
-        const parsedData = searchPhotoParser.parse(inputData);
-        expect(parsedData).toEqual(expectedData);
-        expect.assertions(1);
-      },
-    );
   });
 });

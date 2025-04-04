@@ -1,5 +1,3 @@
-import { ImageSize } from "@shared";
-
 export enum GetPhotoField {
   Metadata = "metadata",
   ImageBuffer = "imageBuffer",
@@ -7,5 +5,4 @@ export enum GetPhotoField {
 
 export interface IGetPhotoOptions {
   fields?: GetPhotoField[];
-  imageSize?: ImageSize;
 }

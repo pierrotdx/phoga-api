@@ -1,8 +1,7 @@
-import { Factory, ImageEditor } from "@shared";
+import { Factory } from "@shared";
 
 import { IPhotoImageDb, IPhotoMetadataDb } from "../gateways";
 import { IUseCases } from "../models";
-import { ThumbnailSetter } from "../thumbnail-setter";
 import { AddPhoto } from "./add-photo/add-photo";
 import { DeletePhoto } from "./delete-photo/delete-photo";
 import { GetPhoto } from "./get-photo/get-photo";
@@ -16,18 +15,12 @@ export class UseCasesFactory implements Factory<IUseCases> {
   ) {}
 
   create(): IUseCases {
-    const imageEditor = new ImageEditor();
-    const thumbnailSetter = new ThumbnailSetter(imageEditor);
     return {
-      getPhoto: new GetPhoto(this.metadataDb, this.imageDb, imageEditor),
-      addPhoto: new AddPhoto(this.metadataDb, this.imageDb, thumbnailSetter),
-      replacePhoto: new ReplacePhoto(
-        this.metadataDb,
-        this.imageDb,
-        thumbnailSetter,
-      ),
+      getPhoto: new GetPhoto(this.metadataDb, this.imageDb),
+      addPhoto: new AddPhoto(this.metadataDb, this.imageDb),
+      replacePhoto: new ReplacePhoto(this.metadataDb, this.imageDb),
       deletePhoto: new DeletePhoto(this.metadataDb, this.imageDb),
-      searchPhoto: new SearchPhoto(this.metadataDb, this.imageDb, imageEditor),
+      searchPhoto: new SearchPhoto(this.metadataDb, this.imageDb),
     };
   }
 }

@@ -36,15 +36,9 @@ export class PhotoMetadataDbMongo implements IPhotoMetadataDb {
     storePhotoMetadata: IMongoPhotoMetadata,
   ): IPhoto["metadata"] {
     const photoMetadata: IPhoto["metadata"] = omit(
-      ["_id", "thumbnail"],
+      ["_id"],
       storePhotoMetadata,
     );
-    if (storePhotoMetadata.thumbnail) {
-      photoMetadata.thumbnail = Buffer.from(
-        storePhotoMetadata.thumbnail,
-        imageBufferEncoding,
-      );
-    }
     return photoMetadata;
   }
 
@@ -64,8 +58,7 @@ export class PhotoMetadataDbMongo implements IPhotoMetadataDb {
   }
 
   private getStorePhotoMetadata(photo: IPhoto): IMongoPhotoMetadata {
-    const thumbnail = photo.metadata.thumbnail.toString(imageBufferEncoding);
-    const metadata = { ...photo.metadata, thumbnail };
+    const metadata = { ...photo.metadata };
     return { _id: photo._id, ...metadata };
   }
 

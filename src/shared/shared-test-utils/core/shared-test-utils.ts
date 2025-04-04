@@ -69,14 +69,7 @@ export class SharedTestUtils implements ISharedTestUtils {
     photoMetadata2: IPhoto["metadata"],
     assertionsCounter: IAssertionsCounter,
   ): void {
-    const metadata1WithoutThumbnail = omit(["thumbnail"], photoMetadata1);
-    const metadata2WithoutThumbnail = omit(["thumbnail"], photoMetadata2);
-    expect(metadata1WithoutThumbnail).toEqual(metadata2WithoutThumbnail);
-    assertionsCounter.increase(1);
-    this.expectMatchingBuffers(
-      photoMetadata1.thumbnail,
-      photoMetadata2.thumbnail,
-      assertionsCounter,
-    );
+    expect(photoMetadata1).toEqual(photoMetadata2);
+    assertionsCounter.increase();
   }
 }
