@@ -1,1 +1,1 @@
-export * from "./entry-points";
+export * from "./photo-entry-points";

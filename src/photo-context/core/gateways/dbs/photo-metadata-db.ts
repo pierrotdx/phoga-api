@@ -1,6 +1,6 @@
 import { IRendering } from "@shared/models";
 
-import { IPhoto, IPhotoMetadata } from "../models";
+import { IPhoto, IPhotoMetadata } from "../../models";
 
 export interface IPhotoMetadataDb {
   insert: (photo: IPhoto) => Promise<void>;

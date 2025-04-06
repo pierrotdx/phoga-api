@@ -12,7 +12,7 @@ describe("GetPhotoParser", () => {
 
   it.each`
     inputData | expectedData
-    ${{ id }} | ${{ _id: id }}
+    ${{ id }} | ${id}
   `(
     "should extract correctly from $inputData to $expectedData",
     ({ expectedData, inputData }) => {

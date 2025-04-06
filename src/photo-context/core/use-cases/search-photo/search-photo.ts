@@ -1,7 +1,7 @@
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
-import { IPhoto, ISearchPhotoOptions } from "../../models";
+import { IPhoto, ISearchPhotoOptions, ISearchPhotoUseCase } from "../../models";
 
-export class SearchPhoto {
+export class SearchPhotoUseCase implements ISearchPhotoUseCase {
   private photos: IPhoto[] = [];
 
   constructor(

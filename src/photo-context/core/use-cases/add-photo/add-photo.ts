@@ -1,9 +1,9 @@
 import { isEmpty, isNil } from "ramda";
 
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
-import { IPhoto, Photo } from "../../models";
+import { IAddPhotoUseCase, IPhoto, Photo } from "../../models";
 
-export class AddPhoto {
+export class AddPhotoUseCase implements IAddPhotoUseCase {
   constructor(
     private readonly photoMetadataDb: IPhotoMetadataDb,
     private readonly photoImageDb: IPhotoImageDb,

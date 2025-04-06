@@ -10,21 +10,21 @@ import {
   dumbPhotoGenerator,
 } from "../../../adapters/";
 import { IPhoto } from "../../models";
-import { DeletePhoto } from "./delete-photo";
+import { DeletePhotoUseCase } from "./delete-photo";
 import { DeletePhotoTestUtils } from "./delete-photo.test-utils";
 
-describe(`${DeletePhoto.name}`, () => {
+describe(`${DeletePhotoUseCase.name}`, () => {
   const photoMetadataDb = new FakePhotoMetadataDb();
   const photoImageDb = new FakePhotoImageDb();
   const sharedTestUtils = new SharedTestUtils();
   const testUtils = new DeletePhotoTestUtils(photoMetadataDb, photoImageDb);
-  let deletePhoto: DeletePhoto;
+  let deletePhoto: DeletePhotoUseCase;
   let assertionsCounter: IAssertionsCounter;
   let photo: IPhoto;
 
   beforeEach(async () => {
     photo = await dumbPhotoGenerator.generatePhoto();
-    deletePhoto = new DeletePhoto(
+    deletePhoto = new DeletePhotoUseCase(
       testUtils.photoMetadataDb,
       testUtils.photoImageDb,
     );
@@ -36,7 +36,7 @@ describe(`${DeletePhoto.name}`, () => {
     await testUtils.deletePhotoIfNecessary(photo._id);
   });
 
-  describe(`${DeletePhoto.prototype.execute.name}`, () => {
+  describe(`${DeletePhotoUseCase.prototype.execute.name}`, () => {
     it("should delete photo's metadata and image from their respective DBs", async () => {
       const dbPhotoBefore = await testUtils.getPhotoFromDb(photo._id);
       await deletePhoto.execute(photo._id);

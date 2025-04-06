@@ -11,20 +11,11 @@ import { Server } from "http";
 
 import { IAuthHandler } from "@auth-context";
 import { ILogger, LoggerWinston } from "@logger-context";
-import {
-  AdminPhotoController,
-  AdminPhotoRouter,
-  IParsers,
-  IUseCases,
-  IValidators,
-  PhotoController,
-  PhotoRouter,
-} from "@photo-context";
+import { IPhotoImageDb, IPhotoMetadataDb } from "@photo-context";
 import { IExpressLogger } from "@shared/express";
 
 import { ExpressLoggerWinston } from "../loggers";
 import { IAppServer } from "../models/";
-import { AdminRouter } from "../routers/admin.router";
 import { AppRouter } from "../routers/app.router";
 
 export class ExpressHttpServer implements IAppServer {
@@ -33,9 +24,8 @@ export class ExpressHttpServer implements IAppServer {
   private loggerHandler: IExpressLogger["handler"];
 
   constructor(
-    private readonly useCases: IUseCases,
-    private readonly validators: IValidators,
-    private readonly parsers: IParsers,
+    private readonly metadataDb: IPhotoMetadataDb,
+    private readonly imageDb: IPhotoImageDb,
     private readonly logger: ILogger,
     private readonly authHandler: IAuthHandler,
   ) {
@@ -70,37 +60,12 @@ export class ExpressHttpServer implements IAppServer {
   }
 
   private initRouter() {
-    const photoRouter = this.getPhotoRouter();
-    const adminRouter = this.getAdminRouter();
     const router = new AppRouter(
-      photoRouter,
-      adminRouter,
       this.authHandler,
-    ).getRouter();
+      this.metadataDb,
+      this.imageDb,
+    ).get();
     this.app.use(router);
-  }
-
-  private getPhotoRouter(): PhotoRouter {
-    const photoController = new PhotoController(
-      this.useCases,
-      this.validators,
-      this.parsers,
-    );
-    return new PhotoRouter(photoController);
-  }
-
-  private getAdminRouter(): AdminRouter {
-    const adminPhotoRouter = this.getAdminPhotoRouter();
-    return new AdminRouter(adminPhotoRouter, this.authHandler);
-  }
-
-  private getAdminPhotoRouter(): AdminPhotoRouter {
-    const adminPhotoController = new AdminPhotoController(
-      this.useCases,
-      this.validators,
-      this.parsers,
-    );
-    return new AdminPhotoRouter(adminPhotoController, this.authHandler);
   }
 
   private logError(err: any, req: Request, res: Response, next: NextFunction) {

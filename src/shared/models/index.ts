@@ -4,3 +4,4 @@ export * from "./parser";
 export * from "./permission";
 export * from "./rendering";
 export * from "./schema";
+export * from "./use-case";

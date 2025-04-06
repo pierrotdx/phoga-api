@@ -12,19 +12,22 @@ import {
   dumbPhotoGenerator,
 } from "../../../adapters/";
 import { GetPhotoField, IPhoto } from "../../models";
-import { GetPhoto } from "./get-photo";
+import { GetPhotoUseCase } from "./get-photo";
 import { GetPhotoTestUtils } from "./get-photo.test-utils";
 
-describe(`${GetPhoto.name}`, () => {
+describe(`${GetPhotoUseCase.name}`, () => {
   const photoMetadataDb = new FakePhotoMetadataDb();
   const photoImageDb = new FakePhotoImageDb();
   const testUtils = new GetPhotoTestUtils(photoMetadataDb, photoImageDb);
-  let getPhoto: GetPhoto;
+  let getPhoto: GetPhotoUseCase;
   let photo: IPhoto;
   let assertionsCounter: IAssertionsCounter;
 
   beforeEach(async () => {
-    getPhoto = new GetPhoto(testUtils.photoMetadataDb, testUtils.photoImageDb);
+    getPhoto = new GetPhotoUseCase(
+      testUtils.photoMetadataDb,
+      testUtils.photoImageDb,
+    );
     assertionsCounter = new AssertionsCounter();
     const imageBuffer = await readFile("assets/test-img-1_536x354.jpg");
     photo = await dumbPhotoGenerator.generatePhoto({ imageBuffer });
@@ -35,7 +38,7 @@ describe(`${GetPhoto.name}`, () => {
     await testUtils.deletePhotoIfNecessary(photo._id);
   });
 
-  describe(`${GetPhoto.prototype.execute.name}`, () => {
+  describe(`${GetPhotoUseCase.prototype.execute.name}`, () => {
     it("should return the photo with matching id", async () => {
       const result = await getPhoto.execute(photo._id);
       testUtils.expectMatchingPhotos(photo, result, assertionsCounter);

@@ -1,2 +1,2 @@
-export * from "./photo-metadata-db";
-export * from "./photo-image-db";
+export * from "./dbs";
+export * from "./routers";

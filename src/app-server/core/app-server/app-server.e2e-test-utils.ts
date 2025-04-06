@@ -5,8 +5,6 @@ import { Storage } from "@google-cloud/storage";
 import { ILogger, LoggerWinston } from "@logger-context";
 import {
   AddPhotoTestUtils,
-  AjvValidatorsFactory,
-  ControllersTestUtils,
   DbsTestUtils,
   DeletePhotoTestUtils,
   ExpressSharedTestUtils,
@@ -14,12 +12,10 @@ import {
   IPhoto,
   IPhotoImageDb,
   IPhotoMetadataDb,
-  ParsersFactory,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
   ReplacePhotoTestUtils,
   SearchPhotoTestUtils,
-  UseCasesFactory,
 } from "@photo-context";
 import { IAssertionsCounter } from "@shared/assertions-counter";
 import { IMongoCollections, MongoManager } from "@shared/mongo";
@@ -44,7 +40,6 @@ export class AppHttpServerExpressE2eTestUtils {
   private photoImageDbGcs: IPhotoImageDb;
 
   private expressSharedTestUtils: ExpressSharedTestUtils;
-  private controllersTestUtils: ControllersTestUtils;
   private dbsTestUtils: DbsTestUtils;
   private addPhotoTestUtils: AddPhotoTestUtils;
   private getPhotoTestUtils: GetPhotoTestUtils;
@@ -113,7 +108,6 @@ export class AppHttpServerExpressE2eTestUtils {
       this.photoMetadataDb,
       this.photoImageDbGcs,
     );
-    this.controllersTestUtils = new ControllersTestUtils();
     this.getPhotoTestUtils = new GetPhotoTestUtils(
       this.photoMetadataDb,
       this.photoImageDbGcs,
@@ -133,20 +127,12 @@ export class AppHttpServerExpressE2eTestUtils {
   }
 
   private setupServer(): void {
-    const useCases = new UseCasesFactory(
-      this.photoMetadataDb,
-      this.photoImageDbGcs,
-    ).create();
-    const validators = new AjvValidatorsFactory().create();
-    const parsers = new ParsersFactory().create();
-
     const silentLogger = true;
     this.logger = new LoggerWinston(silentLogger);
 
     this.expressHttpServer = new ExpressHttpServer(
-      useCases,
-      validators,
-      parsers,
+      this.photoMetadataDb,
+      this.photoImageDbGcs,
       this.logger,
       this.authHandler,
     );
@@ -194,7 +180,7 @@ export class AppHttpServerExpressE2eTestUtils {
   }
 
   addFormDataToReq(req: Test, photo: IPhoto): void {
-    this.controllersTestUtils.addFormDataToReq(req, photo);
+    this.expressSharedTestUtils.addFormDataToReq(req, photo);
   }
 
   getPhotoFromResponse(res: Response): IPhoto {

@@ -1,4 +1,4 @@
-import { IPhoto } from "../models";
+import { IPhoto } from "../../models";
 
 export interface IPhotoImageDb {
   insert: (photo: IPhoto) => Promise<void>;

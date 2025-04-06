@@ -6,8 +6,8 @@ import { ILogger } from "@logger-context";
 import {
   IPhoto,
   PhotoEntryPointId,
+  PhotoEntryPoints,
   dumbPhotoGenerator,
-  entryPoints,
 } from "@photo-context";
 import {
   AssertionsCounter,
@@ -16,22 +16,26 @@ import {
 import { IRendering, SortDirection } from "@shared/models";
 
 import { ExpressHttpServer } from "./app-server";
-import { AppHttpServerExpressE2eTestUtils } from "./app-server.express.e2e-test-utils";
+import { AppHttpServerExpressE2eTestUtils } from "./app-server.e2e-test-utils";
 
-const addPhotoPath = entryPoints.getFullPathRaw(PhotoEntryPointId.AddPhoto);
-const getMetadataPath = entryPoints.getFullPathRaw(
+const photoEntryPoints = new PhotoEntryPoints();
+
+const addPhotoPath = photoEntryPoints.getFullPathRaw(
+  PhotoEntryPointId.AddPhoto,
+);
+const getMetadataPath = photoEntryPoints.getFullPathRaw(
   PhotoEntryPointId.GetPhotoMetadata,
 );
-const getImagePath = entryPoints.getFullPathRaw(
+const getImagePath = photoEntryPoints.getFullPathRaw(
   PhotoEntryPointId.GetPhotoImage,
 );
-const replacePhotoPath = entryPoints.getFullPathRaw(
+const replacePhotoPath = photoEntryPoints.getFullPathRaw(
   PhotoEntryPointId.ReplacePhoto,
 );
-const deletePhotoPath = entryPoints.getFullPathRaw(
+const deletePhotoPath = photoEntryPoints.getFullPathRaw(
   PhotoEntryPointId.DeletePhoto,
 );
-const searchPhotoPath = entryPoints.getFullPathRaw(
+const searchPhotoPath = photoEntryPoints.getFullPathRaw(
   PhotoEntryPointId.SearchPhoto,
 );
 
@@ -119,7 +123,7 @@ describe("ExpressHttpServer", () => {
     });
 
     it("should return the metadata of the photo with matching id", async () => {
-      const url = entryPoints.getFullPathWithParams(
+      const url = photoEntryPoints.getFullPathWithParams(
         PhotoEntryPointId.GetPhotoMetadata,
         { id: expectedPhoto._id },
       );
@@ -147,7 +151,7 @@ describe("ExpressHttpServer", () => {
     });
 
     it("should return the image buffer of the photo with matching id", async () => {
-      const url = entryPoints.getFullPathWithParams(
+      const url = photoEntryPoints.getFullPathWithParams(
         PhotoEntryPointId.GetPhotoImage,
         { id: expectedPhoto._id },
       );
@@ -230,7 +234,7 @@ describe("ExpressHttpServer", () => {
       replacingPhoto = await dumbPhotoGenerator.generatePhoto({
         _id: storedPhoto._id,
       });
-      replacePhotoUrl = entryPoints
+      replacePhotoUrl = photoEntryPoints
         .get(PhotoEntryPointId.ReplacePhoto)
         .getFullPathWithParams({ id: storedPhoto._id });
     });
@@ -257,9 +261,12 @@ describe("ExpressHttpServer", () => {
 
     beforeEach(async () => {
       photoToDelete = await dumbPhotoGenerator.generatePhoto();
-      url = entryPoints.getFullPathWithParams(PhotoEntryPointId.DeletePhoto, {
-        id: photoToDelete._id,
-      });
+      url = photoEntryPoints.getFullPathWithParams(
+        PhotoEntryPointId.DeletePhoto,
+        {
+          id: photoToDelete._id,
+        },
+      );
       await testUtils.insertPhotoInDbs(photoToDelete);
     });
 

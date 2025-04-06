@@ -1,7 +1,7 @@
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
-import { IPhoto } from "../../models";
+import { IDeletePhotoUseCase, IPhoto } from "../../models";
 
-export class DeletePhoto {
+export class DeletePhotoUseCase implements IDeletePhotoUseCase {
   constructor(
     private readonly photoMetadataDb: IPhotoMetadataDb,
     private readonly photoImageDb: IPhotoImageDb,

@@ -1,7 +1,7 @@
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
-import { GetPhotoField, IGetPhotoOptions, IPhoto, Photo } from "../../models";
+import { GetPhotoField, IGetPhotoOptions, IGetPhotoUseCase, IPhoto, Photo } from "../../models";
 
-export class GetPhoto {
+export class GetPhotoUseCase implements IGetPhotoUseCase {
   constructor(
     private readonly photoMetadataDb: IPhotoMetadataDb,
     private readonly photoImageDb: IPhotoImageDb,
@@ -32,9 +32,7 @@ export class GetPhoto {
     return new Photo(id, data);
   }
 
-  private async getImage(
-    id: IPhoto["_id"],
-  ): Promise<Buffer> {
+  private async getImage(id: IPhoto["_id"]): Promise<Buffer> {
     return await this.photoImageDb.getById(id);
   }
 }

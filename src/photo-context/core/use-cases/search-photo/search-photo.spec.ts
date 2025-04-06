@@ -9,22 +9,22 @@ import {
   FakePhotoMetadataDb,
   dumbPhotoGenerator,
 } from "../../../adapters/";
-import { SearchPhoto } from "./search-photo";
+import { SearchPhotoUseCase } from "./search-photo";
 import { SearchPhotoTestUtils } from "./search-photo.test-utils";
 
-describe(`${SearchPhoto.name}`, () => {
+describe(`${SearchPhotoUseCase.name}`, () => {
   const photoMetadataDb = new FakePhotoMetadataDb();
   const photoImageDb = new FakePhotoImageDb();
   const testUtils = new SearchPhotoTestUtils(photoMetadataDb, photoImageDb);
   let assertionsCounter: IAssertionsCounter;
-  let searchPhotos: SearchPhoto;
+  let searchPhotos: SearchPhotoUseCase;
 
   beforeEach(async () => {
     const nbStorePhotos = 3;
     const storedPhotos = await dumbPhotoGenerator.generatePhotos(nbStorePhotos);
     await testUtils.initStoredPhotos(storedPhotos);
 
-    searchPhotos = new SearchPhoto(
+    searchPhotos = new SearchPhotoUseCase(
       testUtils.photoMetadataDb,
       testUtils.photoImageDb,
     );
@@ -36,7 +36,7 @@ describe(`${SearchPhoto.name}`, () => {
     await testUtils.clearStoredPhotos();
   });
 
-  describe(`${SearchPhoto.prototype.execute.name}`, () => {
+  describe(`${SearchPhotoUseCase.prototype.execute.name}`, () => {
     it("should return the photos stored in database", async () => {
       const searchResult = await searchPhotos.execute();
       testUtils.expectSearchResultToMatchStoredPhotos(searchResult);

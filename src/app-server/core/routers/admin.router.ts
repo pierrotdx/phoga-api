@@ -1,23 +1,45 @@
+import { Router } from "express";
+
 import { IAuthHandler } from "@auth-context";
 import {
   AdminPhotoRouter,
-  PhotoEntryPointId,
-  entryPoints,
+  IPhotoImageDb,
+  IPhotoMetadataDb,
 } from "@photo-context";
-import { ExpressRouter } from "@shared/express";
+import { BaseEntryPoints, BaseEntryPointsId } from "@shared/entry-points";
+import { IExpressRouter } from "@shared/express";
 
-export class AdminRouter extends ExpressRouter {
+export class AdminRouter implements IExpressRouter {
+  private readonly router = Router();
+
+  private readonly entryPoints = new BaseEntryPoints();
+
   constructor(
-    private readonly adminPhotoRouter: AdminPhotoRouter,
     private readonly authHandler: IAuthHandler,
+    private readonly metadataDb: IPhotoMetadataDb,
+    private readonly imageDb: IPhotoImageDb,
   ) {
-    super();
-    this.router.use(this.authHandler.requiresAuth);
-    this.addAdminPhotoBaseRouter();
+    this.restrictRouterAccessToAuthUsers();
+    this.addAdminPhotoRouter();
   }
 
-  private addAdminPhotoBaseRouter() {
-    const path = entryPoints.getRelativePath(PhotoEntryPointId.AdminPhotoBase);
-    this.addSubRouter(this.adminPhotoRouter, path);
+  private restrictRouterAccessToAuthUsers(): void {
+    this.router.use(this.authHandler.requiresAuth);
+  }
+
+  private addAdminPhotoRouter() {
+    const path = this.entryPoints.getRelativePath(
+      BaseEntryPointsId.AdminPhotoBase,
+    );
+    const adminPhotoRouter = new AdminPhotoRouter(
+      this.authHandler,
+      this.metadataDb,
+      this.imageDb,
+    ).get();
+    this.router.use(path, adminPhotoRouter);
+  }
+
+  get(): Router {
+    return this.router;
   }
 }

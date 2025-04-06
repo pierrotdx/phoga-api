@@ -1,11 +1,8 @@
 import { ExpressAuthHandler } from "@auth-context";
 import { ILogger } from "@logger-context";
 import {
-  AjvValidatorsFactory,
   IPhotoImageDb,
   IPhotoMetadataDb,
-  ParsersFactory,
-  UseCasesFactory,
 } from "@photo-context";
 import { Factory } from "@shared/models";
 
@@ -32,17 +29,10 @@ export class ExpressAppHttpServerFactory implements Factory<IAppServer> {
   }
 
   create(): IAppServer {
-    const useCases = new UseCasesFactory(
-      this.photoMetadataDb,
-      this.photoImageDb,
-    ).create();
-    const validators = new AjvValidatorsFactory().create();
-    const parsers = new ParsersFactory().create();
     const authHandler = this.getAuthHandler();
     return new ExpressHttpServer(
-      useCases,
-      validators,
-      parsers,
+      this.photoMetadataDb,
+      this.photoImageDb,
       this.logger,
       authHandler,
     );
