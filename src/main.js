@@ -1,7 +1,7 @@
 // prettier-ignore
 {
     require("module-alias/register");
-    import { LoggerWinston } from "@logger";
+    import { LoggerWinston } from "@logger-context";
     import { AppLauncher } from "./app-launcher";
 }
 var logger = new _logger_1.LoggerWinston();

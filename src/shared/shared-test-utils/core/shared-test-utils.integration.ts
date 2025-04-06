@@ -1,4 +1,7 @@
-import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
+import {
+  AssertionsCounter,
+  IAssertionsCounter,
+} from "@shared/assertions-counter";
 
 import { SharedTestUtils } from "./shared-test-utils";
 

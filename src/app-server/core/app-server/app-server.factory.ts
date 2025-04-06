@@ -1,0 +1,57 @@
+import { ExpressAuthHandler } from "@auth-context";
+import { ILogger } from "@logger-context";
+import {
+  AjvValidatorsFactory,
+  IPhotoImageDb,
+  IPhotoMetadataDb,
+  ParsersFactory,
+  UseCasesFactory,
+} from "@photo-context";
+import { Factory } from "@shared/models";
+
+import { IAppServer } from "../models";
+import { ExpressHttpServer } from "./app-server";
+
+export class ExpressAppHttpServerFactory implements Factory<IAppServer> {
+  private readonly logger: ILogger;
+  private readonly photoImageDb: IPhotoImageDb;
+  private readonly photoMetadataDb: IPhotoMetadataDb;
+
+  constructor({
+    logger,
+    photoImageDb,
+    photoMetadataDb,
+  }: {
+    logger: ILogger;
+    photoImageDb: IPhotoImageDb;
+    photoMetadataDb: IPhotoMetadataDb;
+  }) {
+    this.logger = logger;
+    this.photoImageDb = photoImageDb;
+    this.photoMetadataDb = photoMetadataDb;
+  }
+
+  create(): IAppServer {
+    const useCases = new UseCasesFactory(
+      this.photoMetadataDb,
+      this.photoImageDb,
+    ).create();
+    const validators = new AjvValidatorsFactory().create();
+    const parsers = new ParsersFactory().create();
+    const authHandler = this.getAuthHandler();
+    return new ExpressHttpServer(
+      useCases,
+      validators,
+      parsers,
+      this.logger,
+      authHandler,
+    );
+  }
+
+  private getAuthHandler(): ExpressAuthHandler {
+    const domain = process.env.OAUTH2_AUTHORIZATION_SERVER_DOMAIN;
+    const issuerBaseURL = `https://${domain}`;
+    const audience = process.env.OAUTH2_AUDIENCE;
+    return new ExpressAuthHandler(issuerBaseURL, audience);
+  }
+}

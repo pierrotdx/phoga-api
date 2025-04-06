@@ -1,10 +1,6 @@
-import { buffer } from "node:stream/consumers";
-import { omit } from "ramda";
+import { IAssertionsCounter } from "@shared/assertions-counter";
 
-import { IAssertionsCounter } from "@assertions-counter";
-import { IPhoto } from "@domain";
-
-import { ISharedTestUtils } from "../core";
+import { ISharedTestUtils } from "../core"; 
 
 export class SharedTestUtils implements ISharedTestUtils {
   async expectRejection({
@@ -42,34 +38,6 @@ export class SharedTestUtils implements ISharedTestUtils {
   ) {
     const areEqualBuffers = bufferA.equals(bufferB);
     expect(areEqualBuffers).toBe(true);
-    assertionsCounter.increase();
-  }
-
-  expectMatchingPhotos(
-    photo1: IPhoto,
-    photo2: IPhoto,
-    assertionsCounter: IAssertionsCounter,
-  ): void {
-    expect(photo1._id).toEqual(photo2._id);
-    assertionsCounter.increase();
-    this.expectMatchingPhotosMetadata(
-      photo1.metadata,
-      photo2.metadata,
-      assertionsCounter,
-    );
-    this.expectMatchingBuffers(
-      photo1.imageBuffer,
-      photo2.imageBuffer,
-      assertionsCounter,
-    );
-  }
-
-  expectMatchingPhotosMetadata(
-    photoMetadata1: IPhoto["metadata"],
-    photoMetadata2: IPhoto["metadata"],
-    assertionsCounter: IAssertionsCounter,
-  ): void {
-    expect(photoMetadata1).toEqual(photoMetadata2);
     assertionsCounter.increase();
   }
 }

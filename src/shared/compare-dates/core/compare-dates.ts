@@ -1,10 +1,3 @@
-import { IPhoto } from "@domain";
-
-export function comparePhotoDates(a: IPhoto, b: IPhoto) {
-  const aDate = a?.metadata?.date;
-  const bDate = b?.metadata?.date;
-  return compareDates(aDate, bDate);
-}
 
 export function compareDates(a: Date, b: Date): number {
   if (!isDate(a) || !isDate(b)) {

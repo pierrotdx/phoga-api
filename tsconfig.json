@@ -9,15 +9,9 @@
     "types": ["node", "@types/jest"],
     "baseUrl": "./",
     "paths": {
-      "@assertions-counter": ["src/shared/assertions-counter"],
-      "@dumb-photo-generator": ["src/shared/dumb-photo-generator"],
-      "@domain/*": ["src/domain/*"],
-      "@domain": ["src/domain"],
-      "@http-server": ["src/http-server"],
-      "@http-server/*": ["src/http-server/*"],
-      "@logger": ["src/logger/"],
-      "@logger/*": ["src/logger/*"],
-      "@shared": ["src/shared"],
+      "@auth-context": ["src/auth-context"],
+      "@logger-context": ["src/logger-context"],
+      "@photo-context": ["src/photo-context"],
       "@shared/*": ["src/shared/*"]
     }
   },
