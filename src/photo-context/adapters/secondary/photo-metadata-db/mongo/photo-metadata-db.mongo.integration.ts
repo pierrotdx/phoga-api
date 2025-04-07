@@ -1,8 +1,8 @@
 import {
   AssertionsCounter,
   IAssertionsCounter,
-} from "@shared/assertions-counter";
-import { IRendering, SortDirection } from "@shared/models";
+} from "#shared/assertions-counter";
+import { IRendering, SortDirection } from "#shared/models";
 
 import { dumbPhotoGenerator } from "../../../../adapters";
 import { IPhoto } from "../../../../core";

@@ -1,10 +1,15 @@
 import {
   AssertionsCounter,
   IAssertionsCounter,
-} from "@shared/assertions-counter";
+} from "#shared/assertions-counter";
 
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
-import { GetPhotoField, IGetPhotoOptions, IGetPhotoUseCase, IPhoto } from "../../models";
+import {
+  GetPhotoField,
+  IGetPhotoOptions,
+  IGetPhotoUseCase,
+  IPhoto,
+} from "../../models";
 import { PhotoTestUtils } from "../../test-utils";
 import { GetPhotoUseCase } from "./get-photo";
 
@@ -20,7 +25,10 @@ export class GetPhotoTestUtils {
     this.assertionsCounter = new AssertionsCounter();
   }
 
-  async executeTestedUseCase(id: IPhoto["_id"], options?: IGetPhotoOptions): Promise<IPhoto> {
+  async executeTestedUseCase(
+    id: IPhoto["_id"],
+    options?: IGetPhotoOptions,
+  ): Promise<IPhoto> {
     return await this.testedUseCase.execute(id, options);
   }
 

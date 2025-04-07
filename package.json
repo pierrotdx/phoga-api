@@ -21,6 +21,12 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "imports": {
+    "#auth-context": "./dist/auth-context/index.js",
+    "#logger-context": "./dist/logger-context/index.js",
+    "#photo-context": "./dist/photo-context/index.js",
+    "#shared/*": "./dist/shared/index.js"
+  },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/cors": "^2.8.17",
@@ -59,7 +65,6 @@
     "image-size": "^2.0.2",
     "json-schema": "^0.4.0",
     "lorem-ipsum": "^2.0.8",
-    "module-alias": "^2.2.3",
     "mongodb": "^6.8.0",
     "node-fetch": "^2.7.0",
     "oauth2-mock-server": "^7.1.2",
@@ -70,11 +75,5 @@
     "uuid": "^11.1.0",
     "winston": "^3.14.2",
     "winston-daily-rotate-file": "^5.0.0"
-  },
-  "_moduleAliases": {
-    "@auth-context": "dist/auth-context",
-    "@logger-context": "dist/logger-context",
-    "@photo-context": "dist/photo-context",
-    "@shared/*": "dist/shared/*"
   }
 }

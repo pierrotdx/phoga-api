@@ -1,8 +1,7 @@
+import { IExpressLogger } from "#shared/express";
 import { Handler } from "express";
 import expressWinston from "express-winston";
 import { transport } from "winston";
-
-import { IExpressLogger } from "@shared/express";
 
 export class ExpressLoggerWinston implements IExpressLogger {
   public readonly handler: Handler;

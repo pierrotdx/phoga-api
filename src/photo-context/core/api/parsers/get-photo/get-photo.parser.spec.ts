@@ -1,4 +1,4 @@
-import { UuidGenerator } from "@shared/uuid";
+import { UuidGenerator } from "#shared/uuid";
 
 import { GetPhotoParser } from "./get-photo.parser";
 

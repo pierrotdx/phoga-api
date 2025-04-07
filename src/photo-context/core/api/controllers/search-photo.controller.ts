@@ -1,7 +1,6 @@
+import { ExpressController, IExpressController } from "#shared/express";
+import { AjvValidator, IValidator } from "#shared/validators";
 import { type Request, type Response } from "express";
-
-import { ExpressController, IExpressController } from "@shared/express";
-import { AjvValidator, IValidator } from "@shared/validators";
 
 import {
   IPhoto,

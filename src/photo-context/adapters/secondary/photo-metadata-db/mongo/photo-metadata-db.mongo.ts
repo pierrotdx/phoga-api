@@ -1,8 +1,7 @@
+import { IRendering } from "#shared/models";
+import { MongoManager } from "#shared/mongo";
 import { Collection, FindCursor, Sort } from "mongodb";
 import { isEmpty, omit } from "ramda";
-
-import { IRendering } from "@shared/models";
-import { MongoManager } from "@shared/mongo";
 
 import {
   IPhoto,

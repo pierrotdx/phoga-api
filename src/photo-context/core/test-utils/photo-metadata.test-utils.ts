@@ -1,4 +1,4 @@
-import { IAssertionsCounter } from "@shared/assertions-counter";
+import { IAssertionsCounter } from "#shared/assertions-counter";
 
 import { IPhotoMetadataDb } from "../gateways";
 import { IPhoto } from "../models";

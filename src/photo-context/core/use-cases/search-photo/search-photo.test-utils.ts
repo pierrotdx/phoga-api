@@ -1,11 +1,10 @@
-import { clone } from "ramda";
-
 import {
   AssertionsCounter,
   IAssertionsCounter,
-} from "@shared/assertions-counter";
-import { compareDates } from "@shared/compare-dates";
-import { SortDirection } from "@shared/models";
+} from "#shared/assertions-counter";
+import { compareDates } from "#shared/compare-dates";
+import { SortDirection } from "#shared/models";
+import { clone } from "ramda";
 
 import { dumbPhotoGenerator } from "../../../adapters/";
 import {

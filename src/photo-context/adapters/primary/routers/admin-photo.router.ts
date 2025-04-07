@@ -1,7 +1,6 @@
+import { IAuthHandler } from "#auth-context";
+import { IEntryPoints } from "#shared/entry-points";
 import { Handler, Router } from "express";
-
-import { IAuthHandler } from "@auth-context";
-import { IEntryPoints } from "@shared/entry-points";
 
 import {
   AddPhotoController,

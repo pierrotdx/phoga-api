@@ -1,8 +1,7 @@
+import { Permission } from "#shared/models";
 import { OAuth2Server } from "oauth2-mock-server";
 import { isEmpty } from "ramda";
 import { post } from "superagent";
-
-import { Permission } from "@shared/models";
 
 import { ITokenProvider } from "../../../core";
 

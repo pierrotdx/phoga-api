@@ -16,9 +16,9 @@ module.exports = {
     "<rootDir>**/src/**/*.e2e-spec.(ts)",
   ],
   moduleNameMapper: {
-    "@auth-context": "<rootDir>/src/auth-context/",
-    "@logger-context": "<rootDir>/src/logger-context/",
-    "@photo-context": "<rootDir>/src/photo-context/",
-    "^@shared/(.*)$": "<rootDir>/src/shared/$1",
+    "#auth-context": "<rootDir>/src/auth-context/",
+    "#logger-context": "<rootDir>/src/logger-context/",
+    "#photo-context": "<rootDir>/src/photo-context/",
+    "^#shared/(.*)$": "<rootDir>/src/shared/$1",
   },
 };

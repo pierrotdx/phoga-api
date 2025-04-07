@@ -1,5 +1,5 @@
-import { TSchema } from "@shared/models";
-import { UuidSchema } from "@shared/uuid";
+import { TSchema } from "#shared/models";
+import { UuidSchema } from "#shared/uuid";
 
 export const DeletePhotoSchema: TSchema = {
   type: "object",

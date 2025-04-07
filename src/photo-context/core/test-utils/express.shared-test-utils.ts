@@ -1,9 +1,8 @@
+import { imageBufferEncoding } from "#shared/models";
+import { isUuid } from "#shared/uuid";
 import bodyParser from "body-parser";
 import express, { type Express, Router } from "express";
 import { Response, Test } from "supertest";
-
-import { imageBufferEncoding } from "@shared/models";
-import { isUuid } from "@shared/uuid";
 
 import { IPhoto, Photo } from "../models";
 

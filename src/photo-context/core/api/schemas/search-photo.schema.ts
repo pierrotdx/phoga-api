@@ -1,5 +1,5 @@
-import { TSchema } from "@shared/models";
-import { RenderingSchema } from "@shared/schemas";
+import { TSchema } from "#shared/models";
+import { RenderingSchema } from "#shared/schemas";
 
 export const SearchPhotoSchema: TSchema = {
   type: "object",

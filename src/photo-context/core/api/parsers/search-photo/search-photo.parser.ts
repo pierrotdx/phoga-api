@@ -1,6 +1,5 @@
+import { IRendering } from "#shared/models";
 import { isEmpty } from "ramda";
-
-import { IRendering } from "@shared/models";
 
 import { assertSearchPhotoOptions } from "../../../assertions";
 import { ISearchPhotoOptions, ISearchPhotoParser } from "../../../models";

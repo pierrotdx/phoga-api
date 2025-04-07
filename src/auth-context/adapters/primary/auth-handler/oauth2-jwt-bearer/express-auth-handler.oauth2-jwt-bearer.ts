@@ -1,7 +1,6 @@
+import { Permission } from "#shared/models";
 import { Handler } from "express";
 import { JWTPayload, auth, claimCheck } from "express-oauth2-jwt-bearer";
-
-import { Permission } from "@shared/models";
 
 import { IAuthHandler } from "../../../../core";
 

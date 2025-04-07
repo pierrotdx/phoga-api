@@ -1,8 +1,5 @@
 {
   "extends": ["./tsconfig.json"],
-  "compilerOptions": {
-    "types": ["node", "@types/jest"]
-  },
   "exclude": [
     "src/**/*.spec.ts",
     "src/**/*.integration.ts",

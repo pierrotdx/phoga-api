@@ -1,6 +1,6 @@
-import { IAssertionsCounter } from "@shared/assertions-counter";
+import { IAssertionsCounter } from "#shared/assertions-counter";
 
-import { ISharedTestUtils } from "../core"; 
+import { ISharedTestUtils } from "../core";
 
 export class SharedTestUtils implements ISharedTestUtils {
   async expectRejection({

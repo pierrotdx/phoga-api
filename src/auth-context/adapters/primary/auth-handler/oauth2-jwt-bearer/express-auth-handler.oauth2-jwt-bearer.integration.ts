@@ -1,7 +1,6 @@
+import { Permission } from "#shared/models";
 import express, { type Express } from "express";
 import request from "supertest";
-
-import { Permission } from "@shared/models";
 
 import { FakeTokenProvider } from "../../../secondary/token-provider";
 import { ExpressAuthHandler } from "./express-auth-handler.oauth2-jwt-bearer";

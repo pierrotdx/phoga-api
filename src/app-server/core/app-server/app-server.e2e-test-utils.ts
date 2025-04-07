@@ -1,8 +1,5 @@
-import { Response, Test } from "supertest";
-
-import { Auth0TokenProvider, ExpressAuthHandler } from "@auth-context";
-import { Storage } from "@google-cloud/storage";
-import { ILogger, LoggerWinston } from "@logger-context";
+import { Auth0TokenProvider, ExpressAuthHandler } from "#auth-context";
+import { ILogger, LoggerWinston } from "#logger-context";
 import {
   AddPhotoTestUtils,
   DeletePhotoTestUtils,
@@ -16,10 +13,13 @@ import {
   PhotoTestUtils,
   ReplacePhotoTestUtils,
   SearchPhotoTestUtils,
-} from "@photo-context";
-import { IAssertionsCounter } from "@shared/assertions-counter";
-import { SortDirection } from "@shared/models";
-import { IMongoCollections, MongoManager } from "@shared/mongo";
+} from "#photo-context";
+import { IAssertionsCounter } from "#shared/assertions-counter";
+import { SortDirection } from "#shared/models";
+import { IMongoCollections, MongoManager } from "#shared/mongo";
+import { Response, Test } from "supertest";
+
+import { Storage } from "@google-cloud/storage";
 
 import { ExpressHttpServer } from "./app-server";
 

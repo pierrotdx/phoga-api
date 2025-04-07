@@ -1,6 +1,5 @@
+import { Permission } from "#shared/models";
 import path from "path";
-
-import { Permission } from "@shared/models";
 
 import { IEntryPoint, IEntryPointOptions } from "../models";
 
