@@ -1,5 +1,5 @@
-import { IAssertionsCounter } from "@shared/assertions-counter";
-import { SortDirection } from "@shared/models";
+import { IAssertionsCounter } from "#shared/assertions-counter";
+import { SortDirection } from "#shared/models";
 
 import { assertSearchPhotoOptions } from "../../../assertions";
 import { ISearchPhotoOptions } from "../../../models";

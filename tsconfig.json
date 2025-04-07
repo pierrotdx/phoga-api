@@ -7,12 +7,12 @@
     "sourceMap": true,
     "outDir": "dist",
     "types": ["node", "@types/jest"],
-    "baseUrl": "./",
+    "baseUrl": "./src",
     "paths": {
-      "@auth-context": ["src/auth-context"],
-      "@logger-context": ["src/logger-context"],
-      "@photo-context": ["src/photo-context"],
-      "@shared/*": ["src/shared/*"]
+      "#auth-context": ["./auth-context/index.js"],
+      "#logger-context": ["./logger-context/index.js"],
+      "#photo-context": ["./photo-context/index.js"],
+      "#shared/*": ["./shared/*"]
     }
   },
   "lib": ["es2015"],

@@ -1,4 +1,4 @@
-import { UuidGenerator } from "@shared/uuid";
+import { UuidGenerator } from "#shared/uuid";
 
 import { DeletePhotoParser } from "./delete-photo.parser";
 

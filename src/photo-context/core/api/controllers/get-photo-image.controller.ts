@@ -1,8 +1,7 @@
+import { ExpressController, IExpressController } from "#shared/express";
+import { AjvValidator, IValidator } from "#shared/validators";
 import { type Request, type Response } from "express";
 import { Readable } from "node:stream";
-
-import { ExpressController, IExpressController } from "@shared/express";
-import { AjvValidator, IValidator } from "@shared/validators";
 
 import {
   GetPhotoField,

@@ -1,5 +1,5 @@
-import { LoremIpsumGenerator } from "@shared/lorem-ipsum";
-import { UuidGenerator } from "@shared/uuid";
+import { LoremIpsumGenerator } from "#shared/lorem-ipsum";
+import { UuidGenerator } from "#shared/uuid";
 
 import { DumbPhotoGenerator } from "../../core";
 

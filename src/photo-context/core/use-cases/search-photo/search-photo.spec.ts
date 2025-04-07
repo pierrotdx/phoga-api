@@ -1,4 +1,4 @@
-import { IRendering, SortDirection } from "@shared/models";
+import { IRendering, SortDirection } from "#shared/models";
 
 import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters/";
 import { SearchPhotoUseCase } from "./search-photo";

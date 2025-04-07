@@ -1,4 +1,4 @@
-import { SortDirection } from "@shared/models";
+import { SortDirection } from "#shared/models";
 
 import { isRendering } from "./is-rendering";
 

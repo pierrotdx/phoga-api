@@ -1,8 +1,8 @@
+import { assertRendering } from "#shared/assertions";
 import assert from "assert";
 import { isEmpty } from "ramda";
 
 import { ISearchPhotoOptions } from "../../models";
-import { assertRendering } from "@shared/assertions";
 
 export function isSearchPhotoOptions(
   candidate: any,

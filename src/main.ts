@@ -1,6 +1,4 @@
-import "module-alias/register";
-
-import { LoggerWinston } from "@logger-context";
+import { LoggerWinston } from "#logger-context";
 
 import { AppLauncher } from "./app-launcher";
 

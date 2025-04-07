@@ -1,9 +1,8 @@
+import { IAuthHandler } from "#auth-context";
+import { IPhotoImageDb, IPhotoMetadataDb, PhotoRouter } from "#photo-context";
+import { BaseEntryPoints, BaseEntryPointsId } from "#shared/entry-points";
+import { IExpressRouter } from "#shared/express";
 import { Router } from "express";
-
-import { IAuthHandler } from "@auth-context";
-import { IPhotoImageDb, IPhotoMetadataDb, PhotoRouter } from "@photo-context";
-import { BaseEntryPoints, BaseEntryPointsId } from "@shared/entry-points";
-import { IExpressRouter } from "@shared/express";
 
 import { AdminRouter } from "./admin.router";
 

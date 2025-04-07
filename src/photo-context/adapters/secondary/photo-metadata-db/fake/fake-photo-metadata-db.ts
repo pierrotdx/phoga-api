@@ -1,8 +1,13 @@
+import { IRendering, SortDirection } from "#shared/models";
 import { clone } from "ramda";
 
-import { IRendering, SortDirection } from "@shared/models";
-
-import { comparePhotoDates, IPhoto, IPhotoMetadata, IPhotoMetadataDb, Photo } from "../../../../";
+import {
+  IPhoto,
+  IPhotoMetadata,
+  IPhotoMetadataDb,
+  Photo,
+  comparePhotoDates,
+} from "../../../../";
 
 export class FakePhotoMetadataDb implements IPhotoMetadataDb {
   public readonly docs: Record<IPhoto["_id"], IPhotoMetadata> = {};

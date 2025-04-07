@@ -1,10 +1,7 @@
-import { ExpressAuthHandler } from "@auth-context";
-import { ILogger } from "@logger-context";
-import {
-  IPhotoImageDb,
-  IPhotoMetadataDb,
-} from "@photo-context";
-import { Factory } from "@shared/models";
+import { ExpressAuthHandler } from "#auth-context";
+import { ILogger } from "#logger-context";
+import { IPhotoImageDb, IPhotoMetadataDb } from "#photo-context";
+import { Factory } from "#shared/models";
 
 import { IAppServer } from "../models";
 import { ExpressHttpServer } from "./app-server";

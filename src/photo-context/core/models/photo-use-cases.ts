@@ -1,4 +1,4 @@
-import { IUseCase } from "@shared/models";
+import { IUseCase } from "#shared/models";
 
 import { IPhoto } from "./photo";
 

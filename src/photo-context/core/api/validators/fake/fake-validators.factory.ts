@@ -1,4 +1,4 @@
-import { Factory } from "@shared/models";
+import { Factory } from "#shared/models";
 
 import { IValidators } from "../../../models";
 import { AddPhotoFakeValidator } from "./add-photo.fake-validator";

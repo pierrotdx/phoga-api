@@ -1,10 +1,9 @@
+import { IAssertionsCounter } from "#shared/assertions-counter";
+import { ILoremIpsumGenerator } from "#shared/lorem-ipsum";
+import { IUuidGenerator } from "#shared/uuid";
 import express, { Express, NextFunction, Request, Response } from "express";
 import fetch from "node-fetch";
 import request from "supertest";
-
-import { IAssertionsCounter } from "@shared/assertions-counter";
-import { ILoremIpsumGenerator } from "@shared/lorem-ipsum";
-import { IUuidGenerator } from "@shared/uuid";
 
 import { isPhoto } from "../../../assertions";
 import { IPhoto } from "../../../models";

@@ -1,7 +1,6 @@
+import { IAssertionsCounter } from "#shared/assertions-counter";
 import { readFile } from "fs/promises";
 import { path } from "ramda";
-
-import { IAssertionsCounter } from "@shared/assertions-counter";
 
 import { isPhoto } from "../assertions";
 import { IDumbPhotoGeneratorOptions, IPhoto } from "../models";

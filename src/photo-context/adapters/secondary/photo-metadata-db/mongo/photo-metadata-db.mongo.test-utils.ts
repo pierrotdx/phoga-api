@@ -1,8 +1,7 @@
+import { IAssertionsCounter } from "#shared/assertions-counter";
+import { SortDirection } from "#shared/models";
+import { IMongoCollections, MongoManager, MongoStore } from "#shared/mongo";
 import { clone, omit } from "ramda";
-
-import { IAssertionsCounter } from "@shared/assertions-counter";
-import { SortDirection } from "@shared/models";
-import { IMongoCollections, MongoManager, MongoStore } from "@shared/mongo";
 
 import { IPhoto, PhotoTestUtils, comparePhotoDates } from "../../../../core";
 import { PhotoMetadataDbMongo } from "./photo-metadata-db.mongo";

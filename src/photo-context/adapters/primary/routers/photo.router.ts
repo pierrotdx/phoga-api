@@ -1,6 +1,5 @@
+import { IEntryPoints } from "#shared/entry-points";
 import { Router } from "express";
-
-import { IEntryPoints } from "@shared/entry-points";
 
 import {
   GetPhotoImageController,
