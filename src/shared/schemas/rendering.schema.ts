@@ -1,4 +1,4 @@
-import { SortDirection, TSchema } from "@shared/models";
+import { SortDirection, TSchema } from "#shared/models";
 
 export const RenderingSchema: TSchema = {
   type: "object",

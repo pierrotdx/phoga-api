@@ -1,7 +1,7 @@
 import {
   AssertionsCounter,
   IAssertionsCounter,
-} from "@shared/assertions-counter";
+} from "#shared/assertions-counter";
 
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
 import { IDeletePhotoUseCase, IPhoto } from "../../models";

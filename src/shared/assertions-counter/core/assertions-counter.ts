@@ -1,4 +1,4 @@
-import { Counter } from "@shared/counter";
+import { Counter } from "#shared/counter";
 
 import { IAssertionsCounter } from "./models";
 

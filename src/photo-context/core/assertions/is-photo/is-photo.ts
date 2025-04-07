@@ -1,6 +1,5 @@
+import { isUuid } from "#shared/uuid";
 import assert from "assert";
-
-import { isUuid } from "@shared/uuid";
 
 import { IPhoto } from "../../models";
 

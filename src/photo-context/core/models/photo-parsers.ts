@@ -1,4 +1,4 @@
-import { IParser, IParserAsync } from "@shared/models";
+import { IParser, IParserAsync } from "#shared/models";
 
 import { IPhoto, Photo } from "./photo";
 import { ISearchPhotoOptions } from "./search-photo-options";

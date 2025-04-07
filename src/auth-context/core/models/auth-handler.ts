@@ -1,6 +1,5 @@
+import { Permission } from "#shared/models";
 import { Handler } from "express";
-
-import { Permission } from "@shared/models";
 
 export interface IAuthHandler {
   issuerBaseURL: string;

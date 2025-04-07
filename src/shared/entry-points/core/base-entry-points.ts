@@ -1,8 +1,8 @@
-import { Permission } from "@shared/models";
+import { Permission } from "#shared/models";
 
-import { BaseEntryPointsId, IEntryPoints } from "./models";
-import { EntryPoints } from "./entry-points";
 import { EntryPoint } from "./entry-point/entry-point";
+import { EntryPoints } from "./entry-points";
+import { BaseEntryPointsId, IEntryPoints } from "./models";
 
 export class BaseEntryPoints
   extends EntryPoints<BaseEntryPointsId>

@@ -1,5 +1,5 @@
-import { AssertionsCounter } from "@shared/assertions-counter";
-import { IsoStringDateSchema } from "@shared/schemas";
+import { AssertionsCounter } from "#shared/assertions-counter";
+import { IsoStringDateSchema } from "#shared/schemas";
 
 import { AjvValidator } from "./ajv-validator";
 import { AjvTestUtils } from "./ajv-validator.test-utils";

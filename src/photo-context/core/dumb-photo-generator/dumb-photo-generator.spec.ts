@@ -1,9 +1,9 @@
 import {
   AssertionsCounter,
   IAssertionsCounter,
-} from "@shared/assertions-counter";
-import { ILoremIpsumGenerator, LoremIpsumGenerator } from "@shared/lorem-ipsum";
-import { IUuidGenerator, UuidGenerator } from "@shared/uuid";
+} from "#shared/assertions-counter";
+import { ILoremIpsumGenerator, LoremIpsumGenerator } from "#shared/lorem-ipsum";
+import { IUuidGenerator, UuidGenerator } from "#shared/uuid";
 
 import { IDumbPhotoGenerator, IDumbPhotoGeneratorOptions } from "../models";
 import { DumbPhotoGenerator } from "./dumb-photo-generator";

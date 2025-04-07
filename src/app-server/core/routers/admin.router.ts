@@ -1,13 +1,12 @@
-import { Router } from "express";
-
-import { IAuthHandler } from "@auth-context";
+import { IAuthHandler } from "#auth-context";
 import {
   AdminPhotoRouter,
   IPhotoImageDb,
   IPhotoMetadataDb,
-} from "@photo-context";
-import { BaseEntryPoints, BaseEntryPointsId } from "@shared/entry-points";
-import { IExpressRouter } from "@shared/express";
+} from "#photo-context";
+import { BaseEntryPoints, BaseEntryPointsId } from "#shared/entry-points";
+import { IExpressRouter } from "#shared/express";
+import { Router } from "express";
 
 export class AdminRouter implements IExpressRouter {
   private readonly router = Router();

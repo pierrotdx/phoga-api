@@ -1,7 +1,6 @@
+import { IRendering, SortDirection } from "#shared/models";
 import assert from "assert";
 import { isEmpty } from "ramda";
-
-import { IRendering, SortDirection } from "@shared/models";
 
 export function isRendering(candidate: any): candidate is IRendering {
   if (!candidate || isEmpty(candidate)) {

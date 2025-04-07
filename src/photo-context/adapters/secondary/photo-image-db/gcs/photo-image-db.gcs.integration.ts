@@ -1,7 +1,7 @@
 import {
   AssertionsCounter,
   IAssertionsCounter,
-} from "@shared/assertions-counter";
+} from "#shared/assertions-counter";
 
 import { dumbPhotoGenerator } from "../../../../adapters";
 import { IPhoto, IPhotoImageDb } from "../../../../core";

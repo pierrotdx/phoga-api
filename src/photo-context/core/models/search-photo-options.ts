@@ -1,4 +1,4 @@
-import { IRendering } from "@shared/models";
+import { IRendering } from "#shared/models";
 
 export interface ISearchPhotoOptions {
   excludeImages?: boolean;

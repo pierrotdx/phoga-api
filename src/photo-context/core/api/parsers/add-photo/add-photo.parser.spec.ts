@@ -1,14 +1,13 @@
-import { Request, Response } from "express";
-
 import {
   AssertionsCounter,
   IAssertionsCounter,
-} from "@shared/assertions-counter";
+} from "#shared/assertions-counter";
+import { LoremIpsumGenerator } from "#shared/lorem-ipsum";
+import { UuidGenerator } from "#shared/uuid";
+import { Request, Response } from "express";
 
 import { AddPhotoParser } from "./add-photo.parser";
 import { AddPhotoParserTestUtils } from "./add-photo.parser.test-utils";
-import { LoremIpsumGenerator } from "@shared/lorem-ipsum";
-import { UuidGenerator } from "@shared/uuid";
 
 const uuidGenerator = new UuidGenerator();
 const loremIpsum = new LoremIpsumGenerator();

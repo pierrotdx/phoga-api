@@ -1,7 +1,7 @@
 import {
   AssertionsCounter,
   IAssertionsCounter,
-} from "@shared/assertions-counter";
+} from "#shared/assertions-counter";
 
 import { SearchPhotoParser } from "./search-photo.parser";
 import { SearchPhotoParserTestUtils } from "./search-photo.parser.test-utils";

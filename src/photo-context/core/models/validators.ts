@@ -1,4 +1,4 @@
-import { IValidator } from "@shared/validators";
+import { IValidator } from "#shared/validators";
 
 export interface IValidators {
   addPhoto: IValidator;

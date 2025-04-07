@@ -1,19 +1,14 @@
-import { type Express } from "express";
-import { omit } from "ramda";
-import request from "supertest";
-
-import { ILogger } from "@logger-context";
+import { ILogger } from "#logger-context";
 import {
   IPhoto,
   PhotoEntryPointId,
   PhotoEntryPoints,
   dumbPhotoGenerator,
-} from "@photo-context";
-import {
-  AssertionsCounter,
-  IAssertionsCounter,
-} from "@shared/assertions-counter";
-import { IRendering, SortDirection } from "@shared/models";
+} from "#photo-context";
+import { IRendering, SortDirection } from "#shared/models";
+import { type Express } from "express";
+import { omit } from "ramda";
+import request from "supertest";
 
 import { ExpressHttpServer } from "./app-server";
 import { AppHttpServerExpressE2eTestUtils } from "./app-server.e2e-test-utils";

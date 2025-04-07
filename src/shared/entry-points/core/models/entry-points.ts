@@ -1,4 +1,4 @@
-import { Permission } from "@shared/models";
+import { Permission } from "#shared/models";
 
 import { IEntryPoint } from "./entry-point";
 

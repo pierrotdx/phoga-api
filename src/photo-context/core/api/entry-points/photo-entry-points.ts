@@ -4,8 +4,8 @@ import {
   EntryPoint,
   EntryPoints,
   IEntryPoints,
-} from "@shared/entry-points";
-import { Permission } from "@shared/models";
+} from "#shared/entry-points";
+import { Permission } from "#shared/models";
 
 import { PhotoEntryPointId } from "../../models";
 

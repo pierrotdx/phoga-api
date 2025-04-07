@@ -1,4 +1,4 @@
-import { IAssertionsCounter } from "@shared/assertions-counter";
+import { IAssertionsCounter } from "#shared/assertions-counter";
 
 export interface ISharedTestUtils {
   expectRejection({
