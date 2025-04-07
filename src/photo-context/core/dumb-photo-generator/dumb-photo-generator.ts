@@ -5,7 +5,7 @@ import { clone } from "ramda";
 import { ILoremIpsumGenerator } from "@shared/lorem-ipsum";
 import { IUuidGenerator } from "@shared/uuid";
 
-import { assertPhoto } from "../assertions";
+import { assertPhoto } from "../assertions/is-photo/is-photo";
 import {
   IDumbPhotoGenerator,
   IDumbPhotoGeneratorOptions,

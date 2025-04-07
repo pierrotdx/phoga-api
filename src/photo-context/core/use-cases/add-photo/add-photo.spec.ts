@@ -1,11 +1,6 @@
 import { omit } from "ramda";
 
 import {
-  AssertionsCounter,
-  IAssertionsCounter,
-} from "@shared/assertions-counter";
-
-import {
   FakePhotoImageDb,
   FakePhotoMetadataDb,
   dumbPhotoGenerator,
@@ -17,23 +12,19 @@ import { AddPhotoTestUtils } from "./add-photo.test-utils";
 describe(`${AddPhotoUseCase.name}`, () => {
   const photoMetadataDb = new FakePhotoMetadataDb();
   const photoImageDb = new FakePhotoImageDb();
-  const testUtils = new AddPhotoTestUtils(photoMetadataDb, photoImageDb);
-  let addPhoto: AddPhotoUseCase;
-  let assertionsCounter: IAssertionsCounter;
+  let testUtils: AddPhotoTestUtils;
 
   beforeEach(async () => {
-    addPhoto = new AddPhotoUseCase(
-      testUtils.photoMetadataDb,
-      testUtils.photoImageDb,
-    );
-    assertionsCounter = new AssertionsCounter();
+    testUtils = new AddPhotoTestUtils(photoMetadataDb, photoImageDb);
   });
 
   describe(`${AddPhotoUseCase.prototype.execute.name}`, () => {
     it("should upload photo image and metadata to their respective DBs", async () => {
       const photo = await dumbPhotoGenerator.generatePhoto();
-      await addPhoto.execute(photo);
-      await testUtils.expectPhotoToBeUploaded(photo, assertionsCounter);
+
+      await testUtils.executeTestedUseCase(photo);
+
+      await testUtils.expectPhotoToBeUploaded(photo);
     });
 
     it.each`
@@ -48,12 +39,7 @@ describe(`${AddPhotoUseCase.name}`, () => {
         const photoWithInvalidImage = omit(["imageBuffer"], photo) as IPhoto;
         photoWithInvalidImage.imageBuffer = imageBuffer;
 
-        await testUtils.expectThrowAndNoMetadataUpdate({
-          fnExpectedToReject: addPhoto.execute,
-          fnParams: [photoWithInvalidImage],
-          photo,
-          assertionsCounter,
-        });
+        await testUtils.executeUseCaseAndExpectToThrow(photoWithInvalidImage);
       },
     );
   });

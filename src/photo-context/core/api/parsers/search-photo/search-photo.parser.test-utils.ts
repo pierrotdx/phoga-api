@@ -1,7 +1,8 @@
 import { IAssertionsCounter } from "@shared/assertions-counter";
 import { SortDirection } from "@shared/models";
 
-import { ISearchPhotoOptions, assertSearchPhotoOptions } from "../../../";
+import { assertSearchPhotoOptions } from "../../../assertions";
+import { ISearchPhotoOptions } from "../../../models";
 
 export class SearchPhotoParserTestUtils {
   generateInputData(

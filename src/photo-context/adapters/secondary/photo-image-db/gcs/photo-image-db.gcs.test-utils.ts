@@ -3,13 +3,14 @@ import { randomInt } from "node:crypto";
 import { Storage } from "@google-cloud/storage";
 import { IAssertionsCounter } from "@shared/assertions-counter";
 
-import { DbsTestUtils, IPhoto } from "../../../../core";
+import { IPhoto, PhotoTestUtils } from "../../../../core";
 import { PhotoImageDbGcs } from "./photo-image-db.gcs";
 
 export class PhotoImageDbGcsTestUtils {
   private readonly storage: Storage;
-  private dbsTestUtils: DbsTestUtils;
   public photoImageDbGcs: PhotoImageDbGcs;
+
+  private photoTestUtils: PhotoTestUtils;
 
   constructor(
     apiEndpoint: string,
@@ -27,12 +28,8 @@ export class PhotoImageDbGcsTestUtils {
       this.storage,
       this.photoImageBucket,
     );
-    this.testUtilsFactory();
+    this.photoTestUtils = new PhotoTestUtils(undefined, this.photoImageDbGcs);
     await this.deleteAllImages();
-  }
-
-  private testUtilsFactory(): void {
-    this.dbsTestUtils = new DbsTestUtils(undefined, this.photoImageDbGcs);
   }
 
   async deleteAllImages(): Promise<void> {
@@ -67,23 +64,23 @@ export class PhotoImageDbGcsTestUtils {
   }
 
   async insertPhotoInDbs(photo: IPhoto): Promise<void> {
-    await this.dbsTestUtils.insertPhotoInDbs(photo);
+    await this.photoTestUtils.insertPhotoInDbs(photo);
   }
 
   async insertPhotosInDbs(photos: IPhoto[]): Promise<void> {
-    await this.dbsTestUtils.insertPhotosInDbs(photos);
+    await this.photoTestUtils.insertPhotosInDbs(photos);
   }
 
   async deletePhotoIfNecessary(id: IPhoto["_id"]): Promise<void> {
-    await this.dbsTestUtils.deletePhotoIfNecessary(id);
+    await this.photoTestUtils.deletePhotoIfNecessary(id);
   }
 
   async deletePhotosInDbs(ids: IPhoto["_id"][]): Promise<void> {
-    await this.dbsTestUtils.deletePhotosInDbs(ids);
+    await this.photoTestUtils.deletePhotosInDbs(ids);
   }
 
   async getPhotoImageFromDb(id: IPhoto["_id"]): Promise<IPhoto["imageBuffer"]> {
-    return this.dbsTestUtils.getPhotoImageFromDb(id);
+    return this.photoTestUtils.getPhotoImageFromDb(id);
   }
 
   pickRandomPhotoIds(photos: IPhoto[]): IPhoto["_id"][] {
@@ -114,7 +111,7 @@ export class PhotoImageDbGcsTestUtils {
   }
 
   async expectImageToBeUploaded(photo: IPhoto): Promise<void> {
-    const dbImage = await this.dbsTestUtils.getPhotoImageFromDb(photo._id);
+    const dbImage = await this.photoTestUtils.getPhotoImageFromDb(photo._id);
     expect(dbImage).toBeDefined();
     expect(dbImage).toEqual(photo.imageBuffer);
     expect.assertions(2);
@@ -162,7 +159,7 @@ export class PhotoImageDbGcsTestUtils {
   }) {
     expect(initPhoto._id).toBe(replacingPhoto._id);
     expect(dbImageBefore).toEqual(initPhoto.imageBuffer);
-    const imageFromDb = await this.dbsTestUtils.getPhotoImageFromDb(
+    const imageFromDb = await this.photoTestUtils.getPhotoImageFromDb(
       replacingPhoto._id,
     );
     expect(imageFromDb).not.toEqual(initPhoto.imageBuffer);
@@ -179,7 +176,9 @@ export class PhotoImageDbGcsTestUtils {
     dbImageBefore: Buffer;
     assertionsCounter: IAssertionsCounter;
   }) {
-    const dbImageAfter = await this.dbsTestUtils.getPhotoImageFromDb(photo._id);
+    const dbImageAfter = await this.photoTestUtils.getPhotoImageFromDb(
+      photo._id,
+    );
     expect(dbImageBefore).toBeDefined();
     expect(dbImageBefore).toEqual(photo.imageBuffer);
     expect(dbImageAfter).toBeUndefined();

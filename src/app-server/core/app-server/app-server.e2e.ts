@@ -63,7 +63,6 @@ describe("ExpressHttpServer", () => {
     },
   });
 
-  let assertionsCounter: IAssertionsCounter;
   let expressHttpServer: ExpressHttpServer;
   let app: Express;
   let logger: ILogger;
@@ -76,7 +75,6 @@ describe("ExpressHttpServer", () => {
 
     storedPhoto = await dumbPhotoGenerator.generatePhoto();
     await testUtils.insertPhotoInDbs(storedPhoto);
-    assertionsCounter = new AssertionsCounter();
   });
 
   afterEach(async () => {
@@ -106,7 +104,7 @@ describe("ExpressHttpServer", () => {
         .auth(token, { type: "bearer" });
       testUtils.addFormDataToReq(addReq, photoToAdd);
       await addReq;
-      await testUtils.expectPhotoToBeUploaded(photoToAdd, assertionsCounter);
+      await testUtils.expectPhotoToBeUploaded(photoToAdd);
     });
   });
 
@@ -129,12 +127,7 @@ describe("ExpressHttpServer", () => {
       );
       const response = await request(app).get(url);
       const responsePhoto = testUtils.getPhotoFromResponse(response);
-      testUtils.expectMatchingPhotos(
-        expectedPhoto,
-        responsePhoto,
-        assertionsCounter,
-      );
-      assertionsCounter.checkAssertions();
+      testUtils.expectMatchingPhotos(expectedPhoto, responsePhoto);
     });
   });
 
@@ -157,12 +150,7 @@ describe("ExpressHttpServer", () => {
       );
       const response = await request(app).get(url);
       const responsePhoto = testUtils.getPhotoFromResponse(response);
-      testUtils.expectMatchingPhotos(
-        expectedPhoto,
-        responsePhoto,
-        assertionsCounter,
-      );
-      assertionsCounter.checkAssertions();
+      testUtils.expectMatchingPhotos(expectedPhoto, responsePhoto);
     });
   });
 
@@ -209,7 +197,6 @@ describe("ExpressHttpServer", () => {
           testUtils.expectSearchResultMatchingSize(
             searchResult,
             queryParams.size,
-            assertionsCounter,
           );
         }
 
@@ -217,11 +204,8 @@ describe("ExpressHttpServer", () => {
           testUtils.expectSearchResultMatchingDateOrdering(
             searchResult,
             queryParams.date,
-            assertionsCounter,
           );
         }
-
-        assertionsCounter.checkAssertions();
       },
     );
   });
@@ -250,7 +234,6 @@ describe("ExpressHttpServer", () => {
       await testUtils.expectPhotoToBeReplacedInDb(
         dbPhotoBefore,
         replacingPhoto,
-        assertionsCounter,
       );
     });
   });
@@ -278,11 +261,7 @@ describe("ExpressHttpServer", () => {
     it("should delete the image and metadata from their respective DBs of the targeted photo", async () => {
       const token = await testUtils.getToken();
       await request(app).delete(url).auth(token, { type: "bearer" });
-      await testUtils.expectPhotoToBeDeletedFromDbs(
-        photoToDelete._id,
-        assertionsCounter,
-      );
-      assertionsCounter.checkAssertions();
+      await testUtils.expectPhotoToBeDeletedFromDbs(photoToDelete._id);
     });
   });
 

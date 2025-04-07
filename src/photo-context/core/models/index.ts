@@ -1,5 +1,4 @@
 export * from "./get-photo-params";
-export * from "./dbs.test-utils";
 export * from "./dumb-photo-generator";
 export * from "./photo-parsers";
 export * from "./photo";

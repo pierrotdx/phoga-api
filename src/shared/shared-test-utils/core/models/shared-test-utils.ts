@@ -15,9 +15,4 @@ export interface ISharedTestUtils {
     spy: jest.SpyInstance,
     ...params: unknown[]
   ): void;
-  expectMatchingBuffers(
-    bufferA: Buffer,
-    bufferB: Buffer,
-    assertionsCounter: IAssertionsCounter,
-  ): void;
 }

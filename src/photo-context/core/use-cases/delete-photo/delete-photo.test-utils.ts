@@ -1,61 +1,73 @@
-import { IAssertionsCounter } from "@shared/assertions-counter";
+import {
+  AssertionsCounter,
+  IAssertionsCounter,
+} from "@shared/assertions-counter";
 
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
-import { IPhoto } from "../../models";
-import { DbsTestUtils } from "../../test-utils";
+import { IDeletePhotoUseCase, IPhoto } from "../../models";
+import { PhotoTestUtils } from "../../test-utils";
+import { DeletePhotoUseCase } from "./delete-photo";
 
 export class DeletePhotoTestUtils {
-  private dbsTestUtils: DbsTestUtils;
+  private readonly testedUseCase: IDeletePhotoUseCase;
+
+  private readonly photoTestUtils: PhotoTestUtils;
+  private readonly assertionsCounter: IAssertionsCounter;
 
   constructor(
-    public readonly photoMetadataDb: IPhotoMetadataDb,
+    photoMetadataDb: IPhotoMetadataDb,
     public readonly photoImageDb: IPhotoImageDb,
   ) {
-    this.testUtilsFactory();
+    this.testedUseCase = new DeletePhotoUseCase(photoMetadataDb, photoImageDb);
+    this.photoTestUtils = new PhotoTestUtils(photoMetadataDb, photoImageDb);
+    this.assertionsCounter = new AssertionsCounter();
   }
 
-  private testUtilsFactory() {
-    this.dbsTestUtils = new DbsTestUtils(
-      this.photoMetadataDb,
-      this.photoImageDb,
-    );
+  async executeTestedUseCase(id: IPhoto["_id"]): Promise<void> {
+    await this.testedUseCase.execute(id);
+  }
+
+  async executeTestedUseCaseAndExpectToThrow(id: IPhoto["_id"]): Promise<void> {
+    try {
+      await this.executeTestedUseCase(id);
+    } catch (err) {
+      expect(err).toBeDefined();
+    } finally {
+      this.assertionsCounter.increase();
+      this.assertionsCounter.checkAssertions();
+    }
   }
 
   async insertPhotoInDbs(photo: IPhoto): Promise<void> {
-    return await this.dbsTestUtils.insertPhotoInDbs(photo);
+    return await this.photoTestUtils.insertPhotoInDbs(photo);
   }
 
   async getPhotoFromDb(id: IPhoto["_id"]): Promise<IPhoto> {
-    return await this.dbsTestUtils.getPhotoFromDb(id);
+    return await this.photoTestUtils.getPhotoFromDb(id);
   }
 
   async deletePhotoIfNecessary(id: IPhoto["_id"]): Promise<void> {
-    return await this.dbsTestUtils.deletePhotoIfNecessary(id);
+    return await this.photoTestUtils.deletePhotoIfNecessary(id);
   }
 
   async getPhotoMetadataFromDb(id: IPhoto["_id"]): Promise<IPhoto["metadata"]> {
-    return await this.dbsTestUtils.getPhotoMetadataFromDb(id);
+    return await this.photoTestUtils.getPhotoMetadataDoc(id);
   }
 
-  async expectPhotoToBeDeletedFromDbs(
-    id: IPhoto["_id"],
-    assertionsCounter: IAssertionsCounter,
-  ): Promise<void> {
+  async expectPhotoToBeDeletedFromDbs(id: IPhoto["_id"]): Promise<void> {
     const photo = await this.getPhotoFromDb(id);
     expect(photo.imageBuffer).toBeUndefined();
     expect(photo.metadata).toBeUndefined();
-    assertionsCounter.increase(2);
+    this.assertionsCounter.increase(2);
+    this.assertionsCounter.checkAssertions();
   }
 
-  async expectMetadataNotToBeDeleted(
-    photo: IPhoto,
-    assertionsCounter: IAssertionsCounter,
-  ): Promise<void> {
-    const metadataFromDb = await this.dbsTestUtils.getPhotoMetadataFromDb(
+  async expectMetadataNotToBeDeleted(photo: IPhoto): Promise<void> {
+    const metadataFromDb = await this.photoTestUtils.getPhotoMetadataDoc(
       photo._id,
     );
     expect(metadataFromDb).toBeDefined();
     expect(metadataFromDb).toEqual(photo.metadata);
-    assertionsCounter.increase(2);
+    this.assertionsCounter.increase(2);
   }
 }

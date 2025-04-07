@@ -1,10 +1,4 @@
 import {
-  AssertionsCounter,
-  IAssertionsCounter,
-} from "@shared/assertions-counter";
-import { SharedTestUtils } from "@shared/shared-test-utils";
-
-import {
   FakePhotoImageDb,
   FakePhotoMetadataDb,
   dumbPhotoGenerator,
@@ -16,51 +10,36 @@ import { DeletePhotoTestUtils } from "./delete-photo.test-utils";
 describe(`${DeletePhotoUseCase.name}`, () => {
   const photoMetadataDb = new FakePhotoMetadataDb();
   const photoImageDb = new FakePhotoImageDb();
-  const sharedTestUtils = new SharedTestUtils();
-  const testUtils = new DeletePhotoTestUtils(photoMetadataDb, photoImageDb);
-  let deletePhoto: DeletePhotoUseCase;
-  let assertionsCounter: IAssertionsCounter;
-  let photo: IPhoto;
+  let testUtils: DeletePhotoTestUtils;
 
   beforeEach(async () => {
-    photo = await dumbPhotoGenerator.generatePhoto();
-    deletePhoto = new DeletePhotoUseCase(
-      testUtils.photoMetadataDb,
-      testUtils.photoImageDb,
-    );
-    await testUtils.insertPhotoInDbs(photo);
-    assertionsCounter = new AssertionsCounter();
-  });
-
-  afterEach(async () => {
-    await testUtils.deletePhotoIfNecessary(photo._id);
+    testUtils = new DeletePhotoTestUtils(photoMetadataDb, photoImageDb);
   });
 
   describe(`${DeletePhotoUseCase.prototype.execute.name}`, () => {
+    let photo: IPhoto;
+
+    beforeEach(async () => {
+      photo = await dumbPhotoGenerator.generatePhoto();
+      await testUtils.insertPhotoInDbs(photo);
+    });
+
+    afterEach(async () => {
+      await testUtils.deletePhotoIfNecessary(photo._id);
+    });
+
     it("should delete photo's metadata and image from their respective DBs", async () => {
-      const dbPhotoBefore = await testUtils.getPhotoFromDb(photo._id);
-      await deletePhoto.execute(photo._id);
-      expect(dbPhotoBefore).toEqual(photo);
-      assertionsCounter.increase();
-      await testUtils.expectPhotoToBeDeletedFromDbs(
-        photo._id,
-        assertionsCounter,
-      );
-      assertionsCounter.checkAssertions();
+      await testUtils.executeTestedUseCase(photo._id);
+
+      await testUtils.expectPhotoToBeDeletedFromDbs(photo._id);
     });
 
     it("should not delete metadata if image deletion failed", async () => {
-      const assertionsCounter = new AssertionsCounter();
       testUtils.photoImageDb.delete = jest
         .fn()
         .mockImplementationOnce(() => Promise.reject("image-deletion failed"));
-      await sharedTestUtils.expectRejection({
-        fnExpectedToReject: deletePhoto.execute,
-        fnParams: [photo._id],
-        assertionsCounter,
-      });
-      await testUtils.expectMetadataNotToBeDeleted(photo, assertionsCounter);
-      assertionsCounter.checkAssertions();
+
+      await testUtils.executeTestedUseCaseAndExpectToThrow(photo._id);
     });
   });
 });

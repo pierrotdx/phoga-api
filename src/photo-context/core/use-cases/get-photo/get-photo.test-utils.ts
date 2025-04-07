@@ -1,45 +1,49 @@
-import { IAssertionsCounter } from "@shared/assertions-counter";
-import { SharedTestUtils } from "@shared/shared-test-utils";
+import {
+  AssertionsCounter,
+  IAssertionsCounter,
+} from "@shared/assertions-counter";
 
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
-import { GetPhotoField, IPhoto } from "../../models";
-import { DbsTestUtils } from "../../test-utils";
+import { GetPhotoField, IGetPhotoOptions, IGetPhotoUseCase, IPhoto } from "../../models";
+import { PhotoTestUtils } from "../../test-utils";
+import { GetPhotoUseCase } from "./get-photo";
 
 export class GetPhotoTestUtils {
-  private dbsTestUtils: DbsTestUtils;
-  private sharedTestUtils: SharedTestUtils;
+  private readonly testedUseCase: IGetPhotoUseCase;
 
-  constructor(
-    public readonly photoMetadataDb: IPhotoMetadataDb,
-    public readonly photoImageDb: IPhotoImageDb,
-  ) {
-    this.testUtilsFactory();
+  private readonly photoTestUtils: PhotoTestUtils;
+  private readonly assertionsCounter: IAssertionsCounter;
+
+  constructor(photoMetadataDb: IPhotoMetadataDb, photoImageDb: IPhotoImageDb) {
+    this.testedUseCase = new GetPhotoUseCase(photoMetadataDb, photoImageDb);
+    this.photoTestUtils = new PhotoTestUtils(photoMetadataDb, photoImageDb);
+    this.assertionsCounter = new AssertionsCounter();
   }
 
-  private testUtilsFactory() {
-    this.dbsTestUtils = new DbsTestUtils(
-      this.photoMetadataDb,
-      this.photoImageDb,
-    );
-    this.sharedTestUtils = new SharedTestUtils();
+  async executeTestedUseCase(id: IPhoto["_id"], options?: IGetPhotoOptions): Promise<IPhoto> {
+    return await this.testedUseCase.execute(id, options);
   }
 
   async insertPhotoInDbs(photo: IPhoto): Promise<void> {
-    return await this.dbsTestUtils.insertPhotoInDbs(photo);
+    return await this.photoTestUtils.insertPhotoInDbs(photo);
   }
 
   async deletePhotoIfNecessary(id: IPhoto["_id"]): Promise<void> {
-    return await this.dbsTestUtils.deletePhotoIfNecessary(id);
+    return await this.photoTestUtils.deletePhotoIfNecessary(id);
   }
 
-  expectMatchingPhotos(
-    expectedPhoto: IPhoto,
-    result: IPhoto,
-    assertionsCounter: IAssertionsCounter,
-  ) {
-    this.expectMatchingPhotoIds(expectedPhoto, result, assertionsCounter);
-    this.expectMatchingPhotoMetadata(expectedPhoto, result, assertionsCounter);
-    this.expectMatchingPhotoImages(expectedPhoto, result, assertionsCounter);
+  expectMatchingPhotos(expectedPhoto: IPhoto, result: IPhoto) {
+    this.expectMatchingPhotoIds(expectedPhoto, result, this.assertionsCounter);
+    this.expectMatchingPhotoMetadata(
+      expectedPhoto,
+      result,
+      this.assertionsCounter,
+    );
+    this.expectMatchingPhotoImages(
+      expectedPhoto,
+      result,
+      this.assertionsCounter,
+    );
   }
 
   private expectMatchingPhotoIds(
@@ -72,9 +76,9 @@ export class GetPhotoTestUtils {
     if (!expectedPhoto.imageBuffer) {
       return;
     }
-    this.sharedTestUtils.expectMatchingBuffers(
-      expectedPhoto.imageBuffer,
-      result.imageBuffer,
+    this.photoTestUtils.expectMatchingPhotoImages(
+      expectedPhoto,
+      result,
       assertionsCounter,
     );
   }
@@ -82,17 +86,20 @@ export class GetPhotoTestUtils {
   expectResultToHaveOnlyRequiredField(
     requiredField: GetPhotoField,
     result: IPhoto,
-    assertionsCounter: IAssertionsCounter,
   ) {
     if (requiredField === GetPhotoField.Metadata) {
       expect(result.metadata).toBeDefined();
       expect(result.imageBuffer).toBeUndefined();
-      assertionsCounter.increase(2);
+      this.assertionsCounter.increase(2);
     }
     if (requiredField === GetPhotoField.ImageBuffer) {
       expect(result.imageBuffer).toBeDefined();
       expect(result.metadata).toBeUndefined();
-      assertionsCounter.increase(2);
+      this.assertionsCounter.increase(2);
     }
+  }
+
+  checkAssertions(): void {
+    this.assertionsCounter.checkAssertions();
   }
 }

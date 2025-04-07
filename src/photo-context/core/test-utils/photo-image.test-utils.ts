@@ -1,38 +1,20 @@
-import { IAssertionsCounter } from "@shared/assertions-counter";
-import { SharedTestUtils } from "@shared/shared-test-utils";
-
-import { IPhoto, IPhotoImageDb } from "..";
+import { IPhotoImageDb } from "../gateways";
+import { IPhoto } from "../models";
 
 export class PhotoImageTestUtils {
-  constructor(
-    private readonly db: IPhotoImageDb,
-    private readonly sharedTestUtils: SharedTestUtils,
-  ) {}
+  constructor(private readonly imageDb: IPhotoImageDb) {}
 
-  async expectPhotoImageToBeInDb(
-    photo: IPhoto,
-    assertionsCounter: IAssertionsCounter,
-  ): Promise<void> {
-    const dbImage = await this.db.getById(photo._id);
-    this.sharedTestUtils.expectMatchingBuffers(
-      photo.imageBuffer,
-      dbImage,
-      assertionsCounter,
-    );
+  async getPhotoImageFromDb(id: IPhoto["_id"]): Promise<IPhoto["imageBuffer"]> {
+    return await this.imageDb.getById(id);
   }
 
-  expectMatchingPhotoImages(
-    expectedPhoto: IPhoto,
-    result: IPhoto,
-    assertionsCounter: IAssertionsCounter,
-  ): void {
-    if (!expectedPhoto.imageBuffer) {
-      return;
+  async deletePhotoImageFromDb(id: IPhoto["_id"]): Promise<void> {
+    await this.imageDb.delete(id);
+  }
+
+  async insertPhotoImageInDbs(photo: IPhoto): Promise<void> {
+    if (photo.imageBuffer) {
+      await this.imageDb.insert(photo);
     }
-    this.sharedTestUtils.expectMatchingBuffers(
-      expectedPhoto.imageBuffer,
-      result.imageBuffer,
-      assertionsCounter,
-    );
   }
 }

@@ -2,11 +2,6 @@ import { readFile } from "fs/promises";
 import { pick } from "ramda";
 
 import {
-  AssertionsCounter,
-  IAssertionsCounter,
-} from "@shared/assertions-counter";
-
-import {
   FakePhotoImageDb,
   FakePhotoMetadataDb,
   dumbPhotoGenerator,
@@ -18,31 +13,30 @@ import { GetPhotoTestUtils } from "./get-photo.test-utils";
 describe(`${GetPhotoUseCase.name}`, () => {
   const photoMetadataDb = new FakePhotoMetadataDb();
   const photoImageDb = new FakePhotoImageDb();
-  const testUtils = new GetPhotoTestUtils(photoMetadataDb, photoImageDb);
-  let getPhoto: GetPhotoUseCase;
-  let photo: IPhoto;
-  let assertionsCounter: IAssertionsCounter;
+  let testUtils: GetPhotoTestUtils;
 
   beforeEach(async () => {
-    getPhoto = new GetPhotoUseCase(
-      testUtils.photoMetadataDb,
-      testUtils.photoImageDb,
-    );
-    assertionsCounter = new AssertionsCounter();
-    const imageBuffer = await readFile("assets/test-img-1_536x354.jpg");
-    photo = await dumbPhotoGenerator.generatePhoto({ imageBuffer });
-    await testUtils.insertPhotoInDbs(photo);
-  });
-
-  afterEach(async () => {
-    await testUtils.deletePhotoIfNecessary(photo._id);
+    testUtils = new GetPhotoTestUtils(photoMetadataDb, photoImageDb);
   });
 
   describe(`${GetPhotoUseCase.prototype.execute.name}`, () => {
+    let photo: IPhoto;
+
+    beforeEach(async () => {
+      const imageBuffer = await readFile("assets/test-img-1_536x354.jpg");
+      photo = await dumbPhotoGenerator.generatePhoto({ imageBuffer });
+      await testUtils.insertPhotoInDbs(photo);
+    });
+
+    afterEach(async () => {
+      await testUtils.deletePhotoIfNecessary(photo._id);
+    });
+
     it("should return the photo with matching id", async () => {
-      const result = await getPhoto.execute(photo._id);
-      testUtils.expectMatchingPhotos(photo, result, assertionsCounter);
-      assertionsCounter.checkAssertions();
+      const result = await testUtils.executeTestedUseCase(photo._id);
+
+      testUtils.expectMatchingPhotos(photo, result);
+      testUtils.checkAssertions();
     });
 
     it.each`
@@ -54,20 +48,13 @@ describe(`${GetPhotoUseCase.name}`, () => {
       async ({ fieldValue }) => {
         const expectedPhoto = pick(["_id", fieldValue], photo);
 
-        const result = await getPhoto.execute(photo._id, {
+        const result = await testUtils.executeTestedUseCase(photo._id, {
           fields: [fieldValue],
         });
-        testUtils.expectMatchingPhotos(
-          result,
-          expectedPhoto as IPhoto,
-          assertionsCounter,
-        );
-        testUtils.expectResultToHaveOnlyRequiredField(
-          fieldValue,
-          result,
-          assertionsCounter,
-        );
-        assertionsCounter.checkAssertions();
+
+        testUtils.expectMatchingPhotos(result, expectedPhoto as IPhoto);
+        testUtils.expectResultToHaveOnlyRequiredField(fieldValue, result);
+        testUtils.checkAssertions();
       },
     );
   });

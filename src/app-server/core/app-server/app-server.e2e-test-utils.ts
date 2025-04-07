@@ -5,7 +5,6 @@ import { Storage } from "@google-cloud/storage";
 import { ILogger, LoggerWinston } from "@logger-context";
 import {
   AddPhotoTestUtils,
-  DbsTestUtils,
   DeletePhotoTestUtils,
   ExpressSharedTestUtils,
   GetPhotoTestUtils,
@@ -14,14 +13,15 @@ import {
   IPhotoMetadataDb,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
+  PhotoTestUtils,
   ReplacePhotoTestUtils,
   SearchPhotoTestUtils,
 } from "@photo-context";
 import { IAssertionsCounter } from "@shared/assertions-counter";
+import { SortDirection } from "@shared/models";
 import { IMongoCollections, MongoManager } from "@shared/mongo";
 
 import { ExpressHttpServer } from "./app-server";
-import { SortDirection } from "@shared/models";
 
 export class AppHttpServerExpressE2eTestUtils {
   private readonly mongoManager: MongoManager;
@@ -40,7 +40,7 @@ export class AppHttpServerExpressE2eTestUtils {
   private photoImageDbGcs: IPhotoImageDb;
 
   private expressSharedTestUtils: ExpressSharedTestUtils;
-  private dbsTestUtils: DbsTestUtils;
+  private photoTestUtils: PhotoTestUtils;
   private addPhotoTestUtils: AddPhotoTestUtils;
   private getPhotoTestUtils: GetPhotoTestUtils;
   private searchPhotoTestUtils: SearchPhotoTestUtils;
@@ -99,7 +99,7 @@ export class AppHttpServerExpressE2eTestUtils {
   }
 
   private testUtilsFactory() {
-    this.dbsTestUtils = new DbsTestUtils(
+    this.photoTestUtils = new PhotoTestUtils(
       this.photoMetadataDb,
       this.photoImageDbGcs,
     );
@@ -164,15 +164,15 @@ export class AppHttpServerExpressE2eTestUtils {
   }
 
   async deletePhotoIfNecessary(id: IPhoto["_id"]): Promise<void> {
-    await this.dbsTestUtils.deletePhotoIfNecessary(id);
+    await this.photoTestUtils.deletePhotoIfNecessary(id);
   }
 
   async insertPhotoInDbs(photo: IPhoto): Promise<void> {
-    await this.dbsTestUtils.insertPhotoInDbs(photo);
+    await this.photoTestUtils.insertPhotoInDbs(photo);
   }
 
   async getPhotoFromDb(id: IPhoto["_id"]): Promise<IPhoto> {
-    return await this.dbsTestUtils.getPhotoFromDb(id);
+    return await this.photoTestUtils.getPhotoFromDb(id);
   }
 
   getPayloadFromPhoto(photo: IPhoto) {
@@ -187,71 +187,43 @@ export class AppHttpServerExpressE2eTestUtils {
     return this.expressSharedTestUtils.getPhotoFromResponse(res);
   }
 
-  async expectPhotoToBeUploaded(
-    photo: IPhoto,
-    assertionsCounter: IAssertionsCounter,
-  ): Promise<void> {
-    await this.addPhotoTestUtils.expectPhotoToBeUploaded(
-      photo,
-      assertionsCounter,
-    );
+  async expectPhotoToBeUploaded(photo: IPhoto): Promise<void> {
+    await this.addPhotoTestUtils.expectPhotoToBeUploaded(photo);
   }
 
-  expectMatchingPhotos(
-    expectedPhoto: IPhoto,
-    result: IPhoto,
-    assertionsCounter: IAssertionsCounter,
-  ): void {
-    this.getPhotoTestUtils.expectMatchingPhotos(
-      expectedPhoto,
-      result,
-      assertionsCounter,
-    );
+  expectMatchingPhotos(expectedPhoto: IPhoto, result: IPhoto): void {
+    this.getPhotoTestUtils.expectMatchingPhotos(expectedPhoto, result);
+    this.getPhotoTestUtils.checkAssertions();
   }
 
-  expectSearchResultMatchingSize(
-    searchResult: any[],
-    size: number,
-    assertionsCounter: IAssertionsCounter,
-  ): void {
+  expectSearchResultMatchingSize(searchResult: any[], size: number): void {
     return this.searchPhotoTestUtils.expectSearchResultMatchingSize(
       searchResult,
       size,
-      assertionsCounter,
     );
   }
 
   expectSearchResultMatchingDateOrdering(
     searchResult: any[],
     dateOrdering: SortDirection,
-    assertionsCounter: IAssertionsCounter,
   ): void {
     return this.searchPhotoTestUtils.expectSearchResultMatchingDateOrdering(
       searchResult,
       dateOrdering,
-      assertionsCounter,
     );
   }
 
   async expectPhotoToBeReplacedInDb(
     dbPhotoBefore: IPhoto,
     expectedPhoto: IPhoto,
-    assertionsCounter: IAssertionsCounter,
   ): Promise<void> {
     await this.replacePhotoTestUtils.expectPhotoToBeReplacedInDb(
       dbPhotoBefore,
       expectedPhoto,
-      assertionsCounter,
     );
   }
 
-  async expectPhotoToBeDeletedFromDbs(
-    id: IPhoto["_id"],
-    assertionsCounter: IAssertionsCounter,
-  ): Promise<void> {
-    await this.deletePhotoTestUtils.expectPhotoToBeDeletedFromDbs(
-      id,
-      assertionsCounter,
-    );
+  async expectPhotoToBeDeletedFromDbs(id: IPhoto["_id"]): Promise<void> {
+    await this.deletePhotoTestUtils.expectPhotoToBeDeletedFromDbs(id);
   }
 }

@@ -1,13 +1,13 @@
 import formidable, { Fields } from "formidable";
 import { isEmpty } from "ramda";
 
+import { assertPhoto } from "../../../assertions";
 import {
   IAddPhotoParser,
   IPhoto,
   IPhotoMetadata,
   Photo,
-  assertPhoto,
-} from "../../../";
+} from "../../../models";
 import { ImageBufferParser } from "../image-buffer-parser";
 
 export class AddPhotoParser implements IAddPhotoParser {

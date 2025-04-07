@@ -1,5 +1,4 @@
-
-export function compareDates(a: Date, b: Date): number {
+export const compareDates = (a: Date, b: Date): number => {
   if (!isDate(a) || !isDate(b)) {
     throw new Error("both parameters should be of type Date");
   }
@@ -15,8 +14,8 @@ export function compareDates(a: Date, b: Date): number {
     return 0;
   }
   throw new Error("dates cannot be compared");
-}
+};
 
-function isDate(a: unknown) {
+const isDate = (a: unknown) => {
   return a instanceof Date;
-}
+};

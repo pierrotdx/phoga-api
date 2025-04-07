@@ -1,75 +1,54 @@
-import { IAssertionsCounter } from "@shared/assertions-counter";
-import { SharedTestUtils } from "@shared/shared-test-utils";
+import {
+  AssertionsCounter,
+  IAssertionsCounter,
+} from "@shared/assertions-counter";
 
 import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
 import { IPhoto } from "../../models";
-import {
-  PhotoImageTestUtils,
-  PhotoMetadataTestUtils,
-  PhotoSharedTestUtils,
-} from "../../test-utils";
+import { PhotoTestUtils } from "../../test-utils";
+import { AddPhotoUseCase } from "./add-photo";
 
 export class AddPhotoTestUtils {
-  private photoMetadataTestUtils: PhotoMetadataTestUtils;
-  private photoImageTestUtils: PhotoImageTestUtils;
-  private sharedTestUtils: SharedTestUtils;
-  private photoSharedTestUtils: PhotoSharedTestUtils;
+  private readonly testedUseCase: AddPhotoUseCase;
+
+  private readonly photoTestUtils: PhotoTestUtils;
+  private readonly assertionsCounter: IAssertionsCounter =
+    new AssertionsCounter();
 
   constructor(
     public readonly photoMetadataDb: IPhotoMetadataDb,
     public readonly photoImageDb: IPhotoImageDb,
   ) {
-    this.testUtilsFactory();
-  }
-
-  private testUtilsFactory(): void {
-    this.sharedTestUtils = new SharedTestUtils();
-    this.photoSharedTestUtils = new PhotoSharedTestUtils(this.sharedTestUtils);
-    this.photoMetadataTestUtils = new PhotoMetadataTestUtils(
+    this.testedUseCase = new AddPhotoUseCase(
       this.photoMetadataDb,
-      this.photoSharedTestUtils,
-    );
-    this.photoImageTestUtils = new PhotoImageTestUtils(
       this.photoImageDb,
-      this.sharedTestUtils,
+    );
+    this.photoTestUtils = new PhotoTestUtils(
+      this.photoMetadataDb,
+      this.photoImageDb,
     );
   }
 
-  async expectPhotoToBeUploaded(
-    photo: IPhoto,
-    assertionsCounter: IAssertionsCounter,
-  ): Promise<void> {
-    await this.photoMetadataTestUtils.expectPhotoMetadataToBeInDb(
-      photo,
-      assertionsCounter,
-    );
-    await this.photoImageTestUtils.expectPhotoImageToBeInDb(
-      photo,
-      assertionsCounter,
-    );
-    assertionsCounter.checkAssertions();
+  async executeTestedUseCase(photo: IPhoto): Promise<void> {
+    await this.testedUseCase.execute(photo);
   }
 
-  async expectThrowAndNoMetadataUpdate({
-    fnExpectedToReject,
-    fnParams,
-    photo,
-    assertionsCounter,
-  }: {
-    fnExpectedToReject: Function;
-    fnParams: unknown[];
-    photo: IPhoto;
-    assertionsCounter: IAssertionsCounter;
-  }) {
-    await this.sharedTestUtils.expectRejection({
-      fnExpectedToReject,
-      fnParams,
-      assertionsCounter,
-    });
-    await this.photoMetadataTestUtils.expectMetadataNotToBeInDb(
-      photo._id,
-      assertionsCounter,
+  async expectPhotoToBeUploaded(photo: IPhoto): Promise<void> {
+    await this.photoTestUtils.expectPhotoToBeUploaded(
+      photo,
+      this.assertionsCounter,
     );
-    assertionsCounter.checkAssertions();
+    this.assertionsCounter.checkAssertions();
+  }
+
+  async executeUseCaseAndExpectToThrow(photo: IPhoto): Promise<void> {
+    try {
+      await this.executeTestedUseCase(photo);
+    } catch (err) {
+      expect(err).toBeDefined();
+    } finally {
+      this.assertionsCounter.increase();
+      this.assertionsCounter.checkAssertions();
+    }
   }
 }

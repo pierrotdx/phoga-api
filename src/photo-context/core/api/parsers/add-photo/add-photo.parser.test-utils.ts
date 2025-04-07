@@ -6,7 +6,8 @@ import { IAssertionsCounter } from "@shared/assertions-counter";
 import { ILoremIpsumGenerator } from "@shared/lorem-ipsum";
 import { IUuidGenerator } from "@shared/uuid";
 
-import { IPhoto, isPhoto } from "../../../";
+import { isPhoto } from "../../../assertions";
+import { IPhoto } from "../../../models";
 
 export class AddPhotoParserTestUtils {
   private app: Express;

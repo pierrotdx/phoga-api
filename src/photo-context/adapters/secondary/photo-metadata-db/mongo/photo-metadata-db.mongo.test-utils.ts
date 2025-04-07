@@ -1,17 +1,17 @@
 import { clone, omit } from "ramda";
 
-import { comparePhotoDates, DbsTestUtils, IPhoto } from "../../../../core";
-import { PhotoMetadataDbMongo } from "./photo-metadata-db.mongo";
-import { IMongoCollections, MongoManager, MongoStore } from "@shared/mongo";
 import { IAssertionsCounter } from "@shared/assertions-counter";
 import { SortDirection } from "@shared/models";
+import { IMongoCollections, MongoManager, MongoStore } from "@shared/mongo";
 
+import { IPhoto, PhotoTestUtils, comparePhotoDates } from "../../../../core";
+import { PhotoMetadataDbMongo } from "./photo-metadata-db.mongo";
 
 type TDoc = MongoStore<IPhoto["metadata"]>;
 
 export class PhotoMetadataDbMongoTestUtils {
   private readonly mongoManager: MongoManager;
-  private dbsTestUtils: DbsTestUtils;
+  private photoTestUtils: PhotoTestUtils;
   public photoMetadataDb: PhotoMetadataDbMongo;
 
   constructor(
@@ -25,15 +25,11 @@ export class PhotoMetadataDbMongoTestUtils {
   async internalSetup(): Promise<void> {
     await this.mongoManager.open();
     this.setupDb();
-    this.testUtilsFactory();
+    this.photoTestUtils = new PhotoTestUtils(this.photoMetadataDb, undefined);
   }
 
   private setupDb(): void {
     this.photoMetadataDb = new PhotoMetadataDbMongo(this.mongoManager);
-  }
-
-  private testUtilsFactory() {
-    this.dbsTestUtils = new DbsTestUtils(this.photoMetadataDb, undefined);
   }
 
   async internalTeardown(): Promise<void> {
@@ -41,22 +37,22 @@ export class PhotoMetadataDbMongoTestUtils {
   }
 
   async getDocFromDb(_id: IPhoto["_id"]): Promise<TDoc> {
-    const metadata = await this.dbsTestUtils.getPhotoMetadataFromDb(_id);
+    const metadata = await this.photoTestUtils.getPhotoMetadataDoc(_id);
     if (metadata) {
       return { _id, ...metadata };
     }
   }
 
   async insertPhotosInDbs(photos: IPhoto[]): Promise<void> {
-    await this.dbsTestUtils.insertPhotosInDbs(photos);
+    await this.photoTestUtils.insertPhotosInDbs(photos);
   }
 
   async deletePhotoIfNecessary(photoId: IPhoto["_id"]): Promise<void> {
-    await this.dbsTestUtils.deletePhotoIfNecessary(photoId);
+    await this.photoTestUtils.deletePhotoIfNecessary(photoId);
   }
 
   async deletePhotosInDbs(photoIds: IPhoto["_id"][]): Promise<void> {
-    await this.dbsTestUtils.deletePhotosInDbs(photoIds);
+    await this.photoTestUtils.deletePhotosInDbs(photoIds);
   }
 
   expectMatchingPhotos(

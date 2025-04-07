@@ -2,11 +2,8 @@ import { isEmpty } from "ramda";
 
 import { IRendering } from "@shared/models";
 
-import {
-  ISearchPhotoOptions,
-  ISearchPhotoParser,
-  assertSearchPhotoOptions,
-} from "../../../";
+import { assertSearchPhotoOptions } from "../../../assertions";
+import { ISearchPhotoOptions, ISearchPhotoParser } from "../../../models";
 
 export class SearchPhotoParser implements ISearchPhotoParser {
   parse(data: any): ISearchPhotoOptions {
