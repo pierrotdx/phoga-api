@@ -16,7 +16,7 @@ describe("GetTag", () => {
     let tagInDb: ITag;
 
     beforeEach(async () => {
-      tagInDb = testUtils.dumbTag;
+      tagInDb = { _id: "dumb-id", name: "dumb-value" };
       await testUtils.insertTagInDb(tagInDb);
     });
 

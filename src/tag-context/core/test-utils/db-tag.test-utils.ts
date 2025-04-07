@@ -1,8 +1,7 @@
-import { ITagDb } from "../gateways";
-import { ITag } from "../models";
+import { ITag, ITagDb } from "../..";
 
-export class TagsTestUtils {
-  constructor(protected readonly tagDb: ITagDb) {}
+export class DbTagTestUtils {
+  constructor(private readonly tagDb: ITagDb) {}
 
   async insertTag(tag: ITag): Promise<void> {
     await this.tagDb.insert(tag);

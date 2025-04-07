@@ -7,13 +7,11 @@ describe("ReplaceTag", () => {
   let tagDb: ITagDb;
   let testUtils: ReplaceTagTestUtils;
 
-  let newTag: ITag;
+  const newTag: ITag = { _id: "dumb-id", name: "new tag" };
 
   beforeEach(() => {
     tagDb = new TagDbFake();
     testUtils = new ReplaceTagTestUtils(tagDb);
-
-    newTag = testUtils.newTag;
   });
 
   afterEach(async () => {
@@ -24,7 +22,7 @@ describe("ReplaceTag", () => {
     let tagToReplace: ITag;
 
     beforeEach(async () => {
-      tagToReplace = testUtils.tagToReplace;
+      tagToReplace = { _id: newTag._id, name: "tag to replace" };
       await testUtils.insertTagInDb(tagToReplace);
     });
 

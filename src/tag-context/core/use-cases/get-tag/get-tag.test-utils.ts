@@ -1,24 +1,15 @@
-import {
-  AssertionsCounter,
-  IAssertionsCounter,
-} from "#shared/assertions-counter";
-
 import { ITagDb } from "../../gateways";
 import { ITag } from "../../models";
-import { TagsTestUtils } from "../tag.test-utils";
+import { TagTestUtils } from "../../test-utils";
 import { GetTag } from "./get-tag";
 
 export class GetTagTestUtils {
   private readonly useCase: GetTag;
-  private readonly assertionsCounter: IAssertionsCounter;
-  private readonly tagsTestUtils: TagsTestUtils;
-
-  readonly dumbTag: ITag = { _id: "dumb-id", name: "dumb-value" };
+  private readonly tagsTestUtils: TagTestUtils;
 
   constructor(private readonly tagDb: ITagDb) {
     this.useCase = new GetTag(this.tagDb);
-    this.tagsTestUtils = new TagsTestUtils(this.tagDb);
-    this.assertionsCounter = new AssertionsCounter();
+    this.tagsTestUtils = new TagTestUtils(this.tagDb);
   }
 
   async executeUseCase(id: ITag["_id"]): Promise<ITag> {
@@ -34,19 +25,15 @@ export class GetTagTestUtils {
   }
 
   expectTagsToBeEqual(tag1: ITag, tag2: ITag): void {
-    expect(tag1).toEqual(tag2);
-    this.assertionsCounter.increase();
-    this.assertionsCounter.checkAssertions();
+    this.tagsTestUtils.expectTagsToBeEqual(tag1, tag2);
+    this.tagsTestUtils.checkAssertions();
   }
 
   async executeUseCaseAndExpectToThrow(id: ITag["_id"]): Promise<void> {
-    try {
-      await this.executeUseCase(id);
-    } catch (err) {
-      expect(err).toBeDefined();
-    } finally {
-      this.assertionsCounter.increase();
-      this.assertionsCounter.checkAssertions();
-    }
+    await this.tagsTestUtils.executeUseCaseAndExpectToThrow(
+      this.executeUseCase,
+      id,
+    );
+    this.tagsTestUtils.checkAssertions();
   }
 }

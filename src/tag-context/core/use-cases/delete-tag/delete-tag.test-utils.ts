@@ -1,24 +1,15 @@
-import {
-  AssertionsCounter,
-  IAssertionsCounter,
-} from "#shared/assertions-counter";
-
 import { ITagDb } from "../../gateways";
 import { ITag } from "../../models";
-import { TagsTestUtils } from "../tag.test-utils";
+import { TagTestUtils } from "../../test-utils";
 import { DeleteTag } from "./delete-tag";
 
 export class DeleteTagTestUtils {
-  readonly tagToDelete: ITag = { _id: "dumb-id", name: "the tag to delete" };
-
   private readonly useCase: DeleteTag;
-  private readonly tagsTestUtils: TagsTestUtils;
-  private readonly assertionsCounter: IAssertionsCounter;
+  private readonly tagsTestUtils: TagTestUtils;
 
   constructor(private readonly tagDb: ITagDb) {
     this.useCase = new DeleteTag(this.tagDb);
-    this.tagsTestUtils = new TagsTestUtils(this.tagDb);
-    this.assertionsCounter = new AssertionsCounter();
+    this.tagsTestUtils = new TagTestUtils(this.tagDb);
   }
 
   async insertTagInDb(tag: ITag): Promise<void> {
@@ -30,11 +21,7 @@ export class DeleteTagTestUtils {
   }
 
   async expectTagToBeDeleted(id: ITag["_id"]): Promise<void> {
-    const dbTag = await this.tagsTestUtils.getById(id);
-
-    expect(dbTag).toBeUndefined();
-    this.assertionsCounter.increase();
-
-    this.assertionsCounter.checkAssertions();
+    await this.tagsTestUtils.expectTagToBeDeleted(id);
+    this.tagsTestUtils.checkAssertions();
   }
 }

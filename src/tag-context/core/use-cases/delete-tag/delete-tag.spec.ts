@@ -7,13 +7,12 @@ describe("DeleteTag", () => {
   let tagDb: ITagDb;
   let testUtils: DeleteTagTestUtils;
 
-  let tagToDelete: ITag;
+  const tagToDelete: ITag = { _id: "dumb-id", name: "the tag to delete" };
 
   beforeEach(async () => {
     tagDb = new TagDbFake();
     testUtils = new DeleteTagTestUtils(tagDb);
 
-    tagToDelete = testUtils.tagToDelete;
     await testUtils.insertTagInDb(tagToDelete);
   });
 

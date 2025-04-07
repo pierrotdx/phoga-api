@@ -1,4 +1,4 @@
-import { ITag } from "../../../core";
+import { ITag } from "../../../../core";
 import { TagDbMongoTestUtils } from "./tag-db.mongo.test-utils";
 
 describe("TagDbMongo", () => {

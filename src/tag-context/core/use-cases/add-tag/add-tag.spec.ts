@@ -7,35 +7,33 @@ describe("AddTag", () => {
   let tagDb: ITagDb;
   let testUtils: AddTagTestUtils;
 
+  const tagToAdd: ITag = { _id: "dumb-id-1", name: "test-1" };
+
   beforeEach(() => {
     tagDb = new TagDbFake();
     testUtils = new AddTagTestUtils(tagDb);
   });
 
   afterEach(async () => {
-    await testUtils.cleanDbFromDumbTags();
+    await testUtils.removeTagFromDb(tagToAdd._id);
   });
 
   it("should add the requested tag to the database", async () => {
-    const tagToAdd = testUtils.dumbTags[0];
-
     await testUtils.executeUseCase(tagToAdd);
 
     await testUtils.expectTagToBeInDb(tagToAdd);
   });
 
   describe("when a tag with the same id is already in the db", () => {
-    let tag1: ITag;
+    let tagInDb: ITag;
 
     beforeEach(async () => {
-      tag1 = testUtils.dumbTags[0];
-      await testUtils.executeUseCase(tag1);
+      tagInDb = { _id: tagToAdd._id, name: "some value" };
+      await testUtils.executeUseCase(tagInDb);
     });
 
     it("should throw an error", async () => {
-      const tag2 = { _id: tag1._id, value: "some value" };
-
-      await testUtils.executeUseCaseAndExpectToThrow(tag2);
+      await testUtils.executeUseCaseAndExpectToThrow(tagToAdd);
     });
   });
 });

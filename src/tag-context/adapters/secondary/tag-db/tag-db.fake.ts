@@ -1,4 +1,4 @@
-import { ITag, ITagDb } from "../../core";
+import { ITag, ITagDb } from "../../../core";
 
 export class TagDbFake implements ITagDb {
   private readonly tags: ITag[] = [];
