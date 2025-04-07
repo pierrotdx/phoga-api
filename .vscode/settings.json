@@ -3,5 +3,5 @@
   "cSpell.words": ["Logform", "phoga", "randomizer", "trivago", "uuidv"],
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnPaste": false,
-  "editor.formatOnType": false
+  "editor.formatOnType": false,
 }

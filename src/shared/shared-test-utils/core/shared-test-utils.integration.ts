@@ -1,4 +1,7 @@
-import { AssertionsCounter, IAssertionsCounter } from "@assertions-counter";
+import {
+  AssertionsCounter,
+  IAssertionsCounter,
+} from "@shared/assertions-counter";
 
 import { SharedTestUtils } from "./shared-test-utils";
 
@@ -41,22 +44,6 @@ describe("SharedTestUtils", () => {
         assertionsCounter,
         dumbFn,
         params,
-      );
-      expect(assertionsCounter.get()).toBeGreaterThan(0);
-      assertionsCounter.increase();
-      assertionsCounter.checkAssertions();
-    });
-  });
-
-  describe("expectMatchingBuffers", () => {
-    it("should pass if buffers have similar content", () => {
-      const content = "some dumb text";
-      const bufferA = Buffer.from(content);
-      const bufferB = Buffer.from(content);
-      sharedTestUtils.expectMatchingBuffers(
-        bufferA,
-        bufferB,
-        assertionsCounter,
       );
       expect(assertionsCounter.get()).toBeGreaterThan(0);
       assertionsCounter.increase();
