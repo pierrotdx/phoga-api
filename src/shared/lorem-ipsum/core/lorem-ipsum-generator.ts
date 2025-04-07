@@ -1,6 +1,6 @@
 import { LoremIpsum } from "lorem-ipsum";
 
-import { ILoremIpsumGenerator } from "@shared";
+import { ILoremIpsumGenerator } from "../core";
 
 export class LoremIpsumGenerator implements ILoremIpsumGenerator {
   private readonly lorem = new LoremIpsum();

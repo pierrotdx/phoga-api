@@ -72,15 +72,9 @@
     "winston-daily-rotate-file": "^5.0.0"
   },
   "_moduleAliases": {
-    "@assertions-counter": "dist/shared/assertions-counter",
-    "@dumb-photo-generator": "dist/shared/dumb-photo-generator",
-    "@domain/*": "dist/domain/*",
-    "@domain": "dist/domain",
-    "@http-server": "dist/http-server",
-    "@http-server/*": "dist/http-server/*",
-    "@logger": "dist/logger/",
-    "@logger/*": "dist/logger/*",
-    "@shared": "dist/shared",
+    "@auth-context": "dist/auth-context",
+    "@logger-context": "dist/logger-context",
+    "@photo-context": "dist/photo-context",
     "@shared/*": "dist/shared/*"
   }
 }

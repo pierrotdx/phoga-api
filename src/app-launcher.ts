@@ -1,15 +1,17 @@
 import dotenv from "dotenv";
 
+import { Storage } from "@google-cloud/storage";
+import { ILogger } from "@logger-context";
 import {
   IPhotoImageDb,
   IPhotoMetadataDb,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
-} from "@domain";
-import { Storage } from "@google-cloud/storage";
-import { AppHttpServer, ExpressAppHttpServerFactory } from "@http-server";
-import { ILogger } from "@logger";
-import { MongoManager } from "@shared";
+} from "@photo-context";
+import { MongoManager } from "@shared/mongo";
+
+import { IAppServer } from "./app-server";
+import { ExpressAppHttpServerFactory } from "./app-server/core/app-server";
 
 dotenv.config();
 
@@ -18,7 +20,7 @@ export class AppLauncher {
 
   private photoMetadataDb: IPhotoMetadataDb;
   private photoImageDb: IPhotoImageDb;
-  private httpServer: AppHttpServer;
+  private httpServer: IAppServer;
   private readonly defaultPort: number = 3000;
 
   async start() {

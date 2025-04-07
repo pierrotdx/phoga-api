@@ -1,5 +1,4 @@
-import { isUuid } from "@shared";
-
+import { isUuid } from "./is-uuid/is-uuid";
 import { UuidGenerator } from "./uuid-generator";
 
 describe("UuidGenerator", () => {

@@ -1,5 +1,4 @@
-import { IAssertionsCounter } from "@assertions-counter";
-import { IPhoto } from "@domain";
+import { IAssertionsCounter } from "@shared/assertions-counter";
 
 export interface ISharedTestUtils {
   expectRejection({
@@ -15,15 +14,5 @@ export interface ISharedTestUtils {
     assertionsCounter: IAssertionsCounter,
     spy: jest.SpyInstance,
     ...params: unknown[]
-  ): void;
-  expectMatchingPhotos(
-    photo1: IPhoto,
-    photo2: IPhoto,
-    assertionsCounter: IAssertionsCounter,
-  ): void;
-  expectMatchingPhotosMetadata(
-    photoMetadata1: IPhoto["metadata"],
-    photoMetadata2: IPhoto["metadata"],
-    assertionsCounter: IAssertionsCounter,
   ): void;
 }
