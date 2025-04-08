@@ -12,10 +12,14 @@ export abstract class ExpressController implements IExpressController {
     const result = await this.executeUseCase(params);
     this.sendResponse(res, result);
   };
+
   readonly handler = wrapWithErrorCatcher(this.internalHandler);
+
   protected abstract getParamsFromRequest(
     req: Request,
   ): unknown | Promise<unknown>;
+
   protected abstract executeUseCase(...args: unknown[]): Promise<unknown>;
+
   protected abstract sendResponse(res: Response, ...args: unknown[]): void;
 }
