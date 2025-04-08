@@ -1,1 +1,2 @@
-export * from "./secondary/tag-db";
+export * from "./primary";
+export * from "./secondary";
