@@ -36,22 +36,22 @@ export class PhotoMetadataDbMongoTestUtils {
   }
 
   async getDocFromDb(_id: IPhoto["_id"]): Promise<TDoc> {
-    const metadata = await this.photoTestUtils.getPhotoMetadataDoc(_id);
+    const metadata = await this.photoTestUtils.getPhotoMetadataFromDb(_id);
     if (metadata) {
       return { _id, ...metadata };
     }
   }
 
   async insertPhotosInDbs(photos: IPhoto[]): Promise<void> {
-    await this.photoTestUtils.insertPhotosInDbs(photos);
+    await this.photoTestUtils.insertPhotosInDb(photos);
   }
 
   async deletePhotoIfNecessary(photoId: IPhoto["_id"]): Promise<void> {
-    await this.photoTestUtils.deletePhotoIfNecessary(photoId);
+    await this.photoTestUtils.deletePhotoFromDb(photoId);
   }
 
   async deletePhotosInDbs(photoIds: IPhoto["_id"][]): Promise<void> {
-    await this.photoTestUtils.deletePhotosInDbs(photoIds);
+    await this.photoTestUtils.deletePhotosFromDb(photoIds);
   }
 
   expectMatchingPhotos(

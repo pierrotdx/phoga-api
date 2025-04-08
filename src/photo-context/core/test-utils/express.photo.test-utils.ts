@@ -6,7 +6,7 @@ import { Response, Test } from "supertest";
 
 import { IPhoto, Photo } from "../models";
 
-export class ExpressSharedTestUtils {
+export class ExpressPhotoTestUtils {
   getPayloadFromPhoto(photo: IPhoto, encoding = imageBufferEncoding) {
     return {
       _id: photo._id,

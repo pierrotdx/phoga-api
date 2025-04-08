@@ -5,17 +5,29 @@ import {
   FakePhotoMetadataDb,
   dumbPhotoGenerator,
 } from "../../../adapters/";
-import { IPhoto } from "../../models";
+import { IPhotoImageDb, IPhotoMetadataDb, PhotoTestUtils } from "../../../core";
+import { IAddPhotoUseCase, IPhoto } from "../../models";
 import { AddPhotoUseCase } from "./add-photo";
-import { AddPhotoTestUtils } from "./add-photo.test-utils";
 
 describe(`${AddPhotoUseCase.name}`, () => {
-  const photoMetadataDb = new FakePhotoMetadataDb();
-  const photoImageDb = new FakePhotoImageDb();
-  let testUtils: AddPhotoTestUtils;
+  let photoMetadataDb: IPhotoMetadataDb;
+  let photoImageDb: IPhotoImageDb;
+
+  let testedUseCase: IAddPhotoUseCase;
+
+  let testUtils: PhotoTestUtils<void>;
 
   beforeEach(async () => {
-    testUtils = new AddPhotoTestUtils(photoMetadataDb, photoImageDb);
+    photoMetadataDb = new FakePhotoMetadataDb();
+    photoImageDb = new FakePhotoImageDb();
+
+    testedUseCase = new AddPhotoUseCase(photoMetadataDb, photoImageDb);
+
+    testUtils = new PhotoTestUtils(
+      photoMetadataDb,
+      photoImageDb,
+      testedUseCase,
+    );
   });
 
   describe(`${AddPhotoUseCase.prototype.execute.name}`, () => {
@@ -25,6 +37,8 @@ describe(`${AddPhotoUseCase.name}`, () => {
       await testUtils.executeTestedUseCase(photo);
 
       await testUtils.expectPhotoToBeUploaded(photo);
+
+      testUtils.checkAssertions();
     });
 
     it.each`
@@ -40,6 +54,8 @@ describe(`${AddPhotoUseCase.name}`, () => {
         photoWithInvalidImage.imageBuffer = imageBuffer;
 
         await testUtils.executeUseCaseAndExpectToThrow(photoWithInvalidImage);
+
+        testUtils.checkAssertions();
       },
     );
   });

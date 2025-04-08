@@ -6,17 +6,30 @@ import {
   FakePhotoMetadataDb,
   dumbPhotoGenerator,
 } from "../../../adapters/";
-import { GetPhotoField, IPhoto } from "../../models";
+import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
+import { GetPhotoField, IGetPhotoUseCase, IPhoto } from "../../models";
+import { PhotoTestUtils } from "../../test-utils";
 import { GetPhotoUseCase } from "./get-photo";
-import { GetPhotoTestUtils } from "./get-photo.test-utils";
 
 describe(`${GetPhotoUseCase.name}`, () => {
-  const photoMetadataDb = new FakePhotoMetadataDb();
-  const photoImageDb = new FakePhotoImageDb();
-  let testUtils: GetPhotoTestUtils;
+  let photoMetadataDb: IPhotoMetadataDb;
+  let photoImageDb: IPhotoImageDb;
+
+  let testedUseCase: IGetPhotoUseCase;
+
+  let testUtils: PhotoTestUtils<IPhoto>;
 
   beforeEach(async () => {
-    testUtils = new GetPhotoTestUtils(photoMetadataDb, photoImageDb);
+    photoMetadataDb = new FakePhotoMetadataDb();
+    photoImageDb = new FakePhotoImageDb();
+
+    testedUseCase = new GetPhotoUseCase(photoMetadataDb, photoImageDb);
+
+    testUtils = new PhotoTestUtils(
+      photoMetadataDb,
+      photoImageDb,
+      testedUseCase,
+    );
   });
 
   describe(`${GetPhotoUseCase.prototype.execute.name}`, () => {
@@ -25,11 +38,11 @@ describe(`${GetPhotoUseCase.name}`, () => {
     beforeEach(async () => {
       const imageBuffer = await readFile("assets/test-img-1_536x354.jpg");
       photo = await dumbPhotoGenerator.generatePhoto({ imageBuffer });
-      await testUtils.insertPhotoInDbs(photo);
+      await testUtils.insertPhotoInDb(photo);
     });
 
     afterEach(async () => {
-      await testUtils.deletePhotoIfNecessary(photo._id);
+      await testUtils.deletePhotoFromDb(photo._id);
     });
 
     it("should return the photo with matching id", async () => {
@@ -53,7 +66,7 @@ describe(`${GetPhotoUseCase.name}`, () => {
         });
 
         testUtils.expectMatchingPhotos(result, expectedPhoto as IPhoto);
-        testUtils.expectResultToHaveOnlyRequiredField(fieldValue, result);
+        testUtils.expectPhotoToHaveOnlyRequiredField(result, fieldValue);
         testUtils.checkAssertions();
       },
     );

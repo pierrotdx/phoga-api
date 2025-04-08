@@ -3,17 +3,29 @@ import {
   FakePhotoMetadataDb,
   dumbPhotoGenerator,
 } from "../../../adapters/";
-import { IPhoto } from "../../models";
+import { IPhotoImageDb, IPhotoMetadataDb, PhotoTestUtils } from "../../../core";
+import { IPhoto, IReplacePhotoUseCase } from "../../models";
 import { ReplacePhotoUseCase } from "./replace-photo";
-import { ReplacePhotoTestUtils } from "./replace-photo.test-utils";
 
 describe(`${ReplacePhotoUseCase.name}`, () => {
-  const photoMetadataDb = new FakePhotoMetadataDb();
-  const photoImageDb = new FakePhotoImageDb();
-  let testUtils: ReplacePhotoTestUtils;
+  let photoMetadataDb: IPhotoMetadataDb;
+  let photoImageDb: IPhotoImageDb;
+
+  let testedUseCase: IReplacePhotoUseCase;
+
+  let testUtils: PhotoTestUtils;
 
   beforeEach(async () => {
-    testUtils = new ReplacePhotoTestUtils(photoMetadataDb, photoImageDb);
+    photoMetadataDb = new FakePhotoMetadataDb();
+    photoImageDb = new FakePhotoImageDb();
+
+    testedUseCase = new ReplacePhotoUseCase(photoMetadataDb, photoImageDb);
+
+    testUtils = new PhotoTestUtils(
+      photoMetadataDb,
+      photoImageDb,
+      testedUseCase,
+    );
   });
 
   describe(`${ReplacePhotoUseCase.prototype.execute.name}`, () => {
@@ -29,7 +41,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
     });
 
     afterEach(async () => {
-      await testUtils.deletePhotoIfNecessary(photoToReplace._id);
+      await testUtils.deletePhotoFromDb(photoToReplace._id);
     });
 
     it("should replace photo metadata and image in their respective DBs", async () => {
@@ -38,17 +50,19 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
       await testUtils.executeTestedUseCase(newPhoto);
 
       await testUtils.expectPhotoToBeReplacedInDb(dbPhotoBefore, newPhoto);
+      testUtils.checkAssertions();
     });
 
     describe("when the photo to replace only had an image and no metadata in db", () => {
       beforeEach(async () => {
-        await testUtils.deletePhotoMetadata(photoToReplace._id);
+        await testUtils.deletePhotoMetadataFromDb(photoToReplace._id);
       });
 
       it("should add the metadata in db", async () => {
         await testUtils.executeTestedUseCase(newPhoto);
 
         await testUtils.expectPhotoMetadataToBeInDb(newPhoto);
+        testUtils.checkAssertions();
       });
     });
 
@@ -62,12 +76,14 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
       async ({ imageBuffer }) => {
         photoToReplace.imageBuffer = imageBuffer;
         await testUtils.executeUseCaseAndExpectToThrow(photoToReplace);
+        testUtils.checkAssertions();
       },
     );
 
     it("should throw an error if the image to replace is not found", async () => {
       const newPhoto = await dumbPhotoGenerator.generatePhoto();
       await testUtils.executeUseCaseAndExpectToThrow(newPhoto);
+      testUtils.checkAssertions();
     });
   });
 });

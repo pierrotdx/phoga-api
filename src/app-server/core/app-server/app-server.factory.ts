@@ -6,7 +6,7 @@ import { Factory } from "#shared/models";
 import { IAppServer } from "../models";
 import { ExpressHttpServer } from "./app-server";
 
-export class ExpressAppHttpServerFactory implements Factory<IAppServer> {
+export class AppServerFactory implements Factory<IAppServer> {
   private readonly logger: ILogger;
   private readonly photoImageDb: IPhotoImageDb;
   private readonly photoMetadataDb: IPhotoMetadataDb;

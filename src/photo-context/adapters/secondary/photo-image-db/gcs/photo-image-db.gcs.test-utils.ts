@@ -64,19 +64,19 @@ export class PhotoImageDbGcsTestUtils {
   }
 
   async insertPhotoInDbs(photo: IPhoto): Promise<void> {
-    await this.photoTestUtils.insertPhotoInDbs(photo);
+    await this.photoTestUtils.insertPhotoInDb(photo);
   }
 
   async insertPhotosInDbs(photos: IPhoto[]): Promise<void> {
-    await this.photoTestUtils.insertPhotosInDbs(photos);
+    await this.photoTestUtils.insertPhotosInDb(photos);
   }
 
   async deletePhotoIfNecessary(id: IPhoto["_id"]): Promise<void> {
-    await this.photoTestUtils.deletePhotoIfNecessary(id);
+    await this.photoTestUtils.deletePhotoFromDb(id);
   }
 
   async deletePhotosInDbs(ids: IPhoto["_id"][]): Promise<void> {
-    await this.photoTestUtils.deletePhotosInDbs(ids);
+    await this.photoTestUtils.deletePhotosFromDb(ids);
   }
 
   async getPhotoImageFromDb(id: IPhoto["_id"]): Promise<IPhoto["imageBuffer"]> {

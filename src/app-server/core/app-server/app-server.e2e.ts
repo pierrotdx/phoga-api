@@ -11,7 +11,7 @@ import { omit } from "ramda";
 import request from "supertest";
 
 import { ExpressHttpServer } from "./app-server";
-import { AppHttpServerExpressE2eTestUtils } from "./app-server.e2e-test-utils";
+import { AppServerTestUtils } from "./app-server.e2e-test-utils";
 
 const photoEntryPoints = new PhotoEntryPoints();
 
@@ -36,7 +36,7 @@ const searchPhotoPath = photoEntryPoints.getFullPathRaw(
 
 describe("ExpressHttpServer", () => {
   let storedPhoto: IPhoto;
-  const testUtils = new AppHttpServerExpressE2eTestUtils({
+  const testUtils = new AppServerTestUtils({
     mongo: {
       url: global.__MONGO_URL__,
       dbName: global.__MONGO_DB_NAME__,
@@ -73,7 +73,7 @@ describe("ExpressHttpServer", () => {
   });
 
   afterEach(async () => {
-    await testUtils.deletePhotoIfNecessary(storedPhoto._id);
+    await testUtils.deletePhotoFromDb(storedPhoto._id);
     await testUtils.internalTeardown();
   });
 
@@ -89,7 +89,7 @@ describe("ExpressHttpServer", () => {
     });
 
     afterEach(async () => {
-      await testUtils.deletePhotoIfNecessary(photoToAdd._id);
+      await testUtils.deletePhotoFromDb(photoToAdd._id);
     });
 
     it("should add the photo image and metadata to their respective DBs", async () => {
@@ -112,7 +112,7 @@ describe("ExpressHttpServer", () => {
     });
 
     afterEach(async () => {
-      await testUtils.deletePhotoIfNecessary(expectedPhoto._id);
+      await testUtils.deletePhotoFromDb(expectedPhoto._id);
     });
 
     it("should return the metadata of the photo with matching id", async () => {
@@ -135,7 +135,7 @@ describe("ExpressHttpServer", () => {
     });
 
     afterEach(async () => {
-      await testUtils.deletePhotoIfNecessary(expectedPhoto._id);
+      await testUtils.deletePhotoFromDb(expectedPhoto._id);
     });
 
     it("should return the image buffer of the photo with matching id", async () => {
@@ -154,7 +154,7 @@ describe("ExpressHttpServer", () => {
     const timeout = 10000;
 
     beforeEach(async () => {
-      await testUtils.deletePhotoIfNecessary(storedPhoto._id);
+      await testUtils.deletePhotoFromDb(storedPhoto._id);
       storedPhotos = await Promise.all([
         await dumbPhotoGenerator.generatePhoto(),
         await dumbPhotoGenerator.generatePhoto(),
@@ -170,7 +170,7 @@ describe("ExpressHttpServer", () => {
     afterEach(async () => {
       await Promise.all(
         storedPhotos.map(
-          async (photo) => await testUtils.deletePhotoIfNecessary(photo._id),
+          async (photo) => await testUtils.deletePhotoFromDb(photo._id),
         ),
       );
     }, timeout);
@@ -250,7 +250,7 @@ describe("ExpressHttpServer", () => {
 
     afterEach(async () => {
       // in case a test fails
-      await testUtils.deletePhotoIfNecessary(photoToDelete._id);
+      await testUtils.deletePhotoFromDb(photoToDelete._id);
     });
 
     it("should delete the image and metadata from their respective DBs of the targeted photo", async () => {

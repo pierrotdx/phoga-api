@@ -11,7 +11,7 @@ import dotenv from "dotenv";
 import { Storage } from "@google-cloud/storage";
 
 import { IAppServer } from "./app-server";
-import { ExpressAppHttpServerFactory } from "./app-server/core/app-server";
+import { AppServerFactory } from "./app-server/core/app-server";
 
 dotenv.config();
 
@@ -26,7 +26,7 @@ export class AppLauncher {
   async start() {
     this.logger.info("starting PHOGA application");
     await this.setupDbs();
-    this.httpServer = new ExpressAppHttpServerFactory({
+    this.httpServer = new AppServerFactory({
       logger: this.logger,
       photoMetadataDb: this.photoMetadataDb,
       photoImageDb: this.photoImageDb,

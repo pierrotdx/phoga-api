@@ -1,20 +1,14 @@
 import { Auth0TokenProvider, ExpressAuthHandler } from "#auth-context";
 import { ILogger, LoggerWinston } from "#logger-context";
 import {
-  AddPhotoTestUtils,
-  DeletePhotoTestUtils,
-  ExpressSharedTestUtils,
-  GetPhotoTestUtils,
+  ExpressPhotoTestUtils,
   IPhoto,
   IPhotoImageDb,
   IPhotoMetadataDb,
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
   PhotoTestUtils,
-  ReplacePhotoTestUtils,
-  SearchPhotoTestUtils,
 } from "#photo-context";
-import { IAssertionsCounter } from "#shared/assertions-counter";
 import { SortDirection } from "#shared/models";
 import { IMongoCollections, MongoManager } from "#shared/mongo";
 import { Response, Test } from "supertest";
@@ -23,7 +17,7 @@ import { Storage } from "@google-cloud/storage";
 
 import { ExpressHttpServer } from "./app-server";
 
-export class AppHttpServerExpressE2eTestUtils {
+export class AppServerTestUtils {
   private readonly mongoManager: MongoManager;
   private readonly storage: Storage;
   private readonly tokenProvider: Auth0TokenProvider;
@@ -39,13 +33,8 @@ export class AppHttpServerExpressE2eTestUtils {
   private photoMetadataDb: IPhotoMetadataDb;
   private photoImageDbGcs: IPhotoImageDb;
 
-  private expressSharedTestUtils: ExpressSharedTestUtils;
+  private expressSharedTestUtils: ExpressPhotoTestUtils;
   private photoTestUtils: PhotoTestUtils;
-  private addPhotoTestUtils: AddPhotoTestUtils;
-  private getPhotoTestUtils: GetPhotoTestUtils;
-  private searchPhotoTestUtils: SearchPhotoTestUtils;
-  private replacePhotoTestUtils: ReplacePhotoTestUtils;
-  private deletePhotoTestUtils: DeletePhotoTestUtils;
 
   private expressHttpServer: ExpressHttpServer;
 
@@ -103,27 +92,8 @@ export class AppHttpServerExpressE2eTestUtils {
       this.photoMetadataDb,
       this.photoImageDbGcs,
     );
-    this.expressSharedTestUtils = new ExpressSharedTestUtils();
-    this.addPhotoTestUtils = new AddPhotoTestUtils(
-      this.photoMetadataDb,
-      this.photoImageDbGcs,
-    );
-    this.getPhotoTestUtils = new GetPhotoTestUtils(
-      this.photoMetadataDb,
-      this.photoImageDbGcs,
-    );
-    this.searchPhotoTestUtils = new SearchPhotoTestUtils(
-      this.photoMetadataDb,
-      this.photoImageDbGcs,
-    );
-    this.replacePhotoTestUtils = new ReplacePhotoTestUtils(
-      this.photoMetadataDb,
-      this.photoImageDbGcs,
-    );
-    this.deletePhotoTestUtils = new DeletePhotoTestUtils(
-      this.photoMetadataDb,
-      this.photoImageDbGcs,
-    );
+
+    this.expressSharedTestUtils = new ExpressPhotoTestUtils();
   }
 
   private setupServer(): void {
@@ -163,12 +133,12 @@ export class AppHttpServerExpressE2eTestUtils {
     });
   }
 
-  async deletePhotoIfNecessary(id: IPhoto["_id"]): Promise<void> {
-    await this.photoTestUtils.deletePhotoIfNecessary(id);
+  async deletePhotoFromDb(id: IPhoto["_id"]): Promise<void> {
+    await this.photoTestUtils.deletePhotoFromDb(id);
   }
 
   async insertPhotoInDbs(photo: IPhoto): Promise<void> {
-    await this.photoTestUtils.insertPhotoInDbs(photo);
+    await this.photoTestUtils.insertPhotoInDb(photo);
   }
 
   async getPhotoFromDb(id: IPhoto["_id"]): Promise<IPhoto> {
@@ -188,26 +158,23 @@ export class AppHttpServerExpressE2eTestUtils {
   }
 
   async expectPhotoToBeUploaded(photo: IPhoto): Promise<void> {
-    await this.addPhotoTestUtils.expectPhotoToBeUploaded(photo);
+    await this.photoTestUtils.expectPhotoToBeUploaded(photo);
   }
 
   expectMatchingPhotos(expectedPhoto: IPhoto, result: IPhoto): void {
-    this.getPhotoTestUtils.expectMatchingPhotos(expectedPhoto, result);
-    this.getPhotoTestUtils.checkAssertions();
+    this.photoTestUtils.expectMatchingPhotos(expectedPhoto, result);
+    this.photoTestUtils.checkAssertions();
   }
 
   expectSearchResultMatchingSize(searchResult: any[], size: number): void {
-    return this.searchPhotoTestUtils.expectSearchResultMatchingSize(
-      searchResult,
-      size,
-    );
+    return this.photoTestUtils.expectPhotosArraySizeToBe(searchResult, size);
   }
 
   expectSearchResultMatchingDateOrdering(
     searchResult: any[],
     dateOrdering: SortDirection,
   ): void {
-    return this.searchPhotoTestUtils.expectSearchResultMatchingDateOrdering(
+    return this.photoTestUtils.expectPhotosOrderToBe(
       searchResult,
       dateOrdering,
     );
@@ -217,13 +184,13 @@ export class AppHttpServerExpressE2eTestUtils {
     dbPhotoBefore: IPhoto,
     expectedPhoto: IPhoto,
   ): Promise<void> {
-    await this.replacePhotoTestUtils.expectPhotoToBeReplacedInDb(
+    await this.photoTestUtils.expectPhotoToBeReplacedInDb(
       dbPhotoBefore,
       expectedPhoto,
     );
   }
 
   async expectPhotoToBeDeletedFromDbs(id: IPhoto["_id"]): Promise<void> {
-    await this.deletePhotoTestUtils.expectPhotoToBeDeletedFromDbs(id);
+    await this.photoTestUtils.expectPhotoToBeDeletedFromDbs(id);
   }
 }
