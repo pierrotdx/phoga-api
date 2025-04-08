@@ -1,14 +1,14 @@
 import { ITagDb } from "../../gateways";
-import { ITag } from "../../models";
+import { IReplaceTagUseCase, ITag } from "../../models";
 import { TagTestUtils } from "../../test-utils";
-import { ReplaceTag } from "./replace-tag";
+import { ReplaceTagUseCase } from "./replace-tag";
 
 export class ReplaceTagTestUtils {
-  private readonly useCase: ReplaceTag;
+  private readonly useCase: IReplaceTagUseCase;
   private readonly tagsTestUtils: TagTestUtils;
 
   constructor(private readonly tagDb: ITagDb) {
-    this.useCase = new ReplaceTag(this.tagDb);
+    this.useCase = new ReplaceTagUseCase(this.tagDb);
     this.tagsTestUtils = new TagTestUtils(this.tagDb);
   }
 

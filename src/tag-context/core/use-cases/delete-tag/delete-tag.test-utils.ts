@@ -1,14 +1,14 @@
 import { ITagDb } from "../../gateways";
-import { ITag } from "../../models";
+import { IDeleteTagUseCase, ITag } from "../../models";
 import { TagTestUtils } from "../../test-utils";
-import { DeleteTag } from "./delete-tag";
+import { DeleteTagUseCase } from "./delete-tag";
 
 export class DeleteTagTestUtils {
-  private readonly useCase: DeleteTag;
+  private readonly useCase: IDeleteTagUseCase;
   private readonly tagsTestUtils: TagTestUtils;
 
   constructor(private readonly tagDb: ITagDb) {
-    this.useCase = new DeleteTag(this.tagDb);
+    this.useCase = new DeleteTagUseCase(this.tagDb);
     this.tagsTestUtils = new TagTestUtils(this.tagDb);
   }
 

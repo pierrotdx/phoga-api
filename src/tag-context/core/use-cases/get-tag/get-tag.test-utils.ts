@@ -1,14 +1,14 @@
 import { ITagDb } from "../../gateways";
-import { ITag } from "../../models";
+import { IGetTagUseCase, ITag } from "../../models";
 import { TagTestUtils } from "../../test-utils";
-import { GetTag } from "./get-tag";
+import { GetTagUseCase } from "./get-tag";
 
 export class GetTagTestUtils {
-  private readonly useCase: GetTag;
+  private readonly useCase: IGetTagUseCase;
   private readonly tagsTestUtils: TagTestUtils;
 
   constructor(private readonly tagDb: ITagDb) {
-    this.useCase = new GetTag(this.tagDb);
+    this.useCase = new GetTagUseCase(this.tagDb);
     this.tagsTestUtils = new TagTestUtils(this.tagDb);
   }
 

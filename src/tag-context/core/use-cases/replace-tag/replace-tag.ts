@@ -1,7 +1,7 @@
 import { ITagDb } from "../../gateways";
-import { ITag } from "../../models";
+import { IReplaceTagUseCase, ITag } from "../../models";
 
-export class ReplaceTag {
+export class ReplaceTagUseCase implements IReplaceTagUseCase {
   constructor(private readonly tagDb: ITagDb) {}
 
   async execute(tag: ITag): Promise<void> {

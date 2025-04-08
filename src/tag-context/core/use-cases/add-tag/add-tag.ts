@@ -1,7 +1,7 @@
 import { ITagDb } from "../../gateways";
-import { ITag } from "../../models";
+import { IAddTagUseCase, ITag } from "../../models";
 
-export class AddTag {
+export class AddTagUseCase implements IAddTagUseCase {
   constructor(private readonly tagDb: ITagDb) {}
 
   async execute(tag: ITag): Promise<void> {
