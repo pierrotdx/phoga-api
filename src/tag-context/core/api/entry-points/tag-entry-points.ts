@@ -6,7 +6,8 @@ import {
   IEntryPoints,
 } from "#shared/entry-points";
 import { Permission } from "#shared/models";
-import { TagEntryPointId } from "tag-context/core/models";
+
+import { TagEntryPointId } from "../../";
 
 export class TagEntryPoints
   extends EntryPoints<TagEntryPointId>
