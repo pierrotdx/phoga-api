@@ -21,7 +21,10 @@ export class TagEntryPoints
 
   private readonly getTag = new EntryPoint("/:id", {
     parent: this.tagBase,
-    permissions: [Permission.TagRead],
+  });
+
+  private readonly searchTag = new EntryPoint("/search", {
+    parent: this.tagBase,
   });
 
   private readonly adminTagBase = this.baseEntryPoints.get(
@@ -48,5 +51,6 @@ export class TagEntryPoints
     [TagEntryPointId.AddTag]: this.addTag,
     [TagEntryPointId.ReplaceTag]: this.replaceTag,
     [TagEntryPointId.DeleteTag]: this.deleteTag,
+    [TagEntryPointId.SearchTag]: this.searchTag,
   };
 }

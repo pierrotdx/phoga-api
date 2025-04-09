@@ -1,7 +1,7 @@
 import { ILogger } from "#logger-context";
 import { IPhoto, PhotoEntryPointId, dumbPhotoGenerator } from "#photo-context";
 import { HttpErrorCode, IRendering, SortDirection } from "#shared/models";
-import { ITag, TagEntryPointId } from "#tag-context";
+import { ISearchTagFilter, ITag, TagEntryPointId } from "#tag-context";
 import { type Express } from "express";
 import request from "supertest";
 
@@ -18,6 +18,7 @@ import {
   replacePhotoPath,
   replaceTagPath,
   searchPhotoPath,
+  searchTagPath,
   tagEntryPoints,
 } from "./test-utils";
 import { AppServerTestUtils } from "./test-utils/app-server.e2e-test-utils";
@@ -209,6 +210,44 @@ describe("ExpressAppServer", () => {
           expect(response.statusCode).toBe(200);
           testUtils.expectTagsToBeEqual(tagToGet, tagResponse);
           expect.assertions(2);
+        });
+      });
+    });
+
+    describe(`GET ${searchTagPath}`, () => {
+      const dbTags: ITag[] = [
+        { _id: "tag1", name: "hello" },
+        { _id: "tag2", name: "bye" },
+      ];
+
+      beforeEach(async () => {
+        await testUtils.insertTagsInDb(dbTags);
+      });
+
+      afterEach(async () => {
+        await testUtils.deleteTagsFromDb(dbTags);
+      });
+
+      describe("when there is no filter", () => {
+        it("should return all the tags in db", async () => {
+          const response = await request(app).get(searchTagPath);
+
+          const expectedTags = dbTags;
+          const responseTags = response.body;
+          testUtils.expectEqualTagArrays(responseTags, expectedTags);
+        });
+      });
+
+      describe("when there is a filter", () => {
+        const filter: ISearchTagFilter = { name: "hello" };
+
+        it("should return the tags matching the filter", async () => {
+          const expectedTags: ITag[] = [dbTags[0]];
+
+          const response = await request(app).get(searchTagPath).query(filter);
+
+          const responseTags: ITag[] = response.body;
+          testUtils.expectEqualTagArrays(responseTags, expectedTags);
         });
       });
     });

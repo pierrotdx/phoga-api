@@ -3,6 +3,7 @@ import {
   IAssertionsCounter,
 } from "#shared/assertions-counter";
 import { IUseCase } from "#shared/models";
+import { equals } from "ramda";
 
 import { ITagDb } from "../gateways";
 import { ITag } from "../models";
@@ -50,5 +51,16 @@ export class TagTestUtils extends DbTagTestUtils {
 
   checkAssertions(): void {
     this.assertionsCounter.checkAssertions();
+  }
+
+  expectEqualTagArrays(tags1: ITag[], tags2: ITag[]): void {
+    expect(tags1.length).toBe(tags2.length);
+    this.assertionsCounter.increase();
+
+    tags1.forEach((tag1) => {
+      const isInTags2 = tags2.some((tag2) => equals(tag1, tag2));
+      expect(isInTags2).toBe(true);
+      this.assertionsCounter.increase();
+    });
   }
 }

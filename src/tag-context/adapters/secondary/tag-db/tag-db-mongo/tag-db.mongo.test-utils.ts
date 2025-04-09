@@ -3,8 +3,9 @@ import {
   IAssertionsCounter,
 } from "#shared/assertions-counter";
 import { MongoDoc } from "#shared/mongo";
+import { equals } from "ramda";
 
-import { ITag } from "../../../../core";
+import { ISearchTagFilter, ITag } from "../../../../core";
 import { MongoTestUtils } from "./mongo.test-utils";
 import { TagDbMongo } from "./tag-db.mongo";
 
@@ -36,8 +37,22 @@ export class TagDbMongoTestUtils {
     await this.mongoTestUtils.deleteDoc(id);
   }
 
+  async deleteDocs(docIds: MongoDoc["_id"][]): Promise<void> {
+    const deleteAllDocs$ = docIds.map(async (id) => {
+      await this.deleteDoc(id);
+    });
+    await Promise.all(deleteAllDocs$);
+  }
+
   async insertDoc(doc: MongoDoc): Promise<void> {
     await this.mongoTestUtils.insertDoc(doc);
+  }
+
+  async insertDocs(docs: MongoDoc[]): Promise<void> {
+    const insertAllDocs$ = docs.map(async (doc) => {
+      await this.insertDoc(doc);
+    });
+    await Promise.all(insertAllDocs$);
   }
 
   async insert(tag: ITag): Promise<void> {
@@ -54,6 +69,10 @@ export class TagDbMongoTestUtils {
 
   async delete(id: ITag["_id"]): Promise<void> {
     await this.testedClass.delete(id);
+  }
+
+  async find(filter?: ISearchTagFilter): Promise<ITag[]> {
+    return await this.testedClass.find(filter);
   }
 
   async expectTagToBeInDb(expectedTag: ITag): Promise<void> {
@@ -98,6 +117,19 @@ export class TagDbMongoTestUtils {
 
     expect(dbTag).toBeNull();
     this.assertionsCounter.increase();
+
+    this.assertionsCounter.checkAssertions();
+  }
+
+  expectEqualTagArrays(tags1: ITag[], tags2: ITag[]): void {
+    expect(tags1.length).toBe(tags2.length);
+    this.assertionsCounter.increase();
+
+    tags1.forEach((tag1) => {
+      const isInTags2 = tags2.some((tag2) => equals(tag1, tag2));
+      expect(isInTags2).toBe(true);
+      this.assertionsCounter.increase();
+    });
 
     this.assertionsCounter.checkAssertions();
   }

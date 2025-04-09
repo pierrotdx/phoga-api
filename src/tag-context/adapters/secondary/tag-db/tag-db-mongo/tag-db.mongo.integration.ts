@@ -1,4 +1,4 @@
-import { ITag } from "../../../../core";
+import { ISearchTagFilter, ITag } from "../../../../core";
 import { TagDbMongoTestUtils } from "./tag-db.mongo.test-utils";
 
 describe("TagDbMongo", () => {
@@ -117,6 +117,64 @@ describe("TagDbMongo", () => {
       await testUtils.delete(tagToDelete._id);
 
       await testUtils.expectTagNotToBeInDb(tagToDelete._id);
+    });
+  });
+
+  describe("find", () => {
+    const dbTags: ITag[] = [
+      { _id: "tag-1", name: "aaa" },
+      { _id: "tag-2", name: "aab" },
+      { _id: "tag-3", name: "ccc" },
+    ];
+
+    beforeEach(async () => {
+      await testUtils.insertDocs(dbTags);
+    });
+
+    afterEach(async () => {
+      const tagIds = dbTags.map((t) => t._id);
+      await testUtils.deleteDocs(tagIds);
+    });
+
+    describe("when there is no filter", () => {
+      it("should return the all the tags in the db", async () => {
+        const result = await testUtils.find();
+
+        const expectedResult = dbTags;
+        testUtils.expectEqualTagArrays(expectedResult, result);
+      });
+    });
+
+    describe("when there is a filter", () => {
+      let filter: ISearchTagFilter;
+
+      describe("when there is no match", () => {
+        beforeEach(() => {
+          filter = { name: "zzz" };
+        });
+
+        it("should return an empty array", async () => {
+          const result = await testUtils.find(filter);
+
+          const expectedResult = [];
+          testUtils.expectEqualTagArrays(expectedResult, result);
+        });
+      });
+
+      describe("- `filter.name`", () => {
+        let expectedResult: ITag[];
+
+        beforeEach(() => {
+          filter = { name: "aa" };
+          expectedResult = [dbTags[0], dbTags[1]];
+        });
+
+        it("should return tags whose name starts with the requested name filter", async () => {
+          const result = await testUtils.find(filter);
+
+          testUtils.expectEqualTagArrays(result, expectedResult);
+        });
+      });
     });
   });
 });

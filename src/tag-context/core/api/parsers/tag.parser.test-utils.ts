@@ -7,8 +7,8 @@ import bodyParser from "body-parser";
 import express, { NextFunction, Request, Response } from "express";
 import { Test, Response as TestResponse } from "supertest";
 
-export abstract class TagParserTestUtils<T extends IParser<unknown>> {
-  protected abstract readonly testedParser: T;
+export abstract class TagParserTestUtils<TParser extends IParser<unknown>> {
+  protected abstract readonly testedParser: TParser;
 
   protected readonly app = express();
   protected abstract setupRouter(): void;

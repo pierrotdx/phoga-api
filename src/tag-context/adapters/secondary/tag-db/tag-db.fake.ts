@@ -1,4 +1,6 @@
-import { ITag, ITagDb } from "../../../core";
+import { clone } from "ramda";
+
+import { ISearchTagFilter, ITag, ITagDb } from "../../../core";
 
 export class TagDbFake implements ITagDb {
   private readonly tags: ITag[] = [];
@@ -28,5 +30,16 @@ export class TagDbFake implements ITagDb {
       return await this.insert(tag);
     }
     this.tags[tagIndex] = tag;
+  }
+
+  async find(filter?: ISearchTagFilter): Promise<ITag[]> {
+    const filteredTags = filter?.name
+      ? this.filterName(filter.name)
+      : this.tags;
+    return clone(filteredTags);
+  }
+
+  private filterName(name: string): ITag[] {
+    return this.tags.filter((t) => t.name.startsWith(name));
   }
 }

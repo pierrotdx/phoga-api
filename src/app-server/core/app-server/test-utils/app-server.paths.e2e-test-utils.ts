@@ -44,3 +44,7 @@ export const replaceTagPath = tagEntryPoints.getFullPathRaw(
 );
 
 export const getTagPath = tagEntryPoints.getFullPathRaw(TagEntryPointId.GetTag);
+
+export const searchTagPath = tagEntryPoints.getFullPathRaw(
+  TagEntryPointId.SearchTag,
+);

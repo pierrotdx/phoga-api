@@ -119,6 +119,11 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
     await this.tagTestUtils.expectTagToBeDeleted(id);
   }
 
+  expectEqualTagArrays(tags1: ITag[], tags2: ITag[]) {
+    this.tagTestUtils.expectEqualTagArrays(tags1, tags2);
+    this.tagTestUtils.checkAssertions();
+  }
+
   generateId(): string {
     return this.uuidGenerator.generate();
   }
@@ -127,7 +132,15 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
     await this.tagTestUtils.insertTagInDb(tag);
   }
 
+  async insertTagsInDb(tags: ITag[]): Promise<void> {
+    await this.tagTestUtils.insertTagsInDb(tags);
+  }
+
   async deleteTagFromDb(tagId: ITag["_id"]): Promise<void> {
     await this.tagTestUtils.deleteTagFromDb(tagId);
+  }
+
+  async deleteTagsFromDb(tags: ITag[]): Promise<void> {
+    await this.tagTestUtils.deleteTagsFromDb(tags);
   }
 }
