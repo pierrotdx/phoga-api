@@ -1,11 +1,10 @@
-import { Collection } from "mongodb";
-
 import {
   IMongoCollections,
   MongoDoc,
   MongoManager,
   MongoStore,
 } from "#shared/mongo";
+import { Collection } from "mongodb";
 
 export class MongoTestUtils {
   readonly mongoManager: MongoManager;
@@ -29,7 +28,7 @@ export class MongoTestUtils {
   }
 
   private getMongoCollections(): IMongoCollections {
-    return { Tag: this.testGlobalData.__MONGO_TAG_COLLECTION__ };
+    return { Tags: this.testGlobalData.__MONGO_TAG_COLLECTION__ };
   }
 
   async openMongoConnection(): Promise<void> {
@@ -46,7 +45,7 @@ export class MongoTestUtils {
   }
 
   private setTagCollection() {
-    const tagCollectionName = this.mongoManager.collections.Tag;
+    const tagCollectionName = this.mongoManager.collections.Tags;
     return this.mongoManager.getCollection(tagCollectionName);
   }
 

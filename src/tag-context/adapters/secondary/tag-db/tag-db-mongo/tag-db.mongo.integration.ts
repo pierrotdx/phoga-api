@@ -53,7 +53,9 @@ describe("TagDbMongo", () => {
 
     describe("when the requested tag is not in the db", () => {
       it("should throw an error", async () => {
-        await testUtils.expectGetByIdToThrow(tagToGet._id);
+        const result = await testUtils.getById(tagToGet._id);
+
+        await testUtils.expectValuesToMatch(result, undefined);
       });
     });
 

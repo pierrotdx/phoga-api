@@ -30,6 +30,6 @@ export class AddTagTestUtils {
   }
 
   async removeTagFromDb(id: ITag["_id"]): Promise<void> {
-    await this.tagsTestUtils.removeTagFromDb(id);
+    await this.tagsTestUtils.deleteTagFromDb(id);
   }
 }

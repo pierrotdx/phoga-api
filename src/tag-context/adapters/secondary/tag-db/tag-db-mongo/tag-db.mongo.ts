@@ -7,18 +7,19 @@ export class TagDbMongo implements ITagDb {
   private readonly tagCollection: Collection<MongoStore<MongoDoc>>;
 
   constructor(private readonly mongoManager: MongoManager) {
-    const tagCollectionName = this.mongoManager.collections.Tag;
-    this.tagCollection = this.mongoManager.getCollection(tagCollectionName);
+    const tagCollectionName = this.mongoManager.collections.Tags;
+    this.tagCollection =
+      this.mongoManager.getCollection<ITag>(tagCollectionName);
   }
 
   async insert(tag: ITag): Promise<void> {
     await this.tagCollection.insertOne(tag);
   }
 
-  async getById(_id: ITag["_id"]): Promise<ITag> {
+  async getById(_id: ITag["_id"]): Promise<ITag | undefined> {
     const result = await this.tagCollection.findOne<ITag>({ _id });
     if (!result) {
-      throw new Error("tag not found in Mongo");
+      return;
     }
     return result;
   }

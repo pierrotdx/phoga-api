@@ -6,6 +6,7 @@ import {
   PhotoMetadataDbMongo,
 } from "#photo-context";
 import { MongoManager } from "#shared/mongo";
+import { ITagDb, TagDbMongo } from "#tag-context";
 import dotenv from "dotenv";
 
 import { Storage } from "@google-cloud/storage";
@@ -20,8 +21,11 @@ export class AppLauncher {
 
   private photoMetadataDb: IPhotoMetadataDb;
   private photoImageDb: IPhotoImageDb;
+  private tagDb: ITagDb;
   private httpServer: IAppServer;
   private readonly defaultPort: number = 3000;
+
+  private mongoManager: MongoManager;
 
   async start() {
     this.logger.info("starting PHOGA application");
@@ -30,25 +34,33 @@ export class AppLauncher {
       logger: this.logger,
       photoMetadataDb: this.photoMetadataDb,
       photoImageDb: this.photoImageDb,
+      tagDb: this.tagDb,
     }).create();
     this.httpServer.listen(this.defaultPort);
   }
 
   private async setupDbs(): Promise<void> {
     this.logger.info("initiating dbs set up");
-    await this.setPhotoMetadataDb();
+    await this.initMongo();
+    this.onMongoConnection();
     await this.setPhotoImageDb();
     this.logger.info("successfully connected to dbs");
   }
 
-  private async setPhotoMetadataDb() {
-    const mongoManager = new MongoManager(
+  private async initMongo(): Promise<void> {
+    this.mongoManager = new MongoManager(
       process.env.MONGO_URL,
       process.env.MONGO_DB,
-      { PhotoMetadata: process.env.MONGO_PHOTO_METADATA_COLLECTION },
+      { PhotoMetadata: process.env.MONGO_PHOTO_METADATA_COLLECTION,
+        Tags: process.env.MONGO_TAG_COLLECTION
+       },
     );
-    await mongoManager.open();
-    this.photoMetadataDb = new PhotoMetadataDbMongo(mongoManager);
+    await this.mongoManager.open();
+  }
+
+  private onMongoConnection(): void {
+    this.photoMetadataDb = new PhotoMetadataDbMongo(this.mongoManager);
+    this.tagDb = new TagDbMongo(this.mongoManager);
   }
 
   private async setPhotoImageDb() {

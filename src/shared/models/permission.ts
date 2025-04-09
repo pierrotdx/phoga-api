@@ -3,6 +3,6 @@ export enum Permission {
   RestrictedWrite = "write:restricted",
   PhotosRead = "read:photos",
   PhotosWrite = "write:photos",
-  TagRead = "read:tag",
-  TagWrite = "write:tag",
+  TagRead = "read:tags",
+  TagWrite = "write:tags",
 }

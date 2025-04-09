@@ -25,7 +25,7 @@ export class TagEntryPoints
   });
 
   private readonly adminTagBase = this.baseEntryPoints.get(
-    BaseEntryPointsId.AdminPhotoBase,
+    BaseEntryPointsId.AdminTagBase,
   );
 
   private readonly addTag = new EntryPoint("/", {

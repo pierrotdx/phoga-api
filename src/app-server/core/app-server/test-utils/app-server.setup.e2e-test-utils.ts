@@ -6,24 +6,12 @@ import {
   PhotoImageDbGcs,
   PhotoMetadataDbMongo,
 } from "#photo-context";
-import { IMongoCollections, MongoManager } from "#shared/mongo";
+import { MongoManager } from "#shared/mongo";
+import { ITagDb, TagDbMongo } from "#tag-context";
 
 import { Storage } from "@google-cloud/storage";
 
-import { ExpressHttpServer } from "../app-server";
-
-export interface IAppServerE2ETestParams {
-  mongo: { url: string; dbName: string; collections: IMongoCollections };
-  gc: { keyFile: string; photoImageBucket: string };
-  tokenProvider: {
-    domain: string;
-    clientId: string;
-    clientSecret: string;
-    username: string;
-    password: string;
-    audience: string;
-  };
-}
+import { ExpressAppServer } from "../app-server";
 
 export class AppServerSetupE2ETestUtils {
   private readonly mongoManager: MongoManager;
@@ -40,26 +28,61 @@ export class AppServerSetupE2ETestUtils {
 
   protected photoMetadataDb: IPhotoMetadataDb;
   protected photoImageDbGcs: IPhotoImageDb;
+  protected tagDb: ITagDb;
 
-  private appServer: ExpressHttpServer;
+  private appServer: ExpressAppServer;
 
-  constructor({ mongo, gc, tokenProvider }: IAppServerE2ETestParams) {
+  constructor(testEnv: any) {
+    const mongoParams = this.getMongoParams(testEnv);
     this.mongoManager = new MongoManager(
-      mongo.url,
-      mongo.dbName,
-      mongo.collections,
+      mongoParams.url,
+      mongoParams.dbName,
+      mongoParams.collections,
     );
-    this.storage = new Storage(gc);
-    this.tokenProvider = new Auth0TokenProvider(tokenProvider);
-    const issuerBaseURL = `https://${tokenProvider.domain}`;
+
+    const gcParams = this.getGoogleCloudParams(testEnv);
+    this.storage = new Storage(gcParams);
+    this.photoImageBucket = gcParams.photoImageBucket;
+
+    const tokenProviderParams = this.getTokenProviderParams(testEnv);
+    this.tokenProvider = new Auth0TokenProvider(tokenProviderParams);
+    const issuerBaseURL = `https://${tokenProviderParams.domain}`;
     this.authHandler = new ExpressAuthHandler(
       issuerBaseURL,
-      tokenProvider.audience,
+      tokenProviderParams.audience,
     );
-    this.username = tokenProvider.username;
-    this.password = tokenProvider.password;
-    this.audience = tokenProvider.audience;
-    this.photoImageBucket = gc.photoImageBucket;
+    this.username = tokenProviderParams.username;
+    this.password = tokenProviderParams.password;
+    this.audience = tokenProviderParams.audience;
+  }
+
+  private getMongoParams(testEnv: any) {
+    return {
+      url: testEnv.__MONGO_URL__,
+      dbName: testEnv.__MONGO_DB_NAME__,
+      collections: {
+        PhotoMetadata: testEnv.__MONGO_PHOTO_METADATA_COLLECTION__,
+        Tags: testEnv.__MONGO_TAG_COLLECTION__,
+      },
+    };
+  }
+
+  private getGoogleCloudParams(testEnv: any) {
+    return {
+      keyFile: testEnv.__GOOGLE_APPLICATION_CREDENTIALS__,
+      photoImageBucket: testEnv.__GC_PHOTO_IMAGES_BUCKET__,
+    };
+  }
+
+  private getTokenProviderParams(testEnv: any) {
+    return {
+      domain: testEnv.__OAUTH2_AUTHORIZATION_SERVER_DOMAIN__,
+      clientId: testEnv.__OAUTH2_CLIENT_ID__,
+      clientSecret: testEnv.__OAUTH2_CLIENT_SECRET__,
+      username: testEnv.__OAUTH2_USER_NAME__,
+      password: testEnv.__OAUTH2_USER_PASSWORD__,
+      audience: testEnv.__OAUTH2_AUDIENCE__,
+    };
   }
 
   protected async setupDbs(): Promise<void> {
@@ -69,6 +92,7 @@ export class AppServerSetupE2ETestUtils {
       this.storage,
       this.photoImageBucket,
     );
+    this.tagDb = new TagDbMongo(this.mongoManager);
     this.onDbsSetup();
   }
 
@@ -84,9 +108,10 @@ export class AppServerSetupE2ETestUtils {
     const silentLogger = true;
     this.logger = new LoggerWinston(silentLogger);
 
-    this.appServer = new ExpressHttpServer(
+    this.appServer = new ExpressAppServer(
       this.photoMetadataDb,
       this.photoImageDbGcs,
+      this.tagDb,
       this.logger,
       this.authHandler,
     );
@@ -101,7 +126,7 @@ export class AppServerSetupE2ETestUtils {
     await this.mongoManager.close();
   }
 
-  getServer(): ExpressHttpServer {
+  getServer(): ExpressAppServer {
     return this.appServer;
   }
 

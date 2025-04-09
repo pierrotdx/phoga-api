@@ -1,3 +1,5 @@
+import { ErrorWithStatus, HttpErrorCode } from "#shared/models";
+
 import { ITagDb } from "../../gateways";
 import { IGetTagUseCase, ITag } from "../../models";
 
@@ -7,7 +9,7 @@ export class GetTagUseCase implements IGetTagUseCase {
   async execute(id: ITag["_id"]): Promise<ITag> {
     const tag = await this.tagDb.getById(id);
     if (!tag) {
-      throw new Error("tag not found");
+      throw new ErrorWithStatus("tag not found", HttpErrorCode.NotFound);
     }
     return tag;
   }

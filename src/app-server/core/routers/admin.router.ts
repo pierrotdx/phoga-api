@@ -6,6 +6,7 @@ import {
 } from "#photo-context";
 import { BaseEntryPoints, BaseEntryPointsId } from "#shared/entry-points";
 import { IExpressRouter } from "#shared/express";
+import { AdminTagRouter, ITagDb } from "#tag-context";
 import { Router } from "express";
 
 export class AdminRouter implements IExpressRouter {
@@ -17,9 +18,11 @@ export class AdminRouter implements IExpressRouter {
     private readonly authHandler: IAuthHandler,
     private readonly metadataDb: IPhotoMetadataDb,
     private readonly imageDb: IPhotoImageDb,
+    private readonly tagDb: ITagDb,
   ) {
     this.restrictRouterAccessToAuthUsers();
     this.addAdminPhotoRouter();
+    this.addAdminTagRouter();
   }
 
   private restrictRouterAccessToAuthUsers(): void {
@@ -36,6 +39,17 @@ export class AdminRouter implements IExpressRouter {
       this.imageDb,
     ).get();
     this.router.use(path, adminPhotoRouter);
+  }
+
+  private addAdminTagRouter() {
+    const path = this.entryPoints.getRelativePath(
+      BaseEntryPointsId.AdminTagBase,
+    );
+    const adminTagRouter = new AdminTagRouter(
+      this.authHandler,
+      this.tagDb,
+    ).get();
+    this.router.use(path, adminTagRouter);
   }
 
   get(): Router {

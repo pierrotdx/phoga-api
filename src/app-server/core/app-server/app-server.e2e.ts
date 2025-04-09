@@ -1,45 +1,31 @@
 import { ILogger } from "#logger-context";
 import { IPhoto, PhotoEntryPointId, dumbPhotoGenerator } from "#photo-context";
-import { IRendering, SortDirection } from "#shared/models";
+import { HttpErrorCode, IRendering, SortDirection } from "#shared/models";
+import { ITag, TagEntryPointId } from "#tag-context";
 import { type Express } from "express";
 import request from "supertest";
 
-import { ExpressHttpServer } from "./app-server";
+import { ExpressAppServer } from "./app-server";
 import {
   addPhotoPath,
+  addTagPath,
   deletePhotoPath,
+  deleteTagPath,
   getImagePath,
   getMetadataPath,
+  getTagPath,
   photoEntryPoints,
   replacePhotoPath,
+  replaceTagPath,
   searchPhotoPath,
+  tagEntryPoints,
 } from "./test-utils";
 import { AppServerTestUtils } from "./test-utils/app-server.e2e-test-utils";
 
-describe("ExpressHttpServer", () => {
-  const testUtils = new AppServerTestUtils({
-    mongo: {
-      url: global.__MONGO_URL__,
-      dbName: global.__MONGO_DB_NAME__,
-      collections: {
-        PhotoMetadata: global.__MONGO_PHOTO_METADATA_COLLECTION__,
-      },
-    },
-    gc: {
-      keyFile: global.__GOOGLE_APPLICATION_CREDENTIALS__,
-      photoImageBucket: global.__GC_PHOTO_IMAGES_BUCKET__,
-    },
-    tokenProvider: {
-      domain: global.__OAUTH2_AUTHORIZATION_SERVER_DOMAIN__,
-      clientId: global.__OAUTH2_CLIENT_ID__,
-      clientSecret: global.__OAUTH2_CLIENT_SECRET__,
-      username: global.__OAUTH2_USER_NAME__,
-      password: global.__OAUTH2_USER_PASSWORD__,
-      audience: global.__OAUTH2_AUDIENCE__,
-    },
-  });
+describe("ExpressAppServer", () => {
+  const testUtils = new AppServerTestUtils(global);
 
-  let expressHttpServer: ExpressHttpServer;
+  let expressHttpServer: ExpressAppServer;
   let app: Express;
   let logger: ILogger;
 
@@ -58,7 +44,223 @@ describe("ExpressHttpServer", () => {
     await testUtils.globalAfterAll();
   });
 
-  describe("Photo router", () => {
+  describe("tag requests", () => {
+    describe(`POST ${addTagPath}`, () => {
+      let tagToAdd: ITag;
+
+      beforeEach(() => {
+        tagToAdd = { _id: testUtils.generateId(), name: "tag name" };
+      });
+
+      afterEach(async () => {
+        await testUtils.deleteTagFromDb(tagToAdd._id);
+      });
+
+      describe("when the requester does not have the expected right", () => {
+        it(`should respond with status code ${HttpErrorCode.Unauthorized} (unauthorized)`, async () => {
+          const response = await request(app).post(addTagPath).send(tagToAdd);
+
+          expect(response.statusCode).toBe(HttpErrorCode.Unauthorized);
+          expect.assertions(1);
+        });
+      });
+
+      describe("when the requester has the expected right", () => {
+        let token: string;
+
+        beforeEach(async () => {
+          token = await testUtils.getToken();
+        });
+
+        describe("when the requested tag does not exist in db yet", () => {
+          it("should add the requested tag in db", async () => {
+            const response = await request(app)
+              .post(addTagPath)
+              .send(tagToAdd)
+              .auth(token, { type: "bearer" });
+
+            expect(response.statusCode).toBe(200);
+            testUtils.expectTagToBeInDb(tagToAdd);
+            expect.assertions(2);
+          });
+        });
+
+        describe("when the requested tag already exists in db", () => {
+          let tagAlreadyInDb: ITag;
+
+          beforeEach(async () => {
+            tagAlreadyInDb = { _id: tagToAdd._id, name: "tag in db" };
+            await testUtils.insertTagInDb(tagAlreadyInDb);
+          });
+
+          it(`should respond with status code ${HttpErrorCode.Conflict} (conflict)`, async () => {
+            const response = await request(app)
+              .post(addTagPath)
+              .send(tagToAdd)
+              .auth(token, { type: "bearer" });
+
+            expect(response.statusCode).toBe(HttpErrorCode.Conflict);
+            expect.assertions(1);
+          });
+        });
+      });
+    });
+
+    describe(`PUT ${replaceTagPath}`, () => {
+      let newTag: ITag;
+
+      beforeEach(() => {
+        newTag = { _id: testUtils.generateId(), name: "new tag name" };
+      });
+
+      afterEach(async () => {
+        await testUtils.deleteTagFromDb(newTag._id);
+      });
+
+      describe("when the requester does not have the expected right", () => {
+        it(`should respond with status code ${HttpErrorCode.Unauthorized} (unauthorized)`, async () => {
+          const response = await request(app).put(replaceTagPath).send(newTag);
+
+          expect(response.statusCode).toBe(HttpErrorCode.Unauthorized);
+          expect.assertions(1);
+        });
+      });
+
+      describe("when the requester has the expected right", () => {
+        let token: string;
+
+        beforeEach(async () => {
+          token = await testUtils.getToken();
+        });
+
+        describe("when the requested tag does not exist in db yet", () => {
+          it("should add the requested tag in db", async () => {
+            const response = await request(app)
+              .put(replaceTagPath)
+              .send(newTag)
+              .auth(token, { type: "bearer" });
+
+            expect(response.statusCode).toBe(200);
+            testUtils.expectTagToBeInDb(newTag);
+            expect.assertions(2);
+          });
+        });
+
+        describe("when the requested tag already exists in db", () => {
+          let tagAlreadyInDb: ITag;
+
+          beforeEach(async () => {
+            tagAlreadyInDb = { _id: newTag._id, name: "tag in db" };
+            await testUtils.insertTagInDb(tagAlreadyInDb);
+          });
+
+          it(`should replace the existing tag with the requested one`, async () => {
+            const response = await request(app)
+              .put(replaceTagPath)
+              .send(newTag)
+              .auth(token, { type: "bearer" });
+
+            expect(response.statusCode).toBe(200);
+            await testUtils.expectTagToBeInDb(newTag);
+            expect.assertions(2);
+          });
+        });
+      });
+    });
+
+    describe(`GET ${getTagPath}`, () => {
+      let tagToGet: ITag;
+      let url: string;
+
+      beforeEach(() => {
+        tagToGet = { _id: testUtils.generateId(), name: "tag name" };
+        url = tagEntryPoints.getFullPathWithParams(TagEntryPointId.GetTag, {
+          id: tagToGet._id,
+        });
+      });
+
+      describe("when the requested tag does not exist in db", () => {
+        it(`should respond with status ${HttpErrorCode.NotFound} (not found)`, async () => {
+          const response = await request(app).get(url);
+
+          expect(response.statusCode).toBe(HttpErrorCode.NotFound);
+          expect.assertions(1);
+        });
+      });
+
+      describe("when the requested tag exists in db", () => {
+        beforeEach(async () => {
+          await testUtils.insertTagInDb(tagToGet);
+        });
+
+        afterEach(async () => {
+          await testUtils.deleteTagFromDb(tagToGet._id);
+        });
+
+        it("should return the requested tag", async () => {
+          const url = tagEntryPoints.getFullPathWithParams(
+            TagEntryPointId.GetTag,
+            { id: tagToGet._id },
+          );
+
+          const response = await request(app).get(url);
+          const tagResponse: ITag = response.body;
+
+          expect(response.statusCode).toBe(200);
+          testUtils.expectTagsToBeEqual(tagToGet, tagResponse);
+          expect.assertions(2);
+        });
+      });
+    });
+
+    describe(`DELETE ${deleteTagPath}`, () => {
+      let tagToDelete: ITag;
+      let url: string;
+
+      beforeEach(() => {
+        tagToDelete = { _id: testUtils.generateId(), name: "tag to delete" };
+        url = tagEntryPoints.getFullPathWithParams(TagEntryPointId.DeleteTag, {
+          id: tagToDelete._id,
+        });
+      });
+
+      describe("when the requester does not have the expected right", () => {
+        it(`should respond with status code ${HttpErrorCode.Unauthorized} (unauthorized)`, async () => {
+          const response = await request(app).delete(url);
+
+          expect(response.statusCode).toBe(HttpErrorCode.Unauthorized);
+          expect.assertions(1);
+        });
+      });
+
+      describe("when the requester has the expected right", () => {
+        let token: string;
+
+        beforeEach(async () => {
+          token = await testUtils.getToken();
+
+          await testUtils.insertTagInDb(tagToDelete);
+        });
+
+        // making sure to clear db in case of failing test
+        afterEach(async () => {
+          await testUtils.deleteTagFromDb(tagToDelete._id);
+        });
+
+        it("should delete the requested tag from db", async () => {
+          const response = await request(app)
+            .delete(url)
+            .auth(token, { type: "bearer" });
+
+          expect(response.statusCode).toBe(200);
+          await testUtils.expectTagToBeDeleted(tagToDelete._id);
+          expect.assertions(2);
+        });
+      });
+    });
+  });
+
+  describe("photo requests", () => {
     describe(`POST ${addPhotoPath}`, () => {
       let photoToAdd: IPhoto;
 
@@ -247,7 +449,7 @@ describe("ExpressHttpServer", () => {
     });
   });
 
-  describe("error", () => {
+  describe("unhandled error", () => {
     it("should log the error and respond with status code 500", async () => {
       const errorLogSpy = jest.spyOn(logger, "error");
       const errorInducingQueryParams: IRendering = {

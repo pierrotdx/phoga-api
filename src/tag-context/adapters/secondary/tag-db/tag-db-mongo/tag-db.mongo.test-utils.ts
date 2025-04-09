@@ -84,15 +84,13 @@ export class TagDbMongoTestUtils {
     this.assertionsCounter.checkAssertions();
   }
 
-  async expectGetByIdToThrow(id: ITag["_id"]): Promise<void> {
-    try {
-      await this.getById(id);
-    } catch (err) {
-      expect(err).toBeDefined();
-    } finally {
-      this.assertionsCounter.increase(1);
-      this.assertionsCounter.checkAssertions();
-    }
+  async expectValuesToMatch(
+    value: unknown,
+    expectedValue: unknown,
+  ): Promise<void> {
+    expect(value).toBe(expectedValue);
+    this.assertionsCounter.increase(1);
+    this.assertionsCounter.checkAssertions();
   }
 
   async expectTagNotToBeInDb(id: ITag["_id"]): Promise<void> {

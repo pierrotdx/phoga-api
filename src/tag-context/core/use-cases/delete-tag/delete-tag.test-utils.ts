@@ -13,7 +13,7 @@ export class DeleteTagTestUtils {
   }
 
   async insertTagInDb(tag: ITag): Promise<void> {
-    await this.tagsTestUtils.insertTag(tag);
+    await this.tagsTestUtils.insertTagInDb(tag);
   }
 
   async executeUseCase(id: ITag["_id"]): Promise<void> {

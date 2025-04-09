@@ -20,15 +20,15 @@ export class GetTagController
   }
 
   protected getParamsFromRequest(req: Request): unknown | Promise<unknown> {
-    this.validator.validate(req);
+    this.validator.validate(req.params);
     return this.parser.parse(req);
   }
 
   protected async executeUseCase(...args: unknown[]): Promise<unknown> {
-    return await this.useCase.execute(args);
+    return await this.useCase.execute(...args);
   }
 
   protected sendResponse(res: Response, ...args: unknown[]): void {
-    res.json(args);
+    res.json(...args);
   }
 }

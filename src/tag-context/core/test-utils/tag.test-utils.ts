@@ -17,7 +17,7 @@ export class TagTestUtils extends DbTagTestUtils {
   }
 
   async expectTagToBeDeleted(id: ITag["_id"]): Promise<void> {
-    const dbTag = await this.getById(id);
+    const dbTag = await this.getTagFromDb(id);
 
     expect(dbTag).toBeUndefined();
     this.assertionsCounter.increase();
@@ -29,7 +29,7 @@ export class TagTestUtils extends DbTagTestUtils {
   }
 
   async expectTagToBeInDb(expectedTag: ITag): Promise<void> {
-    const dbTag = await this.getById(expectedTag._id);
+    const dbTag = await this.getTagFromDb(expectedTag._id);
 
     expect(dbTag).toEqual(expectedTag);
     this.assertionsCounter.increase();

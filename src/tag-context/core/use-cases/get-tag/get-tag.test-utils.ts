@@ -17,11 +17,11 @@ export class GetTagTestUtils {
   }
 
   async insertTagInDb(tag: ITag): Promise<void> {
-    return await this.tagsTestUtils.insertTag(tag);
+    return await this.tagsTestUtils.insertTagInDb(tag);
   }
 
   async removeTagFromDb(id: ITag["_id"]): Promise<void> {
-    await this.tagsTestUtils.removeTagFromDb(id);
+    await this.tagsTestUtils.deleteTagFromDb(id);
   }
 
   expectTagsToBeEqual(tag1: ITag, tag2: ITag): void {
