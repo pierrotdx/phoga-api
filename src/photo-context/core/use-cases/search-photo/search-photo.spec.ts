@@ -1,33 +1,59 @@
 import { IRendering, SortDirection } from "#shared/models";
 
-import { FakePhotoImageDb, FakePhotoMetadataDb } from "../../../adapters/";
+import {
+  FakePhotoImageDb,
+  FakePhotoMetadataDb,
+  dumbPhotoGenerator,
+} from "../../../adapters/";
+import {
+  IPhoto,
+  IPhotoImageDb,
+  IPhotoMetadataDb,
+  ISearchPhotoUseCase,
+  PhotoTestUtils,
+} from "../../../core/";
 import { SearchPhotoUseCase } from "./search-photo";
-import { SearchPhotoTestUtils } from "./search-photo.test-utils";
 
 describe(`${SearchPhotoUseCase.name}`, () => {
-  const photoMetadataDb = new FakePhotoMetadataDb();
-  const photoImageDb = new FakePhotoImageDb();
-  let testUtils: SearchPhotoTestUtils;
+  let photoMetadataDb: IPhotoMetadataDb;
+  let photoImageDb: IPhotoImageDb;
+
+  let testedUseCase: ISearchPhotoUseCase;
+
+  let testUtils: PhotoTestUtils<IPhoto[]>;
 
   beforeEach(async () => {
-    testUtils = new SearchPhotoTestUtils(photoMetadataDb, photoImageDb);
+    photoMetadataDb = new FakePhotoMetadataDb();
+    photoImageDb = new FakePhotoImageDb();
+
+    testedUseCase = new SearchPhotoUseCase(photoMetadataDb, photoImageDb);
+
+    testUtils = new PhotoTestUtils(
+      photoMetadataDb,
+      photoImageDb,
+      testedUseCase,
+    );
   });
 
   describe(`${SearchPhotoUseCase.prototype.execute.name}`, () => {
     const nbStoredPhotos = 3;
+    let storedPhotos: IPhoto[];
 
     beforeEach(async () => {
-      await testUtils.initStoredPhotos(nbStoredPhotos);
+      storedPhotos = await dumbPhotoGenerator.generatePhotos(nbStoredPhotos);
+      await testUtils.insertPhotosInDb(storedPhotos);
     });
 
     afterEach(async () => {
-      await testUtils.clearStoredPhotos();
+      const storedPhotoIds = storedPhotos.map((p) => p._id);
+      await testUtils.deletePhotosFromDb(storedPhotoIds);
     });
 
     it("should return the photos stored in database", async () => {
       const searchResult = await testUtils.executeTestedUseCase();
 
-      testUtils.expectSearchResultToMatchStoredPhotos(searchResult);
+      testUtils.expectMatchingPhotoArrays(searchResult, storedPhotos);
+      testUtils.checkAssertions();
     });
 
     describe("+ options.rendering.date", () => {
@@ -42,10 +68,9 @@ describe(`${SearchPhotoUseCase.name}`, () => {
             rendering,
           });
 
-          testUtils.expectSearchResultMatchingDateOrdering(
-            searchResult,
-            rendering.dateOrder,
-          );
+          testUtils.expectPhotosOrderToBe(searchResult, rendering.dateOrder);
+
+          testUtils.checkAssertions();
         },
       );
     });
@@ -64,7 +89,8 @@ describe(`${SearchPhotoUseCase.name}`, () => {
             rendering,
           });
 
-          testUtils.expectSearchResultMatchingSize(searchResult, requiredSize);
+          testUtils.expectPhotosArraySizeToBe(searchResult, requiredSize);
+          testUtils.checkAssertions();
         },
       );
     });
@@ -80,10 +106,12 @@ describe(`${SearchPhotoUseCase.name}`, () => {
         async ({ rendering, docIndex }) => {
           const result = await testUtils.executeTestedUseCase({ rendering });
 
-          testUtils.expectSearchResultToStartFromRequiredIndex(
+          testUtils.expectSubArrayToStartFromIndex(
+            storedPhotos,
             result,
             docIndex,
           );
+          testUtils.checkAssertions();
         },
       );
     });
@@ -100,10 +128,8 @@ describe(`${SearchPhotoUseCase.name}`, () => {
             excludeImages,
           });
 
-          testUtils.expectImagesToBeInSearchResultIfRequired(
-            photos,
-            excludeImages,
-          );
+          testUtils.expectImagesToBeInPhotosIfRequired(photos, excludeImages);
+          testUtils.checkAssertions();
         },
       );
     });

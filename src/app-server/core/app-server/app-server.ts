@@ -2,6 +2,7 @@ import { IAuthHandler } from "#auth-context";
 import { ILogger, LoggerWinston } from "#logger-context";
 import { IPhotoImageDb, IPhotoMetadataDb } from "#photo-context";
 import { IExpressLogger } from "#shared/express";
+import { ITagDb } from "#tag-context";
 import bodyParser from "body-parser";
 import cors from "cors";
 import express, {
@@ -17,7 +18,7 @@ import { ExpressLoggerWinston } from "../loggers";
 import { IAppServer } from "../models/";
 import { AppRouter } from "../routers/app.router";
 
-export class ExpressHttpServer implements IAppServer {
+export class ExpressAppServer implements IAppServer {
   public readonly app: Express = express();
   private server: Server;
   private loggerHandler: IExpressLogger["handler"];
@@ -25,6 +26,7 @@ export class ExpressHttpServer implements IAppServer {
   constructor(
     private readonly metadataDb: IPhotoMetadataDb,
     private readonly imageDb: IPhotoImageDb,
+    private readonly tagDb: ITagDb,
     private readonly logger: ILogger,
     private readonly authHandler: IAuthHandler,
   ) {
@@ -63,6 +65,7 @@ export class ExpressHttpServer implements IAppServer {
       this.authHandler,
       this.metadataDb,
       this.imageDb,
+      this.tagDb,
     ).get();
     this.app.use(router);
   }

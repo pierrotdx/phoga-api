@@ -19,6 +19,7 @@ module.exports = {
     "#auth-context": "<rootDir>/src/auth-context/",
     "#logger-context": "<rootDir>/src/logger-context/",
     "#photo-context": "<rootDir>/src/photo-context/",
+    "#tag-context": "<rootDir>/src/tag-context/",
     "^#shared/(.*)$": "<rootDir>/src/shared/$1",
   },
 };

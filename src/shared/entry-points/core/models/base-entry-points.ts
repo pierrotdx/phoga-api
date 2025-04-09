@@ -3,4 +3,6 @@ export enum BaseEntryPointsId {
   AdminBase = "admin",
   AdminPhotoBase = "adminPhoto",
   PhotoBase = "photo",
+  AdminTagBase = "adminTag",
+  TagBase = "tag",
 }

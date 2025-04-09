@@ -107,7 +107,7 @@ describe("PhotoMetadataDbMongo", () => {
       assertionsCounter.checkAssertions();
     });
 
-    describe("+ rendering.date", () => {
+    describe("- rendering.date", () => {
       it.each`
         case            | rendering
         ${"ascending"}  | ${{ dateOrder: SortDirection.Ascending }}
@@ -130,7 +130,7 @@ describe("PhotoMetadataDbMongo", () => {
       );
     });
 
-    describe("+ rendering.size", () => {
+    describe("- rendering.size", () => {
       it.each`
         rendering
         ${{ size: 1 }}
@@ -146,7 +146,7 @@ describe("PhotoMetadataDbMongo", () => {
       );
     });
 
-    describe("+ rendering.from", () => {
+    describe("- rendering.from", () => {
       // use `rendering.date` to make we are testing `rendering.from` on the same ordered list
       it.each`
         rendering                                          | docIndex

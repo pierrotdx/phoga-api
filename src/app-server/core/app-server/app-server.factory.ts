@@ -2,34 +2,40 @@ import { ExpressAuthHandler } from "#auth-context";
 import { ILogger } from "#logger-context";
 import { IPhotoImageDb, IPhotoMetadataDb } from "#photo-context";
 import { Factory } from "#shared/models";
+import { ITagDb } from "#tag-context";
 
 import { IAppServer } from "../models";
-import { ExpressHttpServer } from "./app-server";
+import { ExpressAppServer } from "./app-server";
 
-export class ExpressAppHttpServerFactory implements Factory<IAppServer> {
+export class AppServerFactory implements Factory<IAppServer> {
   private readonly logger: ILogger;
   private readonly photoImageDb: IPhotoImageDb;
   private readonly photoMetadataDb: IPhotoMetadataDb;
+  private readonly tagDb: ITagDb;
 
   constructor({
     logger,
     photoImageDb,
     photoMetadataDb,
+    tagDb,
   }: {
     logger: ILogger;
     photoImageDb: IPhotoImageDb;
     photoMetadataDb: IPhotoMetadataDb;
+    tagDb: ITagDb;
   }) {
     this.logger = logger;
     this.photoImageDb = photoImageDb;
     this.photoMetadataDb = photoMetadataDb;
+    this.tagDb = tagDb;
   }
 
   create(): IAppServer {
     const authHandler = this.getAuthHandler();
-    return new ExpressHttpServer(
+    return new ExpressAppServer(
       this.photoMetadataDb,
       this.photoImageDb,
+      this.tagDb,
       this.logger,
       authHandler,
     );

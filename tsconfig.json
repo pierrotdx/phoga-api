@@ -12,6 +12,7 @@
       "#auth-context": ["./auth-context/index.js"],
       "#logger-context": ["./logger-context/index.js"],
       "#photo-context": ["./photo-context/index.js"],
+      "#tag-context": ["./tag-context/index.js"],
       "#shared/*": ["./shared/*"]
     }
   },

@@ -25,6 +25,7 @@
     "#auth-context": "./dist/auth-context/index.js",
     "#logger-context": "./dist/logger-context/index.js",
     "#photo-context": "./dist/photo-context/index.js",
+    "#tag-context": "./dist/tag-context/index.js",
     "#shared/*": "./dist/shared/index.js"
   },
   "devDependencies": {
