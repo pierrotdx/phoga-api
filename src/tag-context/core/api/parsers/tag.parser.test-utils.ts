@@ -32,7 +32,7 @@ export abstract class TagParserTestUtils<TParser extends IParser<unknown>> {
   ) => {
     try {
       this.parsedData = this.testedParser.parse(req);
-      res.sendStatus(200);
+      res.status(200).json();
       next();
     } catch (err) {
       console.error(err);

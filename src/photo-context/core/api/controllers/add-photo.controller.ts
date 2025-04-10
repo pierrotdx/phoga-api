@@ -37,6 +37,6 @@ export class AddPhotoController
   }
 
   protected sendResponse(res: Response): void {
-    res.sendStatus(200);
+    res.status(200).json();
   }
 }
