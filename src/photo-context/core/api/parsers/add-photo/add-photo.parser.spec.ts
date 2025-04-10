@@ -32,7 +32,7 @@ describe("AddPhotoParser", () => {
           parsedData,
           assertionsCounter,
         );
-        res.sendStatus(200);
+        res.status(200).json();
       };
       testUtils.setReqHandler(reqHandler);
       await testUtils.sendRequest(inputData);
@@ -53,7 +53,7 @@ describe("AddPhotoParser", () => {
           expect(err).toBeDefined();
         } finally {
           assertionsCounter.increase();
-          res.sendStatus(200);
+          res.status(200).json();
         }
       };
       testUtils.setReqHandler(reqHandler);

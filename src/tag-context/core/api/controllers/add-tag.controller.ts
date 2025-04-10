@@ -29,6 +29,6 @@ export class AddTagController
   }
 
   protected sendResponse(res: Response, ...args: unknown[]): void {
-    res.sendStatus(200);
+    res.status(200).json();
   }
 }
