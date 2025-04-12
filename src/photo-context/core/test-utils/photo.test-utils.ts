@@ -4,9 +4,10 @@ import {
 } from "#shared/assertions-counter";
 import { compareDates } from "#shared/compare-dates";
 import { IUseCase, SortDirection } from "#shared/models";
+import { omit } from "ramda";
 
-import { IPhotoImageDb, IPhotoMetadataDb } from "../gateways";
-import { GetPhotoField, IPhoto } from "../models";
+import { IPhotoBaseDb, IPhotoImageDb } from "../gateways";
+import { GetPhotoField, IPhoto, IPhotoBase } from "../models";
 import { DbPhotoTestUtils } from "./db-photo.test-utils";
 
 export class PhotoTestUtils<TUseCaseResult = unknown> extends DbPhotoTestUtils {
@@ -14,11 +15,11 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends DbPhotoTestUtils {
     new AssertionsCounter();
 
   constructor(
-    photoMetadataDb?: IPhotoMetadataDb,
+    photoBaseDb?: IPhotoBaseDb,
     photoImageDb?: IPhotoImageDb,
     protected testedUseCase?: IUseCase<TUseCaseResult>,
   ) {
-    super(photoMetadataDb, photoImageDb);
+    super(photoBaseDb, photoImageDb);
   }
 
   executeTestedUseCase = async (...args: unknown[]): Promise<TUseCaseResult> =>
@@ -27,21 +28,22 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends DbPhotoTestUtils {
   expectMatchingPhotos(photo1: IPhoto, photo2: IPhoto): void {
     expect(photo1._id).toEqual(photo2._id);
     this.assertionsCounter.increase();
-    this.expectMatchingPhotosMetadata(photo1.metadata, photo2.metadata);
+    this.expectMatchingPhotoBases(photo1, photo2);
     this.expectMatchingPhotoImages(photo1, photo2);
   }
 
-  expectMatchingPhotosMetadata(
-    photoMetadata1: IPhoto["metadata"],
-    photoMetadata2: IPhoto["metadata"],
+  expectMatchingPhotoBases(
+    storePhoto1: IPhotoBase,
+    storePhoto2: IPhotoBase,
   ): void {
-    expect(photoMetadata1).toEqual(photoMetadata2);
+    expect(storePhoto1).toEqual(storePhoto2);
     this.assertionsCounter.increase();
   }
 
-  async expectPhotoMetadataToBeInDb(photo: IPhoto): Promise<void> {
-    const dbMetadata = await this.getPhotoMetadataFromDb(photo._id);
-    this.expectMatchingPhotosMetadata(photo.metadata, dbMetadata);
+  async expectPhotoBaseToBeInDb(photo: IPhoto): Promise<void> {
+    const photoBase: IPhotoBase = omit(["imageBuffer"], photo);
+    const dbPhotoBase = await this.getPhotoBaseFromDb(photo._id);
+    this.expectMatchingPhotoBases(photoBase, dbPhotoBase);
   }
 
   async expectPhotoImageToBeInDb(photo: IPhoto): Promise<void> {
@@ -63,7 +65,7 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends DbPhotoTestUtils {
   }
 
   async expectPhotoToBeUploaded(photo: IPhoto): Promise<void> {
-    await this.expectPhotoMetadataToBeInDb(photo);
+    await this.expectPhotoBaseToBeInDb(photo);
     await this.expectPhotoImageToBeInDb(photo);
   }
 
@@ -104,7 +106,7 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends DbPhotoTestUtils {
     photo: IPhoto,
     requiredField: GetPhotoField,
   ) {
-    if (requiredField === GetPhotoField.Metadata) {
+    if (requiredField === GetPhotoField.Base) {
       expect(photo.metadata).toBeDefined();
       expect(photo.imageBuffer).toBeUndefined();
       this.assertionsCounter.increase(2);
@@ -163,10 +165,11 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends DbPhotoTestUtils {
     this.assertionsCounter.increase();
   }
 
-  async expectMetadataNotToBeDeleted(photo: IPhoto): Promise<void> {
-    const metadataFromDb = await this.getPhotoMetadataFromDb(photo._id);
-    expect(metadataFromDb).toBeDefined();
-    expect(metadataFromDb).toEqual(photo.metadata);
+  async expectPhotoBaseNotToBeDeleted(photo: IPhoto): Promise<void> {
+    const photoBaseFromDb = await this.getPhotoBaseFromDb(photo._id);
+    expect(photoBaseFromDb).toBeDefined();
+    const photoBase = omit(["imageBuffer"], photo);
+    expect(photoBaseFromDb).toEqual(photoBase);
     this.assertionsCounter.increase(2);
   }
 

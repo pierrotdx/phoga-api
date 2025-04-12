@@ -1,18 +1,18 @@
 import { readFile } from "fs/promises";
-import { pick } from "ramda";
+import { omit, pick } from "ramda";
 
 import {
+  FakePhotoBaseDb,
   FakePhotoImageDb,
-  FakePhotoMetadataDb,
   dumbPhotoGenerator,
 } from "../../../adapters/";
-import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
+import { IPhotoBaseDb, IPhotoImageDb } from "../../gateways";
 import { GetPhotoField, IGetPhotoUseCase, IPhoto } from "../../models";
 import { PhotoTestUtils } from "../../test-utils";
 import { GetPhotoUseCase } from "./get-photo";
 
 describe(`${GetPhotoUseCase.name}`, () => {
-  let photoMetadataDb: IPhotoMetadataDb;
+  let photoBaseDb: IPhotoBaseDb;
   let photoImageDb: IPhotoImageDb;
 
   let testedUseCase: IGetPhotoUseCase;
@@ -20,16 +20,12 @@ describe(`${GetPhotoUseCase.name}`, () => {
   let testUtils: PhotoTestUtils<IPhoto>;
 
   beforeEach(async () => {
-    photoMetadataDb = new FakePhotoMetadataDb();
+    photoBaseDb = new FakePhotoBaseDb();
     photoImageDb = new FakePhotoImageDb();
 
-    testedUseCase = new GetPhotoUseCase(photoMetadataDb, photoImageDb);
+    testedUseCase = new GetPhotoUseCase(photoBaseDb, photoImageDb);
 
-    testUtils = new PhotoTestUtils(
-      photoMetadataDb,
-      photoImageDb,
-      testedUseCase,
-    );
+    testUtils = new PhotoTestUtils(photoBaseDb, photoImageDb, testedUseCase);
   });
 
   describe(`${GetPhotoUseCase.prototype.execute.name}`, () => {
@@ -54,12 +50,17 @@ describe(`${GetPhotoUseCase.name}`, () => {
 
     it.each`
       fieldName        | fieldValue
-      ${"metadata"}    | ${GetPhotoField.Metadata}
+      ${"base"}        | ${GetPhotoField.Base}
       ${"imageBuffer"} | ${GetPhotoField.ImageBuffer}
     `(
       "should return the requested photo only with the `$fieldName` property when using the option `fields: [$fieldValue]`",
       async ({ fieldValue }) => {
-        const expectedPhoto = pick(["_id", fieldValue], photo);
+        const expectedPhoto =
+          fieldValue === "base"
+            ? omit(["imageBuffer"], photo)
+            : omit(["metadata"
+              
+            ], photo);
 
         const result = await testUtils.executeTestedUseCase(photo._id, {
           fields: [fieldValue],

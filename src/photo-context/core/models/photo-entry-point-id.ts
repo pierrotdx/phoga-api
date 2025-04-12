@@ -2,7 +2,7 @@ export enum PhotoEntryPointId {
   AddPhoto = "addPhoto",
   DeletePhoto = "deletePhoto",
   GetPhotoImage = "getPhotoImage",
-  GetPhotoMetadata = "getPhotoMetadata",
+  GetPhotoBase = "getPhotoBase",
   ReplacePhoto = "replacePhoto",
   SearchPhoto = "searchPhoto",
 }

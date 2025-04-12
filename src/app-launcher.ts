@@ -1,9 +1,9 @@
 import { ILogger } from "#logger-context";
 import {
+  IPhotoBaseDb,
   IPhotoImageDb,
-  IPhotoMetadataDb,
+  PhotoBaseDbMongo,
   PhotoImageDbGcs,
-  PhotoMetadataDbMongo,
 } from "#photo-context";
 import { MongoManager } from "#shared/mongo";
 import { ITagDb, TagDbMongo } from "#tag-context";
@@ -19,7 +19,7 @@ dotenv.config();
 export class AppLauncher {
   constructor(private readonly logger: ILogger) {}
 
-  private photoMetadataDb: IPhotoMetadataDb;
+  private photoBaseDb: IPhotoBaseDb;
   private photoImageDb: IPhotoImageDb;
   private tagDb: ITagDb;
   private httpServer: IAppServer;
@@ -32,7 +32,7 @@ export class AppLauncher {
     await this.setupDbs();
     this.httpServer = new AppServerFactory({
       logger: this.logger,
-      photoMetadataDb: this.photoMetadataDb,
+      photoBaseDb: this.photoBaseDb,
       photoImageDb: this.photoImageDb,
       tagDb: this.tagDb,
     }).create();
@@ -51,15 +51,16 @@ export class AppLauncher {
     this.mongoManager = new MongoManager(
       process.env.MONGO_URL,
       process.env.MONGO_DB,
-      { PhotoMetadata: process.env.MONGO_PHOTO_METADATA_COLLECTION,
-        Tags: process.env.MONGO_TAG_COLLECTION
-       },
+      {
+        PhotoBase: process.env.MONGO_PHOTO_BASE_COLLECTION,
+        Tags: process.env.MONGO_TAG_COLLECTION,
+      },
     );
     await this.mongoManager.open();
   }
 
   private onMongoConnection(): void {
-    this.photoMetadataDb = new PhotoMetadataDbMongo(this.mongoManager);
+    this.photoBaseDb = new PhotoBaseDbMongo(this.mongoManager);
     this.tagDb = new TagDbMongo(this.mongoManager);
   }
 

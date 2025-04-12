@@ -1,6 +1,6 @@
 import { IAuthHandler } from "#auth-context";
 import { ILogger, LoggerWinston } from "#logger-context";
-import { IPhotoImageDb, IPhotoMetadataDb } from "#photo-context";
+import { IPhotoBaseDb, IPhotoImageDb } from "#photo-context";
 import { IExpressLogger } from "#shared/express";
 import { ITagDb } from "#tag-context";
 import bodyParser from "body-parser";
@@ -24,7 +24,7 @@ export class ExpressAppServer implements IAppServer {
   private loggerHandler: IExpressLogger["handler"];
 
   constructor(
-    private readonly metadataDb: IPhotoMetadataDb,
+    private readonly photoBaseDb: IPhotoBaseDb,
     private readonly imageDb: IPhotoImageDb,
     private readonly tagDb: ITagDb,
     private readonly logger: ILogger,
@@ -63,7 +63,7 @@ export class ExpressAppServer implements IAppServer {
   private initRouter() {
     const router = new AppRouter(
       this.authHandler,
-      this.metadataDb,
+      this.photoBaseDb,
       this.imageDb,
       this.tagDb,
     ).get();

@@ -2,10 +2,10 @@ import { IEntryPoints } from "#shared/entry-points";
 import { Router } from "express";
 
 import {
+  GetPhotoBaseController,
   GetPhotoImageController,
-  GetPhotoMetadataController,
+  IPhotoBaseDb,
   IPhotoImageDb,
-  IPhotoMetadataDb,
   IPhotoRouter,
   PhotoEntryPointId,
   PhotoEntryPoints,
@@ -18,34 +18,37 @@ export class PhotoRouter implements IPhotoRouter {
     new PhotoEntryPoints();
 
   constructor(
-    private readonly metadataDb: IPhotoMetadataDb,
+    private readonly photoBaseDb: IPhotoBaseDb,
     private readonly imageDb: IPhotoImageDb,
   ) {
     this.setGetPhotoImageRoute();
-    this.setGetPhotoMetadataRoute();
+    this.setGetPhotoBaseRoute();
     this.setSearchPhotoRoute();
   }
 
   private setGetPhotoImageRoute(): void {
     const controller = new GetPhotoImageController(
-      this.metadataDb,
+      this.photoBaseDb,
       this.imageDb,
     );
     const path = this.getPath(PhotoEntryPointId.GetPhotoImage);
     this.router.get(path, controller.handler);
   }
 
-  private setGetPhotoMetadataRoute(): void {
-    const controller = new GetPhotoMetadataController(
-      this.metadataDb,
+  private setGetPhotoBaseRoute(): void {
+    const controller = new GetPhotoBaseController(
+      this.photoBaseDb,
       this.imageDb,
     );
-    const path = this.getPath(PhotoEntryPointId.GetPhotoMetadata);
+    const path = this.getPath(PhotoEntryPointId.GetPhotoBase);
     this.router.get(path, controller.handler);
   }
 
   private setSearchPhotoRoute(): void {
-    const controller = new SearchPhotoController(this.metadataDb, this.imageDb);
+    const controller = new SearchPhotoController(
+      this.photoBaseDb,
+      this.imageDb,
+    );
     const path = this.getPath(PhotoEntryPointId.SearchPhoto);
     this.router.get(path, controller.handler);
   }

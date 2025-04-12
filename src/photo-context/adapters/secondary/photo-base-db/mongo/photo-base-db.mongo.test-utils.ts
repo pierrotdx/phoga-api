@@ -1,17 +1,22 @@
 import { IAssertionsCounter } from "#shared/assertions-counter";
 import { SortDirection } from "#shared/models";
-import { IMongoCollections, MongoManager, MongoStore } from "#shared/mongo";
+import { IMongoCollections, MongoManager } from "#shared/mongo";
 import { clone, omit } from "ramda";
 
-import { IPhoto, PhotoTestUtils, comparePhotoDates } from "../../../../core";
-import { PhotoMetadataDbMongo } from "./photo-metadata-db.mongo";
+import {
+  IPhoto,
+  IPhotoBase,
+  PhotoTestUtils,
+  comparePhotoDates,
+} from "../../../../core";
+import { PhotoBaseDbMongo } from "./photo-base-db.mongo";
 
-type TDoc = MongoStore<IPhoto["metadata"]>;
+type TDoc = IPhotoBase;
 
-export class PhotoMetadataDbMongoTestUtils {
+export class PhotoBaseDbMongoTestUtils {
   private readonly mongoManager: MongoManager;
   private photoTestUtils: PhotoTestUtils;
-  public photoMetadataDb: PhotoMetadataDbMongo;
+  public photoBaseDb: PhotoBaseDbMongo;
 
   constructor(
     mongoUrl: string,
@@ -24,11 +29,11 @@ export class PhotoMetadataDbMongoTestUtils {
   async internalSetup(): Promise<void> {
     await this.mongoManager.open();
     this.setupDb();
-    this.photoTestUtils = new PhotoTestUtils(this.photoMetadataDb, undefined);
+    this.photoTestUtils = new PhotoTestUtils(this.photoBaseDb, undefined);
   }
 
   private setupDb(): void {
-    this.photoMetadataDb = new PhotoMetadataDbMongo(this.mongoManager);
+    this.photoBaseDb = new PhotoBaseDbMongo(this.mongoManager);
   }
 
   async internalTeardown(): Promise<void> {
@@ -36,10 +41,7 @@ export class PhotoMetadataDbMongoTestUtils {
   }
 
   async getDocFromDb(_id: IPhoto["_id"]): Promise<TDoc> {
-    const metadata = await this.photoTestUtils.getPhotoMetadataFromDb(_id);
-    if (metadata) {
-      return { _id, ...metadata };
-    }
+    return await this.photoTestUtils.getPhotoBaseFromDb(_id);
   }
 
   async insertPhotosInDbs(photos: IPhoto[]): Promise<void> {
@@ -111,7 +113,7 @@ export class PhotoMetadataDbMongoTestUtils {
     assertionsCounter.increase(2);
   }
 
-  async expectPhotoMetadataToReplaceDoc(
+  async expectPhotoBaseToReplaceDoc(
     initPhoto: IPhoto,
     expectedPhoto: IPhoto,
     docBefore: TDoc,
@@ -132,10 +134,9 @@ export class PhotoMetadataDbMongoTestUtils {
     doc: TDoc,
     assertionsCounter: IAssertionsCounter,
   ): void {
-    expect(doc._id).toBe(expectedPhoto._id);
-    const docMetadata = omit(["_id"], doc);
-    expect(docMetadata).toEqual(expectedPhoto.metadata);
-    assertionsCounter.increase(2);
+    const expectedPhotoBase: IPhotoBase = omit(["imageBuffer"], expectedPhoto);
+    expect(doc).toEqual(expectedPhotoBase);
+    assertionsCounter.increase();
   }
 
   async expectDocToBeDeleted(

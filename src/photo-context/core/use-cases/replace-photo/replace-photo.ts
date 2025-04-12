@@ -1,18 +1,18 @@
 import { isEmpty, isNil } from "ramda";
 
-import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
+import { IPhotoBaseDb, IPhotoImageDb } from "../../gateways";
 import { IPhoto, IReplacePhotoUseCase, Photo } from "../../models";
 
 export class ReplacePhotoUseCase implements IReplacePhotoUseCase {
   constructor(
-    private readonly photoMetadataDb: IPhotoMetadataDb,
+    private readonly photoBaseDb: IPhotoBaseDb,
     private readonly photoImageDb: IPhotoImageDb,
   ) {}
 
   async execute(photo: IPhoto): Promise<void> {
     await this.replaceImage(photo);
 
-    await this.photoMetadataDb.replace(photo);
+    await this.photoBaseDb.replace(photo);
   }
 
   private async replaceImage(photo: Photo) {

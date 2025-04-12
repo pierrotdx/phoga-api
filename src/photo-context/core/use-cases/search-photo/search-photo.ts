@@ -1,17 +1,17 @@
-import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
+import { IPhotoBaseDb, IPhotoImageDb } from "../../gateways";
 import { IPhoto, ISearchPhotoOptions, ISearchPhotoUseCase } from "../../models";
 
 export class SearchPhotoUseCase implements ISearchPhotoUseCase {
   private photos: IPhoto[] = [];
 
   constructor(
-    private readonly photoMetadataDb: IPhotoMetadataDb,
+    private readonly photoBaseDb: IPhotoBaseDb,
     private readonly photoImageDb: IPhotoImageDb,
   ) {}
 
   async execute(options?: ISearchPhotoOptions) {
     this.resetPhotos();
-    this.photos = await this.photoMetadataDb.find(options?.rendering);
+    this.photos = await this.photoBaseDb.find(options?.rendering);
     if (!options?.excludeImages) {
       await this.fetchImages(this.photos);
     }
