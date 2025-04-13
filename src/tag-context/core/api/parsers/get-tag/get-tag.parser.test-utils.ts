@@ -1,10 +1,10 @@
 import request, { Test } from "supertest";
 
 import { IGetTagParser, ITag } from "../../../../core";
-import { TagParserTestUtils } from "../tag.parser.test-utils";
 import { GetTagParser } from "./get-tag.parser";
+import { ParserTestUtils } from "#shared/test-utils";
 
-export class GetTagParserTestUtils extends TagParserTestUtils<IGetTagParser> {
+export class GetTagParserTestUtils extends ParserTestUtils<IGetTagParser> {
   protected testedParser: IGetTagParser = new GetTagParser();
 
   private readonly baseUrl = "/";
