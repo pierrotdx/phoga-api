@@ -1,23 +1,26 @@
-import { IPhotoImageDb, IPhotoMetadataDb } from "../gateways";
-import { IPhoto, Photo } from "../models";
+import { isEmpty, omit } from "ramda";
+
+import { IPhotoBaseDb, IPhotoImageDb } from "../gateways";
+import { IPhoto, IPhotoBase } from "../models";
 
 export class DbPhotoTestUtils {
   constructor(
-    private readonly photoMetadataDb?: IPhotoMetadataDb,
+    private readonly photoBaseDb?: IPhotoBaseDb,
     private readonly photoImageDb?: IPhotoImageDb,
   ) {}
 
-  async getPhotoMetadataFromDb(id: IPhoto["_id"]): Promise<IPhoto["metadata"]> {
-    return await this.photoMetadataDb?.getById(id);
+  async getPhotoBaseFromDb(id: IPhoto["_id"]): Promise<IPhotoBase> {
+    return (await this.photoBaseDb?.getById(id)) || undefined;
   }
 
-  async deletePhotoMetadataFromDb(id: IPhoto["_id"]): Promise<void> {
-    await this.photoMetadataDb?.delete(id);
+  async deletePhotoBaseFromDb(id: IPhoto["_id"]): Promise<void> {
+    await this.photoBaseDb?.delete(id);
   }
 
-  async insertPhotoMetadataInDb(photo: IPhoto): Promise<void> {
-    if (photo.metadata) {
-      await this.photoMetadataDb?.insert(photo);
+  async insertPhotoBaseInDb(photo: IPhoto): Promise<void> {
+    const photoBase: IPhotoBase = omit(["imageBuffer"], photo);
+    if (!isEmpty(photoBase)) {
+      await this.photoBaseDb?.insert(photoBase);
     }
   }
 
@@ -41,7 +44,7 @@ export class DbPhotoTestUtils {
   }
 
   async insertPhotoInDb(photo: IPhoto): Promise<void> {
-    await this.insertPhotoMetadataInDb(photo);
+    await this.insertPhotoBaseInDb(photo);
     await this.insertPhotoImageInDb(photo);
   }
 
@@ -52,14 +55,14 @@ export class DbPhotoTestUtils {
 
   async deletePhotoFromDb(id: IPhoto["_id"]): Promise<void> {
     try {
-      await this.deletePhotoMetadataFromDb(id);
+      await this.deletePhotoBaseFromDb(id);
       await this.deletePhotoImageFromDb(id);
     } catch (err) {}
   }
 
   async getPhotoFromDb(id: IPhoto["_id"]): Promise<IPhoto> {
     const imageBuffer = await this.getPhotoImageFromDb(id);
-    const metadata = await this.getPhotoMetadataFromDb(id);
-    return new Photo(id, { imageBuffer, metadata });
+    const storePhoto = await this.getPhotoBaseFromDb(id);
+    return { imageBuffer, ...storePhoto };
   }
 }

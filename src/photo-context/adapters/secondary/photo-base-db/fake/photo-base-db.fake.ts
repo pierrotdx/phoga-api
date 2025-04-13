@@ -1,24 +1,22 @@
 import { IRendering, SortDirection } from "#shared/models";
-import { clone } from "ramda";
+import { clone, omit } from "ramda";
 
 import {
   IPhoto,
-  IPhotoMetadata,
-  IPhotoMetadataDb,
-  Photo,
+  IPhotoBase,
+  IPhotoBaseDb,
   comparePhotoDates,
-} from "../../../../";
+} from "../../../..";
 
-export class FakePhotoMetadataDb implements IPhotoMetadataDb {
-  public readonly docs: Record<IPhoto["_id"], IPhotoMetadata> = {};
+export class FakePhotoBaseDb implements IPhotoBaseDb {
+  public readonly docs: Record<IPhoto["_id"], IPhotoBase> = {};
 
   async insert(photo: IPhoto) {
-    if (photo.metadata) {
-      this.docs[photo._id] = photo.metadata;
-    }
+    const storePhoto: IPhotoBase = this.getPhotoBase(photo);
+    this.docs[photo._id] = storePhoto;
   }
 
-  async getById(id: IPhoto["_id"]): Promise<IPhotoMetadata> {
+  async getById(id: IPhoto["_id"]): Promise<IPhotoBase> {
     return clone(this.docs[id]);
   }
 
@@ -27,7 +25,11 @@ export class FakePhotoMetadataDb implements IPhotoMetadataDb {
   }
 
   async replace(photo: IPhoto): Promise<void> {
-    this.docs[photo._id] = photo.metadata;
+    this.docs[photo._id] = this.getPhotoBase(photo);
+  }
+
+  private getPhotoBase(photo: IPhoto): IPhotoBase {
+    return omit(["imageBuffer"], photo);
   }
 
   async find(rendering?: IRendering): Promise<IPhoto[]> {
@@ -48,11 +50,7 @@ export class FakePhotoMetadataDb implements IPhotoMetadataDb {
 
   private getPhotosFromDocs(): IPhoto[] {
     const docs = clone(this.docs);
-    const photoIds = Object.keys(docs);
-    const photos = photoIds.map(
-      (id: IPhoto["_id"]) => new Photo(id, { metadata: docs[id] }),
-    );
-    return photos;
+    return Object.values(docs);
   }
 
   private sortByDate(photos: IPhoto[], order: SortDirection) {

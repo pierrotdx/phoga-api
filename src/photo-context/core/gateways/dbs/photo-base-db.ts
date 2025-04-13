@@ -1,10 +1,10 @@
 import { IRendering } from "#shared/models";
 
-import { IPhoto, IPhotoMetadata } from "../../models";
+import { IPhoto, IPhotoBase } from "../..";
 
-export interface IPhotoMetadataDb {
+export interface IPhotoBaseDb {
   insert: (photo: IPhoto) => Promise<void>;
-  getById: (id: IPhoto["_id"]) => Promise<IPhotoMetadata | undefined>;
+  getById: (id: IPhoto["_id"]) => Promise<IPhotoBase | undefined>;
   delete: (id: IPhoto["_id"]) => Promise<void>;
   replace: (photo: IPhoto) => Promise<void>;
   find: (rendering?: IRendering) => Promise<IPhoto[]>;

@@ -50,8 +50,8 @@ export abstract class JestGlobalManager {
     }
     projectConfig.globals.__MONGO_URL__ = this.env.MONGO_URL;
     projectConfig.globals.__MONGO_DB_NAME__ = this.env.MONGO_DB;
-    projectConfig.globals.__MONGO_PHOTO_METADATA_COLLECTION__ =
-      this.env.MONGO_PHOTO_METADATA_COLLECTION;
+    projectConfig.globals.__MONGO_PHOTO_BASE_COLLECTION__ =
+      this.env.MONGO_PHOTO_BASE_COLLECTION;
       projectConfig.globals.__MONGO_TAG_COLLECTION__ =
       this.env.MONGO_TAG_COLLECTION;
 

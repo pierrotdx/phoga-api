@@ -1,15 +1,15 @@
 import {
+  FakePhotoBaseDb,
   FakePhotoImageDb,
-  FakePhotoMetadataDb,
   dumbPhotoGenerator,
 } from "../../../adapters/";
-import { IPhotoImageDb, IPhotoMetadataDb } from "../../../core/gateways";
+import { IPhotoBaseDb, IPhotoImageDb } from "../../../core/gateways";
 import { PhotoTestUtils } from "../../../core/test-utils";
 import { IDeletePhotoUseCase, IPhoto } from "../../models";
 import { DeletePhotoUseCase } from "./delete-photo";
 
 describe(`${DeletePhotoUseCase.name}`, () => {
-  let photoMetadataDb: IPhotoMetadataDb;
+  let photoBaseDb: IPhotoBaseDb;
   let photoImageDb: IPhotoImageDb;
 
   let testedUseCase: IDeletePhotoUseCase;
@@ -17,13 +17,13 @@ describe(`${DeletePhotoUseCase.name}`, () => {
   let testUtils: PhotoTestUtils;
 
   beforeEach(async () => {
-    photoMetadataDb = new FakePhotoMetadataDb();
+    photoBaseDb = new FakePhotoBaseDb();
     photoImageDb = new FakePhotoImageDb();
 
-    testedUseCase = new DeletePhotoUseCase(photoMetadataDb, photoImageDb);
+    testedUseCase = new DeletePhotoUseCase(photoBaseDb, photoImageDb);
 
     testUtils = new PhotoTestUtils(
-      photoMetadataDb,
+      photoBaseDb,
       photoImageDb,
       testedUseCase,
     );
@@ -41,14 +41,14 @@ describe(`${DeletePhotoUseCase.name}`, () => {
       await testUtils.deletePhotoFromDb(photo._id);
     });
 
-    it("should delete photo's metadata and image from their respective DBs", async () => {
+    it("should delete photo's base data and image from their respective DBs", async () => {
       await testUtils.executeTestedUseCase(photo._id);
 
       await testUtils.expectPhotoToBeDeletedFromDbs(photo._id);
       testUtils.checkAssertions();
     });
 
-    it("should not delete metadata if image deletion failed", async () => {
+    it("should not delete photo's base data if image deletion failed", async () => {
       photoImageDb.delete = jest
         .fn()
         .mockImplementationOnce(() => Promise.reject("image-deletion failed"));

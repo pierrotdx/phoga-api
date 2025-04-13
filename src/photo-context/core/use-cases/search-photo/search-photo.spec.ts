@@ -1,21 +1,21 @@
 import { IRendering, SortDirection } from "#shared/models";
 
 import {
+  FakePhotoBaseDb,
   FakePhotoImageDb,
-  FakePhotoMetadataDb,
   dumbPhotoGenerator,
 } from "../../../adapters/";
 import {
   IPhoto,
+  IPhotoBaseDb,
   IPhotoImageDb,
-  IPhotoMetadataDb,
   ISearchPhotoUseCase,
   PhotoTestUtils,
 } from "../../../core/";
 import { SearchPhotoUseCase } from "./search-photo";
 
 describe(`${SearchPhotoUseCase.name}`, () => {
-  let photoMetadataDb: IPhotoMetadataDb;
+  let photoBaseDb: IPhotoBaseDb;
   let photoImageDb: IPhotoImageDb;
 
   let testedUseCase: ISearchPhotoUseCase;
@@ -23,16 +23,12 @@ describe(`${SearchPhotoUseCase.name}`, () => {
   let testUtils: PhotoTestUtils<IPhoto[]>;
 
   beforeEach(async () => {
-    photoMetadataDb = new FakePhotoMetadataDb();
+    photoBaseDb = new FakePhotoBaseDb();
     photoImageDb = new FakePhotoImageDb();
 
-    testedUseCase = new SearchPhotoUseCase(photoMetadataDb, photoImageDb);
+    testedUseCase = new SearchPhotoUseCase(photoBaseDb, photoImageDb);
 
-    testUtils = new PhotoTestUtils(
-      photoMetadataDb,
-      photoImageDb,
-      testedUseCase,
-    );
+    testUtils = new PhotoTestUtils(photoBaseDb, photoImageDb, testedUseCase);
   });
 
   describe(`${SearchPhotoUseCase.prototype.execute.name}`, () => {

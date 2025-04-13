@@ -12,7 +12,7 @@ import {
   deletePhotoPath,
   deleteTagPath,
   getImagePath,
-  getMetadataPath,
+  getPhotoBasePath,
   getTagPath,
   photoEntryPoints,
   replacePhotoPath,
@@ -311,7 +311,7 @@ describe("ExpressAppServer", () => {
         await testUtils.deletePhotoFromDb(photoToAdd._id);
       });
 
-      it("should add the photo image and metadata to their respective DBs", async () => {
+      it("should add the photo image and base data to their respective DBs", async () => {
         const token = await testUtils.getToken();
         const addReq = request(app)
           .post(addPhotoPath)
@@ -322,7 +322,7 @@ describe("ExpressAppServer", () => {
       });
     });
 
-    describe(`GET ${getMetadataPath}`, () => {
+    describe(`GET ${getPhotoBasePath}`, () => {
       let expectedPhoto: IPhoto;
 
       beforeEach(async () => {
@@ -336,9 +336,9 @@ describe("ExpressAppServer", () => {
         await testUtils.deletePhotoFromDb(expectedPhoto._id);
       });
 
-      it("should return the metadata of the photo with matching id", async () => {
+      it("should return the base data of the photo with matching id", async () => {
         const url = photoEntryPoints.getFullPathWithParams(
-          PhotoEntryPointId.GetPhotoMetadata,
+          PhotoEntryPointId.GetPhotoBase,
           { id: expectedPhoto._id },
         );
         const response = await request(app).get(url);
@@ -480,7 +480,7 @@ describe("ExpressAppServer", () => {
         await testUtils.deletePhotoFromDb(photoToDelete._id);
       });
 
-      it("should delete the image and metadata from their respective DBs of the targeted photo", async () => {
+      it("should delete the image and base data from their respective DBs of the targeted photo", async () => {
         const token = await testUtils.getToken();
         await request(app).delete(url).auth(token, { type: "bearer" });
         await testUtils.expectPhotoToBeDeletedFromDbs(photoToDelete._id);
