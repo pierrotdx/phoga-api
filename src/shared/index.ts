@@ -8,6 +8,6 @@ export * from "./lorem-ipsum";
 export * from "./models";
 export * from "./mongo";
 export * from "./schemas";
-export * from "./shared-test-utils";
+export * from "./test-utils";
 export * from "./uuid";
 export * from "./validators";

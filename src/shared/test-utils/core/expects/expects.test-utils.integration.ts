@@ -3,7 +3,7 @@ import {
   IAssertionsCounter,
 } from "#shared/assertions-counter";
 
-import { SharedTestUtils } from "./shared-test-utils";
+import { SharedTestUtils } from "./expects.test-utils";
 
 describe("SharedTestUtils", () => {
   let sharedTestUtils: SharedTestUtils;
