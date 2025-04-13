@@ -28,7 +28,7 @@ export class PhotoEntryPoints
     permissions: [Permission.PhotosRead],
   });
 
-  private readonly getPhotoMetadata = new EntryPoint("/:id/metadata", {
+  private readonly getPhotoBase = new EntryPoint("/:id/base", {
     parent: this.photoBase,
     permissions: [Permission.PhotosRead],
   });
@@ -56,7 +56,7 @@ export class PhotoEntryPoints
     [PhotoEntryPointId.AddPhoto]: this.addPhoto,
     [PhotoEntryPointId.DeletePhoto]: this.deletePhoto,
     [PhotoEntryPointId.GetPhotoImage]: this.getPhotoImage,
-    [PhotoEntryPointId.GetPhotoMetadata]: this.getPhotoMetadata,
+    [PhotoEntryPointId.GetPhotoBase]: this.getPhotoBase,
     [PhotoEntryPointId.ReplacePhoto]: this.replacePhoto,
     [PhotoEntryPointId.SearchPhoto]: this.searchPhoto,
   };

@@ -11,8 +11,8 @@ import {
   IGetPhotoParser,
   IGetPhotoUseCase,
   IPhoto,
+  IPhotoBaseDb,
   IPhotoImageDb,
-  IPhotoMetadataDb,
 } from "../..";
 
 export class GetPhotoImageController
@@ -24,11 +24,11 @@ export class GetPhotoImageController
   private readonly parser: IGetPhotoParser;
 
   constructor(
-    private readonly metadataDb: IPhotoMetadataDb,
+    private readonly photoBaseDb: IPhotoBaseDb,
     private readonly imageDb: IPhotoImageDb,
   ) {
     super();
-    this.useCase = new GetPhotoUseCase(this.metadataDb, this.imageDb);
+    this.useCase = new GetPhotoUseCase(this.photoBaseDb, this.imageDb);
     this.validator = new AjvValidator(GetPhotoSchema);
     this.parser = new GetPhotoParser();
   }

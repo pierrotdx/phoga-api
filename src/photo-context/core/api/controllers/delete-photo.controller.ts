@@ -9,8 +9,8 @@ import {
   IDeletePhotoParser,
   IDeletePhotoUseCase,
   IPhoto,
+  IPhotoBaseDb,
   IPhotoImageDb,
-  IPhotoMetadataDb,
 } from "../..";
 
 export class DeletePhotoController
@@ -22,11 +22,11 @@ export class DeletePhotoController
   private readonly parser: IDeletePhotoParser;
 
   constructor(
-    private readonly metadataDb: IPhotoMetadataDb,
+    private readonly photoBaseDb: IPhotoBaseDb,
     private readonly imageDb: IPhotoImageDb,
   ) {
     super();
-    this.useCase = new DeletePhotoUseCase(this.metadataDb, this.imageDb);
+    this.useCase = new DeletePhotoUseCase(this.photoBaseDb, this.imageDb);
     this.validator = new AjvValidator(DeletePhotoSchema);
     this.parser = new DeletePhotoParser();
   }

@@ -1,17 +1,17 @@
 import { isEmpty, isNil } from "ramda";
 
-import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
+import { IPhotoBaseDb, IPhotoImageDb } from "../../gateways";
 import { IAddPhotoUseCase, IPhoto, Photo } from "../../models";
 
 export class AddPhotoUseCase implements IAddPhotoUseCase {
   constructor(
-    private readonly photoMetadataDb: IPhotoMetadataDb,
+    private readonly photoBaseDb: IPhotoBaseDb,
     private readonly photoImageDb: IPhotoImageDb,
   ) {}
 
   async execute(photo: IPhoto): Promise<void> {
     await this.uploadImage(photo);
-    await this.photoMetadataDb.insert(photo);
+    await this.photoBaseDb.insert(photo);
   }
 
   private async uploadImage(photo: Photo) {

@@ -1,16 +1,16 @@
 import { omit } from "ramda";
 
 import {
+  FakePhotoBaseDb,
   FakePhotoImageDb,
-  FakePhotoMetadataDb,
   dumbPhotoGenerator,
 } from "../../../adapters/";
-import { IPhotoImageDb, IPhotoMetadataDb, PhotoTestUtils } from "../../../core";
+import { IPhotoBaseDb, IPhotoImageDb, PhotoTestUtils } from "../../../core";
 import { IAddPhotoUseCase, IPhoto } from "../../models";
 import { AddPhotoUseCase } from "./add-photo";
 
 describe(`${AddPhotoUseCase.name}`, () => {
-  let photoMetadataDb: IPhotoMetadataDb;
+  let photoBaseDb: IPhotoBaseDb;
   let photoImageDb: IPhotoImageDb;
 
   let testedUseCase: IAddPhotoUseCase;
@@ -18,20 +18,16 @@ describe(`${AddPhotoUseCase.name}`, () => {
   let testUtils: PhotoTestUtils<void>;
 
   beforeEach(async () => {
-    photoMetadataDb = new FakePhotoMetadataDb();
+    photoBaseDb = new FakePhotoBaseDb();
     photoImageDb = new FakePhotoImageDb();
 
-    testedUseCase = new AddPhotoUseCase(photoMetadataDb, photoImageDb);
+    testedUseCase = new AddPhotoUseCase(photoBaseDb, photoImageDb);
 
-    testUtils = new PhotoTestUtils(
-      photoMetadataDb,
-      photoImageDb,
-      testedUseCase,
-    );
+    testUtils = new PhotoTestUtils(photoBaseDb, photoImageDb, testedUseCase);
   });
 
   describe(`${AddPhotoUseCase.prototype.execute.name}`, () => {
-    it("should upload photo image and metadata to their respective DBs", async () => {
+    it("should upload photo image and data to their respective DBs", async () => {
       const photo = await dumbPhotoGenerator.generatePhoto();
 
       await testUtils.executeTestedUseCase(photo);
@@ -47,7 +43,7 @@ describe(`${AddPhotoUseCase.name}`, () => {
       ${"null"}      | ${null}
       ${"empty"}     | ${{}}
     `(
-      "should throw if image buffer is `$case` and not upload metadata",
+      "should throw if image buffer is `$case` and not upload photo data",
       async ({ imageBuffer }) => {
         const photo = await dumbPhotoGenerator.generatePhoto();
         const photoWithInvalidImage = omit(["imageBuffer"], photo) as IPhoto;

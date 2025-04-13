@@ -2,7 +2,7 @@ import { ExpressController, IExpressController } from "#shared/express";
 import { AjvValidator, IValidator } from "#shared/validators";
 import { type Request, type Response } from "express";
 
-import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
+import { IPhotoImageDb, IPhotoBaseDb } from "../../gateways";
 import {
   IPhoto,
   IReplacePhotoParser,
@@ -21,11 +21,11 @@ export class ReplacePhotoController
   private readonly parser: IReplacePhotoParser;
 
   constructor(
-    private readonly metadataDb: IPhotoMetadataDb,
+    private readonly photoBaseDb: IPhotoBaseDb,
     private readonly imageDb: IPhotoImageDb,
   ) {
     super();
-    this.useCase = new ReplacePhotoUseCase(this.metadataDb, this.imageDb);
+    this.useCase = new ReplacePhotoUseCase(this.photoBaseDb, this.imageDb);
     this.validator = new AjvValidator(AddPhotoSchema);
     this.parser = new AddPhotoParser();
   }

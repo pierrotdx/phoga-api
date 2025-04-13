@@ -10,11 +10,11 @@ import {
   IGetPhotoParser,
   IGetPhotoUseCase,
   IPhoto,
+  IPhotoBaseDb,
   IPhotoImageDb,
-  IPhotoMetadataDb,
 } from "../..";
 
-export class GetPhotoMetadataController
+export class GetPhotoBaseController
   extends ExpressController
   implements IExpressController
 {
@@ -23,11 +23,11 @@ export class GetPhotoMetadataController
   private readonly parser: IGetPhotoParser;
 
   constructor(
-    private readonly metadataDb: IPhotoMetadataDb,
+    private readonly photoBaseDb: IPhotoBaseDb,
     private readonly imageDb: IPhotoImageDb,
   ) {
     super();
-    this.useCase = new GetPhotoUseCase(this.metadataDb, this.imageDb);
+    this.useCase = new GetPhotoUseCase(this.photoBaseDb, this.imageDb);
     this.validator = new AjvValidator(GetPhotoSchema);
     this.parser = new GetPhotoParser();
   }
@@ -40,7 +40,7 @@ export class GetPhotoMetadataController
 
   protected async executeUseCase(_id: IPhoto["_id"]): Promise<IPhoto> {
     return await this.useCase.execute(_id, {
-      fields: [GetPhotoField.Metadata],
+      fields: [GetPhotoField.Base],
     });
   }
 

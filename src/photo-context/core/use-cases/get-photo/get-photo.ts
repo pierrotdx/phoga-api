@@ -1,16 +1,22 @@
-import { IPhotoImageDb, IPhotoMetadataDb } from "../../gateways";
-import { GetPhotoField, IGetPhotoOptions, IGetPhotoUseCase, IPhoto, Photo } from "../../models";
+import { IPhotoBaseDb, IPhotoImageDb } from "../../gateways";
+import {
+  GetPhotoField,
+  IGetPhotoOptions,
+  IGetPhotoUseCase,
+  IPhoto,
+  Photo,
+} from "../../models";
 
 export class GetPhotoUseCase implements IGetPhotoUseCase {
   constructor(
-    private readonly photoMetadataDb: IPhotoMetadataDb,
+    private readonly photoBaseDb: IPhotoBaseDb,
     private readonly photoImageDb: IPhotoImageDb,
   ) {}
 
   async execute(
     id: IPhoto["_id"],
     options: IGetPhotoOptions = {
-      fields: [GetPhotoField.ImageBuffer, GetPhotoField.Metadata],
+      fields: [GetPhotoField.ImageBuffer, GetPhotoField.Base],
     },
   ): Promise<IPhoto> {
     const data: {
@@ -18,9 +24,9 @@ export class GetPhotoUseCase implements IGetPhotoUseCase {
       imageBuffer?: IPhoto["imageBuffer"];
     } = {};
 
-    const includeMetadata = options?.fields?.includes(GetPhotoField.Metadata);
-    if (includeMetadata) {
-      data.metadata = await this.photoMetadataDb.getById(id);
+    const includeBase = options?.fields?.includes(GetPhotoField.Base);
+    if (includeBase) {
+      data.metadata = (await this.photoBaseDb.getById(id))?.metadata;
     }
 
     const includeImageBuffer = options?.fields?.includes(

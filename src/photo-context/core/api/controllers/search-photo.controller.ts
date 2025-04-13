@@ -4,15 +4,16 @@ import { type Request, type Response } from "express";
 
 import {
   IPhoto,
+  IPhotoBase,
+  IPhotoBaseDb,
   IPhotoImageDb,
-  IPhotoMetadataDb,
   ISearchPhotoOptions,
   ISearchPhotoParser,
   ISearchPhotoUseCase,
   SearchPhotoUseCase,
 } from "../..";
 import { SearchPhotoParser } from "../parsers";
-import { GetPhotoSchema, SearchPhotoSchema } from "../schemas";
+import { SearchPhotoSchema } from "../schemas";
 
 export class SearchPhotoController
   extends ExpressController
@@ -23,11 +24,11 @@ export class SearchPhotoController
   private readonly parser: ISearchPhotoParser;
 
   constructor(
-    private readonly metadataDb: IPhotoMetadataDb,
+    private readonly photoBaseDb: IPhotoBaseDb,
     private readonly imageDb: IPhotoImageDb,
   ) {
     super();
-    this.useCase = new SearchPhotoUseCase(this.metadataDb, this.imageDb);
+    this.useCase = new SearchPhotoUseCase(this.photoBaseDb, this.imageDb);
     this.validator = new AjvValidator(SearchPhotoSchema);
     this.parser = new SearchPhotoParser();
   }
