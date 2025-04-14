@@ -3,6 +3,7 @@ import { IPhoto, PhotoEntryPointId, dumbPhotoGenerator } from "#photo-context";
 import { HttpErrorCode, IRendering, SortDirection } from "#shared/models";
 import { ISearchTagFilter, ITag, TagEntryPointId } from "#tag-context";
 import { type Express } from "express";
+import { omit } from "ramda";
 import request from "supertest";
 
 import { ExpressAppServer } from "./app-server";
@@ -12,7 +13,7 @@ import {
   deletePhotoPath,
   deleteTagPath,
   getImagePath,
-  getPhotoBasePath,
+  getPhotoDataPath,
   getTagPath,
   photoEntryPoints,
   replacePhotoPath,
@@ -322,11 +323,14 @@ describe("ExpressAppServer", () => {
       });
     });
 
-    describe(`GET ${getPhotoBasePath}`, () => {
+    describe(`GET ${getPhotoDataPath}`, () => {
       let expectedPhoto: IPhoto;
 
       beforeEach(async () => {
-        expectedPhoto = await dumbPhotoGenerator.generatePhoto();
+        expectedPhoto = omit(
+          ["imageBuffer"],
+          await dumbPhotoGenerator.generatePhoto(),
+        );
         delete expectedPhoto.imageBuffer;
 
         await testUtils.insertPhotoInDbs(expectedPhoto);
@@ -338,7 +342,7 @@ describe("ExpressAppServer", () => {
 
       it("should return the base data of the photo with matching id", async () => {
         const url = photoEntryPoints.getFullPathWithParams(
-          PhotoEntryPointId.GetPhotoBase,
+          PhotoEntryPointId.GetPhotoData,
           { id: expectedPhoto._id },
         );
         const response = await request(app).get(url);

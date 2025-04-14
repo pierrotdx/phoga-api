@@ -1,5 +1,6 @@
 import formidable, { Fields } from "formidable";
 import { isEmpty } from "ramda";
+import { stream } from "winston";
 
 import { assertPhoto } from "../../../assertions";
 import {
@@ -44,7 +45,7 @@ export class AddPhotoParser implements IAddPhotoParser {
     const metadata: IPhotoMetadata = {};
     const stringDate = data.date?.[0];
     if (stringDate) {
-      metadata.date = new Date(stringDate);
+      metadata.date = this.getDate(stringDate);
     }
     const description = data.description?.[0];
     if (description) {
@@ -61,5 +62,14 @@ export class AddPhotoParser implements IAddPhotoParser {
     if (!isEmpty(metadata)) {
       this.photo.metadata = metadata;
     }
+  }
+
+  private getDate(stringDate: string): Date {
+    const date = new Date(stringDate);
+    const isValidDate = date.toISOString() === stringDate;
+    if (!isValidDate) {
+      throw new Error(`invalid date '${stringDate}'`);
+    }
+    return date;
   }
 }

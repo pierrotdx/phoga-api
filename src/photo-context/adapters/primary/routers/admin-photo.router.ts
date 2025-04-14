@@ -6,7 +6,7 @@ import {
   AddPhotoController,
   DeletePhotoController,
   IAdminPhotoRouter,
-  IPhotoBaseDb,
+  IPhotoDataDb,
   IPhotoImageDb,
   PhotoEntryPointId,
   PhotoEntryPoints,
@@ -20,7 +20,7 @@ export class AdminPhotoRouter implements IAdminPhotoRouter {
 
   constructor(
     private readonly authHandler: IAuthHandler,
-    private readonly photoBaseDb: IPhotoBaseDb,
+    private readonly photoDataDb: IPhotoDataDb,
     private readonly imageDb: IPhotoImageDb,
   ) {
     this.setAddPhotoRoute();
@@ -33,7 +33,7 @@ export class AdminPhotoRouter implements IAdminPhotoRouter {
     const permissionsHandler = this.getPermissionHandler(
       PhotoEntryPointId.AddPhoto,
     );
-    const controller = new AddPhotoController(this.photoBaseDb, this.imageDb);
+    const controller = new AddPhotoController(this.photoDataDb, this.imageDb);
     this.router.post(path, permissionsHandler, controller.handler);
   }
 
@@ -43,7 +43,7 @@ export class AdminPhotoRouter implements IAdminPhotoRouter {
       PhotoEntryPointId.ReplacePhoto,
     );
     const controller = new ReplacePhotoController(
-      this.photoBaseDb,
+      this.photoDataDb,
       this.imageDb,
     );
     this.router.put(path, permissionsHandler, controller.handler);
@@ -55,7 +55,7 @@ export class AdminPhotoRouter implements IAdminPhotoRouter {
       PhotoEntryPointId.DeletePhoto,
     );
     const controller = new DeletePhotoController(
-      this.photoBaseDb,
+      this.photoDataDb,
       this.imageDb,
     );
     this.router.delete(path, permissionsHandler, controller.handler);

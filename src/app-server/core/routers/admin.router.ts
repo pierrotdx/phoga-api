@@ -1,5 +1,5 @@
 import { IAuthHandler } from "#auth-context";
-import { AdminPhotoRouter, IPhotoBaseDb, IPhotoImageDb } from "#photo-context";
+import { AdminPhotoRouter, IPhotoDataDb, IPhotoImageDb } from "#photo-context";
 import { BaseEntryPoints, BaseEntryPointsId } from "#shared/entry-points";
 import { IExpressRouter } from "#shared/express";
 import { AdminTagRouter, ITagDb } from "#tag-context";
@@ -12,7 +12,7 @@ export class AdminRouter implements IExpressRouter {
 
   constructor(
     private readonly authHandler: IAuthHandler,
-    private readonly photoBaseDb: IPhotoBaseDb,
+    private readonly photoDataDb: IPhotoDataDb,
     private readonly imageDb: IPhotoImageDb,
     private readonly tagDb: ITagDb,
   ) {
@@ -27,11 +27,11 @@ export class AdminRouter implements IExpressRouter {
 
   private addAdminPhotoRouter() {
     const path = this.entryPoints.getRelativePath(
-      BaseEntryPointsId.AdminPhotoBase,
+      BaseEntryPointsId.AdminPhotoData,
     );
     const adminPhotoRouter = new AdminPhotoRouter(
       this.authHandler,
-      this.photoBaseDb,
+      this.photoDataDb,
       this.imageDb,
     ).get();
     this.router.use(path, adminPhotoRouter);

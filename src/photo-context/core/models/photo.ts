@@ -1,7 +1,7 @@
-import { IPhotoBase } from "./photo-base";
+import { IPhotoData } from "./photo-data";
 import { IPhotoMetadata } from "./photo-metadata";
 
-export interface IPhoto extends IPhotoBase {
+export interface IPhoto extends IPhotoData {
   imageBuffer?: Buffer;
 }
 

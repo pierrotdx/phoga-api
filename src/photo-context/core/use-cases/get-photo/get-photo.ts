@@ -1,4 +1,4 @@
-import { IPhotoBaseDb, IPhotoImageDb } from "../../gateways";
+import { IPhotoDataDb, IPhotoImageDb } from "../../gateways";
 import {
   GetPhotoField,
   IGetPhotoOptions,
@@ -9,7 +9,7 @@ import {
 
 export class GetPhotoUseCase implements IGetPhotoUseCase {
   constructor(
-    private readonly photoBaseDb: IPhotoBaseDb,
+    private readonly photoDataDb: IPhotoDataDb,
     private readonly photoImageDb: IPhotoImageDb,
   ) {}
 
@@ -26,7 +26,7 @@ export class GetPhotoUseCase implements IGetPhotoUseCase {
 
     const includeBase = options?.fields?.includes(GetPhotoField.Base);
     if (includeBase) {
-      data.metadata = (await this.photoBaseDb.getById(id))?.metadata;
+      data.metadata = (await this.photoDataDb.getById(id))?.metadata;
     }
 
     const includeImageBuffer = options?.fields?.includes(

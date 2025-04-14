@@ -5,27 +5,30 @@ import {
 import { IRendering, SortDirection } from "#shared/models";
 import { omit } from "ramda";
 
-import { dumbPhotoGenerator } from "../../..";
-import { IPhoto } from "../../../../core";
-import { PhotoBaseDbMongo } from "./photo-base-db.mongo";
-import { PhotoBaseDbMongoTestUtils } from "./photo-base-db.mongo.test-utils";
+import { IPhoto, IPhotoStoredData } from "../../../../core";
+import { PhotoDataDbMongo } from "./photo-data-db.mongo";
+import { PhotoDataDbMongoTestUtils } from "./photo-data-db.mongo.test-utils";
 
-describe("PhotoBaseDbMongo", () => {
+describe("PhotoDataDbMongo", () => {
   let storedPhotos: IPhoto[];
 
-  const testUtils = new PhotoBaseDbMongoTestUtils(
+  const testUtils = new PhotoDataDbMongoTestUtils(
     global.__MONGO_URL__,
     global.__MONGO_DB_NAME__,
-    { PhotoBase: global.__MONGO_PHOTO_BASE_COLLECTION__ },
+    { PhotoData: global.__MONGO_PHOTO_BASE_COLLECTION__ },
   );
-  let photoBaseDbMongo: PhotoBaseDbMongo;
+  let photoDataDbMongo: PhotoDataDbMongo;
   let assertionsCounter: IAssertionsCounter;
   const timeout = 10000; // generating multiple stored photos
 
   beforeEach(async () => {
     await testUtils.internalSetup();
-    photoBaseDbMongo = testUtils.photoBaseDb;
-    storedPhotos = [...(await dumbPhotoGenerator.generatePhotos(3))];
+    photoDataDbMongo = testUtils.photoDataDb;
+    storedPhotos = [
+      await testUtils.generatePhotoDataStore(),
+      await testUtils.generatePhotoDataStore(),
+      await testUtils.generatePhotoDataStore(),
+    ];
     await testUtils.insertPhotosInDbs(storedPhotos);
     assertionsCounter = new AssertionsCounter();
   }, timeout);
@@ -36,11 +39,11 @@ describe("PhotoBaseDbMongo", () => {
     await testUtils.internalTeardown();
   });
 
-  describe(`${PhotoBaseDbMongo.prototype.insert.name}`, () => {
-    let photoToInsert: IPhoto;
+  describe(`${PhotoDataDbMongo.prototype.insert.name}`, () => {
+    let photoToInsert: IPhotoStoredData;
 
     beforeEach(async () => {
-      photoToInsert = await dumbPhotoGenerator.generatePhoto();
+      photoToInsert = await testUtils.generatePhotoDataStore();
     });
 
     afterEach(async () => {
@@ -49,7 +52,7 @@ describe("PhotoBaseDbMongo", () => {
 
     it("should insert a doc with the photo base data", async () => {
       const docBefore = await testUtils.getDocFromDb(photoToInsert._id);
-      await photoBaseDbMongo.insert(photoToInsert);
+      await photoDataDbMongo.insert(photoToInsert);
       await testUtils.expectDocToBeInsertedWithCorrectId(
         docBefore,
         photoToInsert,
@@ -58,24 +61,24 @@ describe("PhotoBaseDbMongo", () => {
     });
   });
 
-  describe(`${PhotoBaseDbMongo.prototype.getById.name}`, () => {
+  describe(`${PhotoDataDbMongo.prototype.getById.name}`, () => {
     it("should return the photo base data of the doc matching the input id", async () => {
-      const storedPhotoBase = omit(["imageBuffer"], storedPhotos[0]);
-      const photoBase = await photoBaseDbMongo.getById(storedPhotoBase._id);
-      expect(photoBase).toEqual(storedPhotoBase);
+      const storedPhotoData = omit(["imageBuffer"], storedPhotos[0]);
+      const photoData = await photoDataDbMongo.getById(storedPhotoData._id);
+      expect(photoData).toEqual(storedPhotoData);
       expect.assertions(1);
     });
   });
 
-  describe(`${PhotoBaseDbMongo.prototype.replace.name}`, () => {
+  describe(`${PhotoDataDbMongo.prototype.replace.name}`, () => {
     it("should replace the required doc with the input photo base data", async () => {
       const storedPhoto = storedPhotos[0];
       const docBefore = await testUtils.getDocFromDb(storedPhoto._id);
-      const replacingPhoto = await dumbPhotoGenerator.generatePhoto({
+      const replacingPhoto = await testUtils.generatePhotoDataStore({
         _id: storedPhoto._id,
       });
-      await photoBaseDbMongo.replace(replacingPhoto);
-      await testUtils.expectPhotoBaseToReplaceDoc(
+      await photoDataDbMongo.replace(replacingPhoto);
+      await testUtils.expectPhotoDataToReplaceDoc(
         storedPhoto,
         replacingPhoto,
         docBefore,
@@ -84,11 +87,11 @@ describe("PhotoBaseDbMongo", () => {
     });
   });
 
-  describe(`${PhotoBaseDbMongo.prototype.delete.name}`, () => {
+  describe(`${PhotoDataDbMongo.prototype.delete.name}`, () => {
     it("should delete the doc matching the input id", async () => {
       const storedPhoto = storedPhotos[0];
       const docBefore = await testUtils.getDocFromDb(storedPhoto._id);
-      await photoBaseDbMongo.delete(storedPhoto._id);
+      await photoDataDbMongo.delete(storedPhoto._id);
       await testUtils.expectDocToBeDeleted(
         storedPhoto,
         docBefore,
@@ -97,9 +100,9 @@ describe("PhotoBaseDbMongo", () => {
     });
   });
 
-  describe(`${PhotoBaseDbMongo.prototype.find.name}`, () => {
+  describe(`${PhotoDataDbMongo.prototype.find.name}`, () => {
     it("should return the docs in DB", async () => {
-      const photos = await photoBaseDbMongo.find();
+      const photos = await photoDataDbMongo.find();
       testUtils.expectMatchingPhotoArrays(
         storedPhotos,
         photos,
@@ -120,7 +123,7 @@ describe("PhotoBaseDbMongo", () => {
             storedPhotos,
             rendering.dateOrder,
           );
-          const result = await photoBaseDbMongo.find(rendering);
+          const result = await photoDataDbMongo.find(rendering);
           testUtils.expectMatchingPhotoArrays(
             expectedResult,
             result,
@@ -140,7 +143,7 @@ describe("PhotoBaseDbMongo", () => {
       `(
         "should return at most $rendering.size results when required",
         async ({ rendering }: { rendering: IRendering }) => {
-          const result = await photoBaseDbMongo.find(rendering);
+          const result = await photoDataDbMongo.find(rendering);
           expect(result.length).toEqual(rendering.size);
           expect.assertions(1);
         },
@@ -168,7 +171,7 @@ describe("PhotoBaseDbMongo", () => {
             SortDirection.Ascending,
           );
           const expectedPhoto = ascendingPhotos[docIndex];
-          const result = await photoBaseDbMongo.find(rendering);
+          const result = await photoDataDbMongo.find(rendering);
           testUtils.expectMatchingPhotos(
             expectedPhoto,
             result[0],

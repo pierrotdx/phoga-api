@@ -2,17 +2,17 @@ import { readFile } from "fs/promises";
 import { omit, pick } from "ramda";
 
 import {
-  FakePhotoBaseDb,
+  FakePhotoDataDb,
   FakePhotoImageDb,
   dumbPhotoGenerator,
 } from "../../../adapters/";
-import { IPhotoBaseDb, IPhotoImageDb } from "../../gateways";
+import { IPhotoDataDb, IPhotoImageDb } from "../../gateways";
 import { GetPhotoField, IGetPhotoUseCase, IPhoto } from "../../models";
 import { PhotoTestUtils } from "../../test-utils";
 import { GetPhotoUseCase } from "./get-photo";
 
 describe(`${GetPhotoUseCase.name}`, () => {
-  let photoBaseDb: IPhotoBaseDb;
+  let photoDataDb: IPhotoDataDb;
   let photoImageDb: IPhotoImageDb;
 
   let testedUseCase: IGetPhotoUseCase;
@@ -20,12 +20,12 @@ describe(`${GetPhotoUseCase.name}`, () => {
   let testUtils: PhotoTestUtils<IPhoto>;
 
   beforeEach(async () => {
-    photoBaseDb = new FakePhotoBaseDb();
+    photoDataDb = new FakePhotoDataDb();
     photoImageDb = new FakePhotoImageDb();
 
-    testedUseCase = new GetPhotoUseCase(photoBaseDb, photoImageDb);
+    testedUseCase = new GetPhotoUseCase(photoDataDb, photoImageDb);
 
-    testUtils = new PhotoTestUtils(photoBaseDb, photoImageDb, testedUseCase);
+    testUtils = new PhotoTestUtils(photoDataDb, photoImageDb, testedUseCase);
   });
 
   describe(`${GetPhotoUseCase.prototype.execute.name}`, () => {
@@ -58,9 +58,7 @@ describe(`${GetPhotoUseCase.name}`, () => {
         const expectedPhoto =
           fieldValue === "base"
             ? omit(["imageBuffer"], photo)
-            : omit(["metadata"
-              
-            ], photo);
+            : omit(["metadata"], photo);
 
         const result = await testUtils.executeTestedUseCase(photo._id, {
           fields: [fieldValue],

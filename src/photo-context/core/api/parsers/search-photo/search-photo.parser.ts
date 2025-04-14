@@ -1,17 +1,19 @@
 import { IRendering } from "#shared/models";
+import { Request } from "express";
 import { isEmpty } from "ramda";
 
 import { assertSearchPhotoOptions } from "../../../assertions";
 import { ISearchPhotoOptions, ISearchPhotoParser } from "../../../models";
 
 export class SearchPhotoParser implements ISearchPhotoParser {
-  parse(data: any): ISearchPhotoOptions {
-    if (isEmpty(data)) {
+  parse(data: Request): ISearchPhotoOptions {
+    const query = data.query;
+    if (isEmpty(query)) {
       return;
     }
     const searchOptions: ISearchPhotoOptions = {};
-    this.setExcludeImages(data, searchOptions);
-    this.setRendering(data, searchOptions);
+    this.setExcludeImages(query, searchOptions);
+    this.setRendering(query, searchOptions);
     assertSearchPhotoOptions(searchOptions);
     return searchOptions;
   }
@@ -20,7 +22,7 @@ export class SearchPhotoParser implements ISearchPhotoParser {
     data: any,
     searchOptions: ISearchPhotoOptions,
   ): void {
-    if (data.excludeImages) {
+    if (data?.excludeImages) {
       searchOptions.excludeImages = data.excludeImages === "true";
     }
   }

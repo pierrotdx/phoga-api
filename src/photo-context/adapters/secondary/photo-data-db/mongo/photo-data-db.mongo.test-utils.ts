@@ -3,20 +3,22 @@ import { SortDirection } from "#shared/models";
 import { IMongoCollections, MongoManager } from "#shared/mongo";
 import { clone, omit } from "ramda";
 
+import { dumbPhotoGenerator } from "../../../";
 import {
   IPhoto,
-  IPhotoBase,
+  IPhotoData,
+  IPhotoStoredData,
   PhotoTestUtils,
   comparePhotoDates,
 } from "../../../../core";
-import { PhotoBaseDbMongo } from "./photo-base-db.mongo";
+import { PhotoDataDbMongo } from "./photo-data-db.mongo";
 
-type TDoc = IPhotoBase;
+type TDoc = IPhotoData;
 
-export class PhotoBaseDbMongoTestUtils {
+export class PhotoDataDbMongoTestUtils {
   private readonly mongoManager: MongoManager;
   private photoTestUtils: PhotoTestUtils;
-  public photoBaseDb: PhotoBaseDbMongo;
+  public photoDataDb: PhotoDataDbMongo;
 
   constructor(
     mongoUrl: string,
@@ -29,11 +31,11 @@ export class PhotoBaseDbMongoTestUtils {
   async internalSetup(): Promise<void> {
     await this.mongoManager.open();
     this.setupDb();
-    this.photoTestUtils = new PhotoTestUtils(this.photoBaseDb, undefined);
+    this.photoTestUtils = new PhotoTestUtils(this.photoDataDb, undefined);
   }
 
   private setupDb(): void {
-    this.photoBaseDb = new PhotoBaseDbMongo(this.mongoManager);
+    this.photoDataDb = new PhotoDataDbMongo(this.mongoManager);
   }
 
   async internalTeardown(): Promise<void> {
@@ -41,7 +43,7 @@ export class PhotoBaseDbMongoTestUtils {
   }
 
   async getDocFromDb(_id: IPhoto["_id"]): Promise<TDoc> {
-    return await this.photoTestUtils.getPhotoBaseFromDb(_id);
+    return await this.photoTestUtils.getPhotoDataStoreFromDb(_id);
   }
 
   async insertPhotosInDbs(photos: IPhoto[]): Promise<void> {
@@ -54,6 +56,14 @@ export class PhotoBaseDbMongoTestUtils {
 
   async deletePhotosInDbs(photoIds: IPhoto["_id"][]): Promise<void> {
     await this.photoTestUtils.deletePhotosFromDb(photoIds);
+  }
+
+  async generatePhotoDataStore(params?: {
+    _id?: string;
+  }): Promise<IPhotoStoredData> {
+    const photo = await dumbPhotoGenerator.generatePhoto({ ...params });
+    const photoDataStore: IPhotoStoredData = omit(["imageBuffer"], photo);
+    return photoDataStore;
   }
 
   expectMatchingPhotos(
@@ -113,7 +123,7 @@ export class PhotoBaseDbMongoTestUtils {
     assertionsCounter.increase(2);
   }
 
-  async expectPhotoBaseToReplaceDoc(
+  async expectPhotoDataToReplaceDoc(
     initPhoto: IPhoto,
     expectedPhoto: IPhoto,
     docBefore: TDoc,
@@ -134,8 +144,8 @@ export class PhotoBaseDbMongoTestUtils {
     doc: TDoc,
     assertionsCounter: IAssertionsCounter,
   ): void {
-    const expectedPhotoBase: IPhotoBase = omit(["imageBuffer"], expectedPhoto);
-    expect(doc).toEqual(expectedPhotoBase);
+    const expectedPhotoData: IPhotoData = omit(["imageBuffer"], expectedPhoto);
+    expect(doc).toEqual(expectedPhotoData);
     assertionsCounter.increase();
   }
 

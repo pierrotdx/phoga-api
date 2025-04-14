@@ -1,16 +1,16 @@
 import { omit } from "ramda";
 
 import {
-  FakePhotoBaseDb,
+  FakePhotoDataDb,
   FakePhotoImageDb,
   dumbPhotoGenerator,
 } from "../../../adapters/";
-import { IPhotoBaseDb, IPhotoImageDb, PhotoTestUtils } from "../../../core";
+import { IPhotoDataDb, IPhotoImageDb, PhotoTestUtils } from "../../../core";
 import { IAddPhotoUseCase, IPhoto } from "../../models";
 import { AddPhotoUseCase } from "./add-photo";
 
 describe(`${AddPhotoUseCase.name}`, () => {
-  let photoBaseDb: IPhotoBaseDb;
+  let photoDataDb: IPhotoDataDb;
   let photoImageDb: IPhotoImageDb;
 
   let testedUseCase: IAddPhotoUseCase;
@@ -18,12 +18,12 @@ describe(`${AddPhotoUseCase.name}`, () => {
   let testUtils: PhotoTestUtils<void>;
 
   beforeEach(async () => {
-    photoBaseDb = new FakePhotoBaseDb();
+    photoDataDb = new FakePhotoDataDb();
     photoImageDb = new FakePhotoImageDb();
 
-    testedUseCase = new AddPhotoUseCase(photoBaseDb, photoImageDb);
+    testedUseCase = new AddPhotoUseCase(photoDataDb, photoImageDb);
 
-    testUtils = new PhotoTestUtils(photoBaseDb, photoImageDb, testedUseCase);
+    testUtils = new PhotoTestUtils(photoDataDb, photoImageDb, testedUseCase);
   });
 
   describe(`${AddPhotoUseCase.prototype.execute.name}`, () => {

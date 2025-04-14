@@ -1,15 +1,15 @@
 import {
-  FakePhotoBaseDb,
+  FakePhotoDataDb,
   FakePhotoImageDb,
   dumbPhotoGenerator,
 } from "../../../adapters/";
-import { IPhotoBaseDb, IPhotoImageDb } from "../../../core/gateways";
+import { IPhotoDataDb, IPhotoImageDb } from "../../../core/gateways";
 import { PhotoTestUtils } from "../../../core/test-utils";
 import { IDeletePhotoUseCase, IPhoto } from "../../models";
 import { DeletePhotoUseCase } from "./delete-photo";
 
 describe(`${DeletePhotoUseCase.name}`, () => {
-  let photoBaseDb: IPhotoBaseDb;
+  let photoDataDb: IPhotoDataDb;
   let photoImageDb: IPhotoImageDb;
 
   let testedUseCase: IDeletePhotoUseCase;
@@ -17,16 +17,12 @@ describe(`${DeletePhotoUseCase.name}`, () => {
   let testUtils: PhotoTestUtils;
 
   beforeEach(async () => {
-    photoBaseDb = new FakePhotoBaseDb();
+    photoDataDb = new FakePhotoDataDb();
     photoImageDb = new FakePhotoImageDb();
 
-    testedUseCase = new DeletePhotoUseCase(photoBaseDb, photoImageDb);
+    testedUseCase = new DeletePhotoUseCase(photoDataDb, photoImageDb);
 
-    testUtils = new PhotoTestUtils(
-      photoBaseDb,
-      photoImageDb,
-      testedUseCase,
-    );
+    testUtils = new PhotoTestUtils(photoDataDb, photoImageDb, testedUseCase);
   });
 
   describe(`${DeletePhotoUseCase.prototype.execute.name}`, () => {

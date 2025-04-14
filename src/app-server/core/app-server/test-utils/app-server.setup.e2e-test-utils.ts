@@ -1,9 +1,9 @@
 import { Auth0TokenProvider, ExpressAuthHandler } from "#auth-context";
 import { ILogger, LoggerWinston } from "#logger-context";
 import {
-  IPhotoBaseDb,
+  IPhotoDataDb,
   IPhotoImageDb,
-  PhotoBaseDbMongo,
+  PhotoDataDbMongo,
   PhotoImageDbGcs,
 } from "#photo-context";
 import { MongoManager } from "#shared/mongo";
@@ -26,7 +26,7 @@ export class AppServerSetupE2ETestUtils {
 
   private readonly photoImageBucket: string;
 
-  protected photoBaseDb: IPhotoBaseDb;
+  protected photoDataDb: IPhotoDataDb;
   protected photoImageDbGcs: IPhotoImageDb;
   protected tagDb: ITagDb;
 
@@ -61,7 +61,7 @@ export class AppServerSetupE2ETestUtils {
       url: testEnv.__MONGO_URL__,
       dbName: testEnv.__MONGO_DB_NAME__,
       collections: {
-        PhotoBase: testEnv.__MONGO_PHOTO_BASE_COLLECTION__,
+        PhotoData: testEnv.__MONGO_PHOTO_BASE_COLLECTION__,
         Tags: testEnv.__MONGO_TAG_COLLECTION__,
       },
     };
@@ -87,7 +87,7 @@ export class AppServerSetupE2ETestUtils {
 
   protected async setupDbs(): Promise<void> {
     await this.openMongoConnection();
-    this.photoBaseDb = new PhotoBaseDbMongo(this.mongoManager);
+    this.photoDataDb = new PhotoDataDbMongo(this.mongoManager);
     this.photoImageDbGcs = new PhotoImageDbGcs(
       this.storage,
       this.photoImageBucket,
@@ -109,7 +109,7 @@ export class AppServerSetupE2ETestUtils {
     this.logger = new LoggerWinston(silentLogger);
 
     this.appServer = new ExpressAppServer(
-      this.photoBaseDb,
+      this.photoDataDb,
       this.photoImageDbGcs,
       this.tagDb,
       this.logger,

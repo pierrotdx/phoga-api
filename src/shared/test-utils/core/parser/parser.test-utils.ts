@@ -16,6 +16,7 @@ export abstract class ParserTestUtils<TParser extends IParser<unknown>> {
 
   protected parsedData: unknown;
   protected response: TestResponse;
+  protected responseError: any;
 
   private readonly assertionsCounter: IAssertionsCounter =
     new AssertionsCounter();
@@ -31,11 +32,11 @@ export abstract class ParserTestUtils<TParser extends IParser<unknown>> {
     next: NextFunction,
   ) => {
     try {
-      this.parsedData = this.testedParser.parse(req);
+      this.parsedData = await this.testedParser.parse(req);
       res.status(200).json();
       next();
     } catch (err) {
-      console.error(err);
+      this.responseError = err;
       next(err);
     }
   };
@@ -52,6 +53,11 @@ export abstract class ParserTestUtils<TParser extends IParser<unknown>> {
   expectResponseStatusCode(expectedStatusCode: number): void {
     const statusCode = this.response.statusCode;
     expect(statusCode).toBe(expectedStatusCode);
+    this.assertionsCounter.increase();
+  }
+
+  expectParserToHaveThrown(): void {
+    expect(this.responseError).toBeDefined();
     this.assertionsCounter.increase();
   }
 

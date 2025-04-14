@@ -1,24 +1,21 @@
-import { UuidGenerator } from "#shared/uuid";
-
-import { GetPhotoParser } from "./get-photo.parser";
+import { GetPhotoParserTestUtils } from "./get-photo.parser.test-utils";
 
 describe("GetPhotoParser", () => {
-  let getPhotoParser: GetPhotoParser;
-  const id = new UuidGenerator().generate();
+  let testUtils: GetPhotoParserTestUtils;
 
   beforeEach(() => {
-    getPhotoParser = new GetPhotoParser();
+    testUtils = new GetPhotoParserTestUtils();
   });
 
-  it.each`
-    inputData | expectedData
-    ${{ id }} | ${id}
-  `(
-    "should extract correctly from $inputData to $expectedData",
-    ({ expectedData, inputData }) => {
-      const parsedData = getPhotoParser.parse(inputData);
-      expect(parsedData).toEqual(expectedData);
-      expect.assertions(1);
-    },
-  );
+  describe("parse", () => {
+    it("should correctly parse the request path parameter", async () => {
+      const expectedData = "photo-id";
+
+      await testUtils.sendRequest(expectedData);
+
+      testUtils.expectResponseStatusCode(200);
+      testUtils.expectParsedDataToBe(expectedData);
+      testUtils.checkAssertions();
+    });
+  });
 });

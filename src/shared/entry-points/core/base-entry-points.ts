@@ -10,7 +10,7 @@ export class BaseEntryPoints
 {
   private readonly base = new EntryPoint("/");
 
-  private readonly photoBase = new EntryPoint("/photo", {
+  private readonly photoData = new EntryPoint("/photo", {
     parent: this.base,
   });
 
@@ -23,7 +23,7 @@ export class BaseEntryPoints
     permissions: [Permission.RestrictedRead],
   });
 
-  private readonly adminPhotoBase = new EntryPoint("/photo", {
+  private readonly adminPhotoData = new EntryPoint("/photo", {
     parent: this.adminBase,
   });
 
@@ -33,10 +33,10 @@ export class BaseEntryPoints
 
   protected readonly entryPoints: Record<BaseEntryPointsId, EntryPoint> = {
     [BaseEntryPointsId.Base]: this.base,
-    [BaseEntryPointsId.PhotoBase]: this.photoBase,
+    [BaseEntryPointsId.PhotoData]: this.photoData,
     [BaseEntryPointsId.TagBase]: this.tagBase,
     [BaseEntryPointsId.AdminBase]: this.adminBase,
-    [BaseEntryPointsId.AdminPhotoBase]: this.adminPhotoBase,
+    [BaseEntryPointsId.AdminPhotoData]: this.adminPhotoData,
     [BaseEntryPointsId.AdminTagBase]: this.adminTagBase,
   };
 }

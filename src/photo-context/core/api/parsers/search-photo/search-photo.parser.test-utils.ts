@@ -1,11 +1,34 @@
-import { IAssertionsCounter } from "#shared/assertions-counter";
-import { SortDirection } from "#shared/models";
+import { IRendering, SortDirection } from "#shared/models";
+import { ParserTestUtils } from "#shared/test-utils";
+import { isEmpty } from "ramda";
+import request, { Test } from "supertest";
 
-import { assertSearchPhotoOptions } from "../../../assertions";
-import { ISearchPhotoOptions } from "../../../models";
+import { ISearchPhotoOptions, ISearchPhotoParser } from "../../../models";
+import { SearchPhotoParser } from "./search-photo.parser";
 
-export class SearchPhotoParserTestUtils {
-  generateInputData(
+type TQueryParams = ReturnType<
+  typeof SearchPhotoParserTestUtils.prototype.generateQueryParams
+>;
+
+export class SearchPhotoParserTestUtils extends ParserTestUtils<ISearchPhotoParser> {
+  protected testedParser: ISearchPhotoParser = new SearchPhotoParser();
+  private readonly url = "/";
+
+  constructor() {
+    super();
+    this.setupApp();
+  }
+
+  protected setupRouter(): void {
+    this.app.get(this.url, this.requestHandler);
+  }
+
+  protected getRequest(queryParams: unknown): Test {
+    const req = request(this.app).get(this.url).query(queryParams);
+    return req;
+  }
+
+  generateQueryParams(
     excludesImages: boolean = true,
     dateOrder: string = SortDirection.Ascending,
   ) {
@@ -17,86 +40,24 @@ export class SearchPhotoParserTestUtils {
     };
   }
 
-  expectValidType(
-    parsedData: unknown,
-    assertionsCounter: IAssertionsCounter,
-  ): void {
-    const isSearchPhotoOptions = assertSearchPhotoOptions(parsedData);
-    expect(isSearchPhotoOptions).toBe(true);
-    assertionsCounter.increase();
-  }
-
-  expectParsedDataMatchingInputData(
-    parsedData: ISearchPhotoOptions,
-    inputData: ReturnType<typeof this.generateInputData>,
-    assertionsCounter: IAssertionsCounter,
-  ): void {
-    this.expectExcludeImagesToMatchInputData(
-      parsedData,
-      inputData,
-      assertionsCounter,
-    );
-    this.expectRenderingSizeToMatchInputDate(
-      parsedData,
-      inputData,
-      assertionsCounter,
-    );
-    this.expectRenderingFromToMatchInputDate(
-      parsedData,
-      inputData,
-      assertionsCounter,
-    );
-    this.expectRenderingDateOrderToMatchInputDate(
-      parsedData,
-      inputData,
-      assertionsCounter,
-    );
-  }
-
-  private expectExcludeImagesToMatchInputData(
-    parsedData: ISearchPhotoOptions,
-    inputData: ReturnType<typeof this.generateInputData>,
-    assertionsCounter: IAssertionsCounter,
-  ): void {
-    if (typeof inputData.excludeImages !== "undefined") {
-      const stringifiedExcludeImages = JSON.stringify(parsedData.excludeImages);
-      expect(stringifiedExcludeImages).toEqual(inputData.excludeImages);
-      assertionsCounter.increase();
+  getExpectedData(queryParams: TQueryParams): ISearchPhotoOptions {
+    const searchOptions: ISearchPhotoOptions = {};
+    const rendering: IRendering = {};
+    if (queryParams.excludeImages) {
+      searchOptions.excludeImages = JSON.parse(queryParams.excludeImages);
     }
-  }
-
-  private expectRenderingSizeToMatchInputDate(
-    parsedData: ISearchPhotoOptions,
-    inputData: ReturnType<typeof this.generateInputData>,
-    assertionsCounter: IAssertionsCounter,
-  ): void {
-    if (typeof inputData.size !== "undefined") {
-      const stringifiedSize = JSON.stringify(parsedData.rendering?.size);
-      expect(stringifiedSize).toEqual(inputData.size);
-      assertionsCounter.increase();
+    if (queryParams.dateOrder) {
+      rendering.dateOrder = queryParams.dateOrder as SortDirection;
     }
-  }
-
-  private expectRenderingFromToMatchInputDate(
-    parsedData: ISearchPhotoOptions,
-    inputData: ReturnType<typeof this.generateInputData>,
-    assertionsCounter: IAssertionsCounter,
-  ): void {
-    if (typeof inputData.from !== "undefined") {
-      const stringifiedFrom = JSON.stringify(parsedData.rendering?.from);
-      expect(stringifiedFrom).toEqual(inputData.from);
-      assertionsCounter.increase();
+    if (queryParams.from) {
+      rendering.from = parseInt(queryParams.from);
     }
-  }
-
-  private expectRenderingDateOrderToMatchInputDate(
-    parsedData: ISearchPhotoOptions,
-    inputData: ReturnType<typeof this.generateInputData>,
-    assertionsCounter: IAssertionsCounter,
-  ): void {
-    if (inputData.dateOrder) {
-      expect(parsedData.rendering?.dateOrder).toEqual(inputData.dateOrder);
-      assertionsCounter.increase();
+    if (queryParams.size) {
+      rendering.size = parseInt(queryParams.size);
     }
+    if (!isEmpty(rendering)) {
+      searchOptions.rendering = rendering;
+    }
+    return searchOptions;
   }
 }

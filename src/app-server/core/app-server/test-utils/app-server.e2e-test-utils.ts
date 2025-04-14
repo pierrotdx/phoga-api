@@ -24,7 +24,7 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
   private testUtilsFactory() {
     this.expressSharedTestUtils = new ExpressPhotoTestUtils();
     this.photoTestUtils = new PhotoTestUtils(
-      this.photoBaseDb,
+      this.photoDataDb,
       this.photoImageDbGcs,
     );
     this.tagTestUtils = new TagTestUtils(this.tagDb);

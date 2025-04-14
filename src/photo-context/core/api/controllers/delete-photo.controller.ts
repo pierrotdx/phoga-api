@@ -9,7 +9,7 @@ import {
   IDeletePhotoParser,
   IDeletePhotoUseCase,
   IPhoto,
-  IPhotoBaseDb,
+  IPhotoDataDb,
   IPhotoImageDb,
 } from "../..";
 
@@ -22,11 +22,11 @@ export class DeletePhotoController
   private readonly parser: IDeletePhotoParser;
 
   constructor(
-    private readonly photoBaseDb: IPhotoBaseDb,
+    private readonly photoDataDb: IPhotoDataDb,
     private readonly imageDb: IPhotoImageDb,
   ) {
     super();
-    this.useCase = new DeletePhotoUseCase(this.photoBaseDb, this.imageDb);
+    this.useCase = new DeletePhotoUseCase(this.photoDataDb, this.imageDb);
     this.validator = new AjvValidator(DeletePhotoSchema);
     this.parser = new DeletePhotoParser();
   }
@@ -34,7 +34,7 @@ export class DeletePhotoController
   protected getParamsFromRequest(req: Request): string {
     const reqData = { ...req.params, ...req.query };
     this.validator.validate(reqData);
-    return this.parser.parse(reqData);
+    return this.parser.parse(req);
   }
 
   protected async executeUseCase(_id: IPhoto["_id"]): Promise<void> {

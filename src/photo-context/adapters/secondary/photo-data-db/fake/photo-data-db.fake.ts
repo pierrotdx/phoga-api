@@ -3,20 +3,21 @@ import { clone, omit } from "ramda";
 
 import {
   IPhoto,
-  IPhotoBase,
-  IPhotoBaseDb,
+  IPhotoData,
+  IPhotoDataDb,
+  IPhotoStoredData,
   comparePhotoDates,
 } from "../../../..";
 
-export class FakePhotoBaseDb implements IPhotoBaseDb {
-  public readonly docs: Record<IPhoto["_id"], IPhotoBase> = {};
+export class FakePhotoDataDb implements IPhotoDataDb {
+  public readonly docs: Record<IPhoto["_id"], IPhotoData> = {};
 
-  async insert(photo: IPhoto) {
-    const storePhoto: IPhotoBase = this.getPhotoBase(photo);
+  async insert(photo: IPhotoStoredData) {
+    const storePhoto: IPhotoData = this.getPhotoData(photo);
     this.docs[photo._id] = storePhoto;
   }
 
-  async getById(id: IPhoto["_id"]): Promise<IPhotoBase> {
+  async getById(id: IPhoto["_id"]): Promise<IPhotoData> {
     return clone(this.docs[id]);
   }
 
@@ -24,15 +25,15 @@ export class FakePhotoBaseDb implements IPhotoBaseDb {
     delete this.docs[id];
   }
 
-  async replace(photo: IPhoto): Promise<void> {
-    this.docs[photo._id] = this.getPhotoBase(photo);
+  async replace(photo: IPhotoStoredData): Promise<void> {
+    this.docs[photo._id] = this.getPhotoData(photo);
   }
 
-  private getPhotoBase(photo: IPhoto): IPhotoBase {
+  private getPhotoData(photo: IPhoto): IPhotoData {
     return omit(["imageBuffer"], photo);
   }
 
-  async find(rendering?: IRendering): Promise<IPhoto[]> {
+  async find(rendering?: IRendering): Promise<IPhotoStoredData[]> {
     let photos = this.getPhotosFromDocs();
     if (rendering?.dateOrder) {
       this.sortByDate(photos, rendering.dateOrder);

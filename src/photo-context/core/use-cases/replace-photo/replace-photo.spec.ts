@@ -1,14 +1,14 @@
 import {
-  FakePhotoBaseDb,
+  FakePhotoDataDb,
   FakePhotoImageDb,
   dumbPhotoGenerator,
 } from "../../../adapters/";
-import { IPhotoBaseDb, IPhotoImageDb, PhotoTestUtils } from "../../../core";
+import { IPhotoDataDb, IPhotoImageDb, PhotoTestUtils } from "../../../core";
 import { IPhoto, IReplacePhotoUseCase } from "../../models";
 import { ReplacePhotoUseCase } from "./replace-photo";
 
 describe(`${ReplacePhotoUseCase.name}`, () => {
-  let photoBaseDb: IPhotoBaseDb;
+  let photoDataDb: IPhotoDataDb;
   let photoImageDb: IPhotoImageDb;
 
   let testedUseCase: IReplacePhotoUseCase;
@@ -16,12 +16,12 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
   let testUtils: PhotoTestUtils;
 
   beforeEach(async () => {
-    photoBaseDb = new FakePhotoBaseDb();
+    photoDataDb = new FakePhotoDataDb();
     photoImageDb = new FakePhotoImageDb();
 
-    testedUseCase = new ReplacePhotoUseCase(photoBaseDb, photoImageDb);
+    testedUseCase = new ReplacePhotoUseCase(photoDataDb, photoImageDb);
 
-    testUtils = new PhotoTestUtils(photoBaseDb, photoImageDb, testedUseCase);
+    testUtils = new PhotoTestUtils(photoDataDb, photoImageDb, testedUseCase);
   });
 
   describe(`${ReplacePhotoUseCase.prototype.execute.name}`, () => {
@@ -51,13 +51,13 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
 
     describe("when the photo to replace only had an image and no base data in db", () => {
       beforeEach(async () => {
-        await testUtils.deletePhotoBaseFromDb(photoToReplace._id);
+        await testUtils.deletePhotoDataFromDb(photoToReplace._id);
       });
 
       it("should add the photo's base data in db", async () => {
         await testUtils.executeTestedUseCase(newPhoto);
 
-        await testUtils.expectPhotoBaseToBeInDb(newPhoto);
+        await testUtils.expectPhotoDataToBeInDb(newPhoto);
         testUtils.checkAssertions();
       });
     });

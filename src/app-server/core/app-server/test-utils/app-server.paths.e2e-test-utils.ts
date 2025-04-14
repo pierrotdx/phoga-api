@@ -9,8 +9,8 @@ export const addPhotoPath = photoEntryPoints.getFullPathRaw(
   PhotoEntryPointId.AddPhoto,
 );
 
-export const getPhotoBasePath = photoEntryPoints.getFullPathRaw(
-  PhotoEntryPointId.GetPhotoBase,
+export const getPhotoDataPath = photoEntryPoints.getFullPathRaw(
+  PhotoEntryPointId.GetPhotoData,
 );
 
 export const getImagePath = photoEntryPoints.getFullPathRaw(
