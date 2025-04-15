@@ -61,7 +61,7 @@ describe(`${GetPhotoUseCase.name}`, () => {
 
     describe("when the required photo has a stored image", () => {
       beforeEach(async () => {
-        await testUtils.insertPhotoInDb(photoToGet);
+        await testUtils.insertPhotoInDbs(photoToGet);
       });
 
       afterEach(async () => {

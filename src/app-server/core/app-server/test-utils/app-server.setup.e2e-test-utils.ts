@@ -27,7 +27,7 @@ export class AppServerSetupE2ETestUtils {
   private readonly photoImageBucket: string;
 
   protected photoDataDb: IPhotoDataDb;
-  protected photoImageDbGcs: IPhotoImageDb;
+  protected photoImageDb: IPhotoImageDb;
   protected tagDb: ITagDb;
 
   private appServer: ExpressAppServer;
@@ -88,7 +88,7 @@ export class AppServerSetupE2ETestUtils {
   protected async setupDbs(): Promise<void> {
     await this.openMongoConnection();
     this.photoDataDb = new PhotoDataDbMongo(this.mongoManager);
-    this.photoImageDbGcs = new PhotoImageDbGcs(
+    this.photoImageDb = new PhotoImageDbGcs(
       this.storage,
       this.photoImageBucket,
     );
@@ -110,7 +110,7 @@ export class AppServerSetupE2ETestUtils {
 
     this.appServer = new ExpressAppServer(
       this.photoDataDb,
-      this.photoImageDbGcs,
+      this.photoImageDb,
       this.tagDb,
       this.logger,
       this.authHandler,
@@ -136,5 +136,13 @@ export class AppServerSetupE2ETestUtils {
 
   getTagDb(): ITagDb {
     return this.tagDb;
+  }
+
+  getPhotoDataDb(): IPhotoDataDb {
+    return this.photoDataDb;
+  }
+
+  getPhotoImageDb(): IPhotoImageDb {
+    return this.photoImageDb;
   }
 }

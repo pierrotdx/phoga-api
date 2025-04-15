@@ -1,5 +1,10 @@
 import { ILogger } from "#logger-context";
-import { IPhoto, PhotoEntryPointId, dumbPhotoGenerator } from "#photo-context";
+import {
+  IPhoto,
+  PhotoEntryPointId,
+  PhotoTestUtils,
+  dumbPhotoGenerator,
+} from "#photo-context";
 import { HttpErrorCode, IRendering, SortDirection } from "#shared/models";
 import {
   ISearchTagFilter,
@@ -324,6 +329,14 @@ describe("ExpressAppServer", () => {
   });
 
   describe("photo requests", () => {
+    let photoTestUtils: PhotoTestUtils;
+
+    beforeEach(() => {
+      const photoDataDb = appTestUtils.getPhotoDataDb();
+      const photoImageDb = appTestUtils.getPhotoImageDb();
+      photoTestUtils = new PhotoTestUtils(photoDataDb, photoImageDb);
+    });
+
     describe(`POST ${addPhotoPath}`, () => {
       let photoToAdd: IPhoto;
 
@@ -332,7 +345,7 @@ describe("ExpressAppServer", () => {
       });
 
       afterEach(async () => {
-        await appTestUtils.deletePhotoFromDb(photoToAdd._id);
+        await photoTestUtils.deletePhotoFromDb(photoToAdd._id);
       });
 
       it("should add the photo image and base data to their respective DBs", async () => {
@@ -342,7 +355,7 @@ describe("ExpressAppServer", () => {
           .auth(token, { type: "bearer" });
         appTestUtils.addFormDataToReq(addReq, photoToAdd);
         await addReq;
-        await appTestUtils.expectPhotoToBeUploaded(photoToAdd);
+        await photoTestUtils.expectPhotoToBeUploaded(photoToAdd);
       });
     });
 
@@ -356,11 +369,11 @@ describe("ExpressAppServer", () => {
         );
         delete expectedPhoto.imageBuffer;
 
-        await appTestUtils.insertPhotoInDbs(expectedPhoto);
+        await photoTestUtils.insertPhotoInDbs(expectedPhoto);
       });
 
       afterEach(async () => {
-        await appTestUtils.deletePhotoFromDb(expectedPhoto._id);
+        await photoTestUtils.deletePhotoFromDb(expectedPhoto._id);
       });
 
       it("should return the base data of the photo with matching id", async () => {
@@ -370,7 +383,7 @@ describe("ExpressAppServer", () => {
         );
         const response = await request(app).get(url);
         const responsePhoto = appTestUtils.getPhotoFromResponse(response);
-        appTestUtils.expectMatchingPhotos(expectedPhoto, responsePhoto);
+        photoTestUtils.expectMatchingPhotos(expectedPhoto, responsePhoto);
       });
     });
 
@@ -381,11 +394,11 @@ describe("ExpressAppServer", () => {
         expectedPhoto = await dumbPhotoGenerator.generatePhoto();
         delete expectedPhoto.metadata;
 
-        await appTestUtils.insertPhotoInDbs(expectedPhoto);
+        await photoTestUtils.insertPhotoInDbs(expectedPhoto);
       });
 
       afterEach(async () => {
-        await appTestUtils.deletePhotoFromDb(expectedPhoto._id);
+        await photoTestUtils.deletePhotoFromDb(expectedPhoto._id);
       });
 
       it("should return the image buffer of the photo with matching id", async () => {
@@ -395,7 +408,7 @@ describe("ExpressAppServer", () => {
         );
         const response = await request(app).get(url);
         const responsePhoto = appTestUtils.getPhotoFromResponse(response);
-        appTestUtils.expectMatchingPhotos(expectedPhoto, responsePhoto);
+        photoTestUtils.expectMatchingPhotos(expectedPhoto, responsePhoto);
       });
     });
 
@@ -411,7 +424,7 @@ describe("ExpressAppServer", () => {
         ]);
         await Promise.all(
           storedPhotos.map(
-            async (photo) => await appTestUtils.insertPhotoInDbs(photo),
+            async (photo) => await photoTestUtils.insertPhotoInDbs(photo),
           ),
         );
       }, timeout);
@@ -419,7 +432,7 @@ describe("ExpressAppServer", () => {
       afterEach(async () => {
         await Promise.all(
           storedPhotos.map(
-            async (photo) => await appTestUtils.deletePhotoFromDb(photo._id),
+            async (photo) => await photoTestUtils.deletePhotoFromDb(photo._id),
           ),
         );
       }, timeout);
@@ -438,14 +451,14 @@ describe("ExpressAppServer", () => {
           const searchResult = response.body as IPhoto[];
 
           if (queryParams.size) {
-            appTestUtils.expectSearchResultMatchingSize(
+            photoTestUtils.expectArraySizeToBeAtMost(
               searchResult,
               queryParams.size,
             );
           }
 
           if (queryParams.date) {
-            appTestUtils.expectSearchResultMatchingDateOrdering(
+            photoTestUtils.expectPhotosOrderToBe(
               searchResult,
               queryParams.date,
             );
@@ -461,7 +474,7 @@ describe("ExpressAppServer", () => {
 
       beforeEach(async () => {
         storedPhoto = await dumbPhotoGenerator.generatePhoto();
-        await appTestUtils.insertPhotoInDbs(storedPhoto);
+        await photoTestUtils.insertPhotoInDbs(storedPhoto);
 
         newPhoto = await dumbPhotoGenerator.generatePhoto({
           _id: storedPhoto._id,
@@ -472,11 +485,11 @@ describe("ExpressAppServer", () => {
       });
 
       afterEach(async () => {
-        await appTestUtils.deletePhotoFromDb(storedPhoto._id);
+        await photoTestUtils.deletePhotoFromDb(storedPhoto._id);
       });
 
       it("should replace the photo with the one in the request", async () => {
-        const dbPhotoBefore = await appTestUtils.getPhotoFromDb(
+        const dbPhotoBefore = await photoTestUtils.getPhotoFromDb(
           storedPhoto._id,
         );
         const token = await appTestUtils.getToken();
@@ -485,7 +498,7 @@ describe("ExpressAppServer", () => {
           .auth(token, { type: "bearer" });
         appTestUtils.addFormDataToReq(replaceReq, newPhoto);
         await replaceReq;
-        await appTestUtils.expectPhotoToBeReplacedInDb(
+        await photoTestUtils.expectPhotoToBeReplacedInDb(
           dbPhotoBefore._id,
           newPhoto,
         );
@@ -504,18 +517,18 @@ describe("ExpressAppServer", () => {
             id: photoToDelete._id,
           },
         );
-        await appTestUtils.insertPhotoInDbs(photoToDelete);
+        await photoTestUtils.insertPhotoInDbs(photoToDelete);
       });
 
       afterEach(async () => {
         // in case a test fails
-        await appTestUtils.deletePhotoFromDb(photoToDelete._id);
+        await photoTestUtils.deletePhotoFromDb(photoToDelete._id);
       });
 
       it("should delete the image and base data from their respective DBs of the targeted photo", async () => {
         const token = await appTestUtils.getToken();
         await request(app).delete(url).auth(token, { type: "bearer" });
-        await appTestUtils.expectPhotoToBeDeletedFromDbs(photoToDelete._id);
+        await photoTestUtils.expectPhotoToBeDeletedFromDbs(photoToDelete._id);
       });
     });
   });

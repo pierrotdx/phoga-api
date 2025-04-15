@@ -38,7 +38,7 @@ describe(`${DeletePhotoUseCase.name}`, () => {
 
     beforeEach(async () => {
       photoToDelete = await dumbPhotoGenerator.generatePhoto();
-      await testUtils.insertPhotoInDb(photoToDelete);
+      await testUtils.insertPhotoInDbs(photoToDelete);
 
       useCaseParams = photoToDelete._id;
     });

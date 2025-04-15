@@ -66,7 +66,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
 
       beforeEach(async () => {
         photoToReplace = await dumbPhotoGenerator.generatePhoto();
-        await testUtils.insertPhotoInDb(photoToReplace);
+        await testUtils.insertPhotoInDbs(photoToReplace);
       });
 
       afterEach(async () => {

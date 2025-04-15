@@ -47,7 +47,7 @@ export class PhotoDataDbMongoTestUtils {
   }
 
   async insertPhotosInDbs(photos: IPhoto[]): Promise<void> {
-    await this.photoTestUtils.insertPhotosInDb(photos);
+    await this.photoTestUtils.insertPhotosInDbs(photos);
   }
 
   async deletePhotoIfNecessary(photoId: IPhoto["_id"]): Promise<void> {

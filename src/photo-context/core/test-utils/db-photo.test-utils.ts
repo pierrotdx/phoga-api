@@ -37,12 +37,12 @@ export class DbPhotoTestUtils {
     }
   }
 
-  async insertPhotosInDb(photos: IPhoto[]): Promise<void> {
-    const insertPromises = photos.map(this.insertPhotoInDb.bind(this));
+  async insertPhotosInDbs(photos: IPhoto[]): Promise<void> {
+    const insertPromises = photos.map(this.insertPhotoInDbs.bind(this));
     await Promise.all(insertPromises);
   }
 
-  async insertPhotoInDb(photo: IPhoto): Promise<void> {
+  async insertPhotoInDbs(photo: IPhoto): Promise<void> {
     const storedPhotoData: IPhotoStoredData = omit(["imageBuffer"], photo);
     await this.insertStoredPhotoDataInDb(storedPhotoData);
     await this.insertPhotoImageInDb(photo);

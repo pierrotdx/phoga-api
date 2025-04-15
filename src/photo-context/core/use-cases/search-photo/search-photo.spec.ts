@@ -39,7 +39,7 @@ describe(`${SearchPhotoUseCase.name}`, () => {
 
     beforeEach(async () => {
       storedPhotos = await dumbPhotoGenerator.generatePhotos(nbStoredPhotos);
-      await testUtils.insertPhotosInDb(storedPhotos);
+      await testUtils.insertPhotosInDbs(storedPhotos);
     });
 
     afterEach(async () => {
