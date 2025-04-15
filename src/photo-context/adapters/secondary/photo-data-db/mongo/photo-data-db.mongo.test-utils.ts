@@ -43,7 +43,7 @@ export class PhotoDataDbMongoTestUtils {
   }
 
   async getDocFromDb(_id: IPhoto["_id"]): Promise<TDoc> {
-    return await this.photoTestUtils.getPhotoDataStoreFromDb(_id);
+    return await this.photoTestUtils.getPhotoStoredDataFromDb(_id);
   }
 
   async insertPhotosInDbs(photos: IPhoto[]): Promise<void> {

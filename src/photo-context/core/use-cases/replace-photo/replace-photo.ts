@@ -1,7 +1,12 @@
-import { isEmpty, isNil } from "ramda";
+import { ErrorWithStatus, HttpErrorCode } from "#shared/models";
 
 import { IPhotoDataDb, IPhotoImageDb } from "../../gateways";
-import { IPhoto, IReplacePhotoUseCase, Photo } from "../../models";
+import {
+  IPhoto,
+  IPhotoStoredData,
+  IReplacePhotoParams,
+  IReplacePhotoUseCase,
+} from "../../models";
 
 export class ReplacePhotoUseCase implements IReplacePhotoUseCase {
   constructor(
@@ -9,20 +14,43 @@ export class ReplacePhotoUseCase implements IReplacePhotoUseCase {
     private readonly photoImageDb: IPhotoImageDb,
   ) {}
 
-  async execute(photo: IPhoto): Promise<void> {
-    await this.replaceImage(photo);
-
-    await this.photoDataDb.replace(photo);
+  async execute(data: IReplacePhotoParams): Promise<void> {
+    await this.replaceImage(data);
+    await this.replacePhotoData(data);
   }
 
-  private async replaceImage(photo: Photo) {
-    if (isNil(photo.imageBuffer) || isEmpty(photo.imageBuffer)) {
-      throw new Error(`no image to upload for photo: ${photo._id}`);
+  private async replaceImage(data: IReplacePhotoParams) {
+    this.checkImage(data.imageBuffer);
+    await this.checkPhotoToReplace(data._id);
+    await this.photoImageDb.replace(data);
+  }
+
+  private checkImage(imageBuffer: IPhoto["imageBuffer"]): void {
+    if (!imageBuffer) {
+      const error = new ErrorWithStatus(
+        "need a new image",
+        HttpErrorCode.BadRequest,
+      );
+      throw error;
     }
-    const photoToReplaceExists = await this.photoImageDb.checkExists(photo._id);
+  }
+
+  private async checkPhotoToReplace(id: IPhoto["_id"]): Promise<void> {
+    const photoToReplaceExists = await this.photoImageDb.checkExists(id);
     if (!photoToReplaceExists) {
-      throw new Error(`there is no image to replace`);
+      const error = new ErrorWithStatus(
+        "there is no photo to replace",
+        HttpErrorCode.NotFound,
+      );
+      throw error;
     }
-    await this.photoImageDb.replace(photo);
+  }
+
+  private async replacePhotoData(data: IReplacePhotoParams): Promise<void> {
+    const photoStoredData: IPhotoStoredData = {
+      _id: data._id,
+      metadata: data.metadata,
+    };
+    await this.photoDataDb.replace(photoStoredData);
   }
 }

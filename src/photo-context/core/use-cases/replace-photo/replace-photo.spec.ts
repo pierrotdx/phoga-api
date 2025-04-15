@@ -1,10 +1,22 @@
+import { HttpErrorCode } from "#shared/models";
+
 import {
   FakePhotoDataDb,
   FakePhotoImageDb,
   dumbPhotoGenerator,
 } from "../../../adapters/";
-import { IPhotoDataDb, IPhotoImageDb, PhotoTestUtils } from "../../../core";
-import { IPhoto, IReplacePhotoUseCase } from "../../models";
+import {
+  AddPhotoUseCase,
+  IPhotoDataDb,
+  IPhotoImageDb,
+  PhotoTestUtils,
+} from "../../../core";
+import {
+  IPhoto,
+  IPhotoStoredData,
+  IReplacePhotoParams,
+  IReplacePhotoUseCase,
+} from "../../models";
 import { ReplacePhotoUseCase } from "./replace-photo";
 
 describe(`${ReplacePhotoUseCase.name}`, () => {
@@ -25,61 +37,148 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
   });
 
   describe(`${ReplacePhotoUseCase.prototype.execute.name}`, () => {
-    let photoToReplace: IPhoto;
-    let newPhoto: IPhoto;
+    let useCaseParams: IReplacePhotoParams;
 
-    beforeEach(async () => {
-      photoToReplace = await dumbPhotoGenerator.generatePhoto();
-      newPhoto = await dumbPhotoGenerator.generatePhoto({
-        _id: photoToReplace._id,
-      });
-      await testUtils.insertPhotoInDb(photoToReplace);
+    afterEach(() => {
+      useCaseParams = undefined;
     });
 
-    afterEach(async () => {
-      await testUtils.deletePhotoFromDb(photoToReplace._id);
-    });
-
-    it("should replace photo base data and image in their respective DBs", async () => {
-      const dbPhotoBefore = await testUtils.getPhotoFromDb(photoToReplace._id);
-
-      await testUtils.executeTestedUseCase(newPhoto);
-
-      await testUtils.expectPhotoToBeReplacedInDb(dbPhotoBefore, newPhoto);
-      testUtils.checkAssertions();
-    });
-
-    describe("when the photo to replace only had an image and no base data in db", () => {
+    describe("when there is no photo to replace", () => {
       beforeEach(async () => {
-        await testUtils.deletePhotoDataFromDb(photoToReplace._id);
+        const newPhoto = await dumbPhotoGenerator.generatePhoto();
+        useCaseParams = newPhoto;
       });
 
-      it("should add the photo's base data in db", async () => {
-        await testUtils.executeTestedUseCase(newPhoto);
+      it(`should throw an error with status code ${HttpErrorCode.NotFound} (not found)`, async () => {
+        const expectedStatus = HttpErrorCode.NotFound;
 
-        await testUtils.expectPhotoDataToBeInDb(newPhoto);
+        await testUtils.executeUseCaseAndExpectToThrow({
+          useCaseParams: [useCaseParams],
+          expectedStatus,
+        });
+
         testUtils.checkAssertions();
       });
     });
 
-    it.each`
-      case           | imageBuffer
-      ${"undefined"} | ${undefined}
-      ${"null"}      | ${null}
-      ${"empty"}     | ${{}}
-    `(
-      "should throw an error if the image buffer is `$case` and not update photo's base data",
-      async ({ imageBuffer }) => {
-        photoToReplace.imageBuffer = imageBuffer;
-        await testUtils.executeUseCaseAndExpectToThrow(photoToReplace);
-        testUtils.checkAssertions();
-      },
-    );
+    describe("when there is a photo to replace", () => {
+      let photoToReplace: IPhoto;
 
-    it("should throw an error if the image to replace is not found", async () => {
-      const newPhoto = await dumbPhotoGenerator.generatePhoto();
-      await testUtils.executeUseCaseAndExpectToThrow(newPhoto);
-      testUtils.checkAssertions();
+      beforeEach(async () => {
+        photoToReplace = await dumbPhotoGenerator.generatePhoto();
+        await testUtils.insertPhotoInDb(photoToReplace);
+      });
+
+      afterEach(async () => {
+        await testUtils.deletePhotoFromDb(photoToReplace._id);
+      });
+
+      describe("when there is no image in the new photo", () => {
+        beforeEach(async () => {
+          const newPhotoWithoutImage = await dumbPhotoGenerator.generatePhoto({
+            _id: photoToReplace._id,
+          });
+          delete newPhotoWithoutImage.imageBuffer;
+
+          useCaseParams = newPhotoWithoutImage;
+        });
+
+        it(`should throw an error with status code ${HttpErrorCode.BadRequest} (bad request)`, async () => {
+          const expectedStatus = HttpErrorCode.BadRequest;
+
+          await testUtils.executeUseCaseAndExpectToThrow({
+            useCaseParams: [useCaseParams],
+            expectedStatus,
+          });
+
+          testUtils.checkAssertions();
+        });
+
+        it("should not update the data (other than image) in the photo-data db", async () => {
+          const expectedStoreData: IPhotoStoredData =
+            getExpectedPhotoDataStored(photoToReplace);
+
+          try {
+            await testUtils.executeTestedUseCase(useCaseParams);
+          } catch (err) {
+          } finally {
+            await testUtils.expectPhotoStoredDataToBe(
+              photoToReplace._id,
+              expectedStoreData,
+            );
+            testUtils.checkAssertions();
+          }
+        });
+      });
+
+      describe("when there is an image in the new photo", () => {
+        beforeEach(async () => {
+          const newPhoto = await dumbPhotoGenerator.generatePhoto({
+            _id: photoToReplace._id,
+          });
+          useCaseParams = newPhoto;
+        });
+
+        it("should replace the photo image in the photo-image db", async () => {
+          const expectedPhotoImage = useCaseParams.imageBuffer;
+
+          await testUtils.executeTestedUseCase(useCaseParams);
+
+          await testUtils.expectPhotoStoredImageToBe(
+            useCaseParams._id,
+            expectedPhotoImage,
+          );
+          testUtils.checkAssertions();
+        });
+
+        describe("when the photo to replace had data already stored in the photo-data db", () => {
+          it("should replace the data with the new one in the photo-data db", async () => {
+            const expectedStoredData =
+              getExpectedPhotoDataStored(useCaseParams);
+
+            await testUtils.executeTestedUseCase(useCaseParams);
+
+            await testUtils.expectPhotoStoredDataToBe(
+              useCaseParams._id,
+              expectedStoredData,
+            );
+            testUtils.checkAssertions();
+          });
+        });
+
+        describe("when the photo to replace did non have any data stored in the photo-data db", () => {
+          beforeEach(async () => {
+            const newPhotoWithoutData = await dumbPhotoGenerator.generatePhoto({
+              _id: photoToReplace._id,
+            });
+            delete newPhotoWithoutData.metadata;
+            useCaseParams = newPhotoWithoutData;
+          });
+
+          it("should add the new data in the photo-data db", async () => {
+            const expectedStoredData =
+              getExpectedPhotoDataStored(useCaseParams);
+
+            await testUtils.executeTestedUseCase(useCaseParams);
+
+            await testUtils.expectPhotoStoredDataToBe(
+              useCaseParams._id,
+              expectedStoredData,
+            );
+            testUtils.checkAssertions();
+          });
+        });
+      });
     });
   });
 });
+
+function getExpectedPhotoDataStored(
+  useCaseParams: Parameters<typeof AddPhotoUseCase.prototype.execute>[0],
+): IPhotoStoredData {
+  const photoStoredData: IPhotoStoredData = {
+    _id: useCaseParams._id,
+    metadata: useCaseParams.metadata,
+  };
+  return photoStoredData;
+}

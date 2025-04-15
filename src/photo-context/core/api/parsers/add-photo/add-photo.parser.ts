@@ -1,9 +1,10 @@
+import { Request } from "express";
 import formidable, { Fields } from "formidable";
 import { isEmpty } from "ramda";
-import { stream } from "winston";
 
 import { assertPhoto } from "../../../assertions";
 import {
+  IAddPhotoParams,
   IAddPhotoParser,
   IPhoto,
   IPhotoMetadata,
@@ -15,10 +16,10 @@ export class AddPhotoParser implements IAddPhotoParser {
   private photo: IPhoto;
   private imageBufferParser = new ImageBufferParser();
 
-  async parse(data: any): Promise<IPhoto> {
+  async parse(req: Request): Promise<IAddPhotoParams> {
     this.reset();
     const form = formidable(this.imageBufferParser.formOptions);
-    const [fields, files] = await form.parse(data);
+    const [fields, files] = await form.parse(req);
     const _id = fields._id[0];
     this.photo = new Photo(_id);
     this.addMetadata(fields);

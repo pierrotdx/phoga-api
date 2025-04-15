@@ -12,9 +12,8 @@ import {
 export class FakePhotoDataDb implements IPhotoDataDb {
   public readonly docs: Record<IPhoto["_id"], IPhotoData> = {};
 
-  async insert(photo: IPhotoStoredData) {
-    const storePhoto: IPhotoData = this.getPhotoData(photo);
-    this.docs[photo._id] = storePhoto;
+  async insert(storedPhotoData: IPhotoStoredData) {
+    this.docs[storedPhotoData._id] = storedPhotoData;
   }
 
   async getById(id: IPhoto["_id"]): Promise<IPhotoData> {
@@ -25,12 +24,8 @@ export class FakePhotoDataDb implements IPhotoDataDb {
     delete this.docs[id];
   }
 
-  async replace(photo: IPhotoStoredData): Promise<void> {
-    this.docs[photo._id] = this.getPhotoData(photo);
-  }
-
-  private getPhotoData(photo: IPhoto): IPhotoData {
-    return omit(["imageBuffer"], photo);
+  async replace(storedPhotoData: IPhotoStoredData): Promise<void> {
+    this.docs[storedPhotoData._id] = storedPhotoData;
   }
 
   async find(rendering?: IRendering): Promise<IPhotoStoredData[]> {

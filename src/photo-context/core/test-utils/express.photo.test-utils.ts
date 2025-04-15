@@ -29,7 +29,7 @@ export class ExpressPhotoTestUtils {
     if (metadata?.date) {
       metadata.date = new Date(metadata.date);
     }
-    return new Photo(_id, { metadata });
+    return new Photo(_id, { photoData: { metadata } });
   }
 
   private getPhotoFromGetImageResponse(res: Response): IPhoto {

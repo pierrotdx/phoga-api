@@ -1,4 +1,4 @@
-import { omit } from "ramda";
+import { HttpErrorCode } from "#shared/models";
 
 import {
   FakePhotoDataDb,
@@ -6,7 +6,12 @@ import {
   dumbPhotoGenerator,
 } from "../../../adapters/";
 import { IPhotoDataDb, IPhotoImageDb, PhotoTestUtils } from "../../../core";
-import { IAddPhotoUseCase, IPhoto } from "../../models";
+import {
+  IAddPhotoParams,
+  IAddPhotoUseCase,
+  IPhoto,
+  IPhotoStoredData,
+} from "../../models";
 import { AddPhotoUseCase } from "./add-photo";
 
 describe(`${AddPhotoUseCase.name}`, () => {
@@ -27,32 +32,68 @@ describe(`${AddPhotoUseCase.name}`, () => {
   });
 
   describe(`${AddPhotoUseCase.prototype.execute.name}`, () => {
-    it("should upload photo image and data to their respective DBs", async () => {
-      const photo = await dumbPhotoGenerator.generatePhoto();
+    let useCaseParams: IAddPhotoParams;
 
-      await testUtils.executeTestedUseCase(photo);
+    describe("when there is no image to upload", () => {
+      beforeEach(async () => {
+        const photoWithoutImage = await dumbPhotoGenerator.generatePhoto();
+        delete photoWithoutImage.imageBuffer;
+        useCaseParams = photoWithoutImage;
+      });
 
-      await testUtils.expectPhotoToBeUploaded(photo);
+      it(`should throw an error with status code ${HttpErrorCode.BadRequest} (bad request)`, async () => {
+        const expectedStatus = HttpErrorCode.BadRequest;
+        await testUtils.executeUseCaseAndExpectToThrow({
+          useCaseParams: [useCaseParams],
+          expectedStatus,
+        });
+        testUtils.checkAssertions();
+      });
 
-      testUtils.checkAssertions();
+      it(`should not upload anything to the photo-data db`, async () => {
+        try {
+          await testUtils.executeTestedUseCase(useCaseParams);
+        } catch (err) {
+        } finally {
+          await testUtils.expectPhotoStoredDataToBe(
+            useCaseParams._id,
+            undefined,
+          );
+          testUtils.checkAssertions();
+        }
+      });
     });
 
-    it.each`
-      case           | imageBuffer
-      ${"undefined"} | ${undefined}
-      ${"null"}      | ${null}
-      ${"empty"}     | ${{}}
-    `(
-      "should throw if image buffer is `$case` and not upload photo data",
-      async ({ imageBuffer }) => {
-        const photo = await dumbPhotoGenerator.generatePhoto();
-        const photoWithInvalidImage = omit(["imageBuffer"], photo) as IPhoto;
-        photoWithInvalidImage.imageBuffer = imageBuffer;
+    describe("when there is an image to upload", () => {
+      beforeEach(async () => {
+        useCaseParams = await dumbPhotoGenerator.generatePhoto();
+      });
 
-        await testUtils.executeUseCaseAndExpectToThrow(photoWithInvalidImage);
+      it("should upload the image to the photo-image db", async () => {
+        await testUtils.executeTestedUseCase(useCaseParams);
 
+        await testUtils.expectPhotoStoredImageToBe(
+          useCaseParams._id,
+          useCaseParams.imageBuffer,
+        );
         testUtils.checkAssertions();
-      },
-    );
+      });
+
+      it("should upload the data (other than image) to the photo-data db", async () => {
+        const expectedStoredData: IPhotoStoredData = {
+          _id: useCaseParams._id,
+          metadata: useCaseParams.metadata,
+        };
+
+        console.log("useCaseParams", useCaseParams);
+        await testUtils.executeTestedUseCase(useCaseParams);
+
+        await testUtils.expectPhotoStoredDataToBe(
+          useCaseParams._id,
+          expectedStoredData,
+        );
+        testUtils.checkAssertions();
+      });
+    });
   });
 });

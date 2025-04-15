@@ -1,7 +1,7 @@
 import { omit } from "ramda";
 
 import { IPhotoDataDb, IPhotoImageDb } from "../gateways";
-import { IPhoto, IPhotoStoredData, Photo } from "../models";
+import { IPhoto, IPhotoData, IPhotoStoredData, Photo } from "../models";
 
 export class DbPhotoTestUtils {
   constructor(
@@ -9,18 +9,18 @@ export class DbPhotoTestUtils {
     private readonly photoImageDb?: IPhotoImageDb,
   ) {}
 
-  async getPhotoDataStoreFromDb(id: IPhoto["_id"]): Promise<IPhotoStoredData> {
+  async getPhotoStoredDataFromDb(id: IPhoto["_id"]): Promise<IPhotoStoredData> {
     return (await this.photoDataDb?.getById(id)) || undefined;
   }
 
-  async deletePhotoDataFromDb(id: IPhoto["_id"]): Promise<void> {
+  async deletePhotoStoredDataFromDb(id: IPhoto["_id"]): Promise<void> {
     await this.photoDataDb?.delete(id);
   }
 
-  async insertPhotoDataStoreInDb(
-    photoDataStore: IPhotoStoredData,
+  async insertStoredPhotoDataInDb(
+    photoStoredData: IPhotoStoredData,
   ): Promise<void> {
-    await this.photoDataDb?.insert(photoDataStore);
+    await this.photoDataDb?.insert(photoStoredData);
   }
 
   async getPhotoImageFromDb(id: IPhoto["_id"]): Promise<IPhoto["imageBuffer"]> {
@@ -43,7 +43,8 @@ export class DbPhotoTestUtils {
   }
 
   async insertPhotoInDb(photo: IPhoto): Promise<void> {
-    await this.insertPhotoDataStoreInDb(photo);
+    const storedPhotoData: IPhotoStoredData = omit(["imageBuffer"], photo);
+    await this.insertStoredPhotoDataInDb(storedPhotoData);
     await this.insertPhotoImageInDb(photo);
   }
 
@@ -54,17 +55,17 @@ export class DbPhotoTestUtils {
 
   async deletePhotoFromDb(id: IPhoto["_id"]): Promise<void> {
     try {
-      await this.deletePhotoDataFromDb(id);
+      await this.deletePhotoStoredDataFromDb(id);
       await this.deletePhotoImageFromDb(id);
     } catch (err) {}
   }
 
   async getPhotoFromDb(id: IPhoto["_id"]): Promise<IPhoto> {
     const imageBuffer = await this.getPhotoImageFromDb(id);
-    const photoDataStore = await this.getPhotoDataStoreFromDb(id);
-    const photoData = omit(["tags"], photoDataStore);
+    const photoBaseStore = await this.getPhotoStoredDataFromDb(id);
+    const photoData: IPhotoData = omit(["tags"], photoBaseStore);
     const photo = new Photo(photoData._id, {
-      metadata: photoData.metadata,
+      photoData,
       imageBuffer: imageBuffer,
     });
     return photo;

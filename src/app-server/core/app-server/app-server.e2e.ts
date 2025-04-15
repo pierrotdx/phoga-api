@@ -58,6 +58,11 @@ describe("ExpressAppServer", () => {
         await testUtils.deleteTagFromDb(tagToAdd._id);
       });
 
+      afterAll(async () => {
+        // making sure the db is cleaned up after tests
+        await testUtils.deleteAllTagsFromDb();
+      });
+
       describe("when the requester does not have the expected right", () => {
         it(`should respond with status code ${HttpErrorCode.Unauthorized} (unauthorized)`, async () => {
           const response = await request(app).post(addTagPath).send(tagToAdd);
@@ -235,6 +240,7 @@ describe("ExpressAppServer", () => {
 
           const expectedTags = dbTags;
           const responseTags = response.body;
+
           testUtils.expectEqualTagArrays(responseTags, expectedTags);
         });
       });
@@ -460,7 +466,10 @@ describe("ExpressAppServer", () => {
           .auth(token, { type: "bearer" });
         testUtils.addFormDataToReq(replaceReq, newPhoto);
         await replaceReq;
-        await testUtils.expectPhotoToBeReplacedInDb(dbPhotoBefore, newPhoto);
+        await testUtils.expectPhotoToBeReplacedInDb(
+          dbPhotoBefore._id,
+          newPhoto,
+        );
       });
     });
 

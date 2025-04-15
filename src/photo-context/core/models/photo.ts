@@ -12,12 +12,12 @@ export class Photo implements IPhoto {
   constructor(
     public readonly _id: string,
     data?: {
-      metadata?: IPhoto["metadata"];
+      photoData?: Partial<IPhotoData>;
       imageBuffer?: IPhoto["imageBuffer"];
     },
   ) {
-    if (data?.metadata) {
-      this.metadata = data.metadata;
+    if (data?.photoData?.metadata) {
+      this.metadata = data?.photoData?.metadata;
     }
     if (data?.imageBuffer) {
       this.imageBuffer = data.imageBuffer;

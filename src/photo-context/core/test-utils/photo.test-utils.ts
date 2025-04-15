@@ -3,11 +3,21 @@ import {
   IAssertionsCounter,
 } from "#shared/assertions-counter";
 import { compareDates } from "#shared/compare-dates";
-import { IUseCase, SortDirection } from "#shared/models";
+import {
+  ErrorWithStatus,
+  HttpErrorCode,
+  IUseCase,
+  SortDirection,
+} from "#shared/models";
 import { omit } from "ramda";
 
 import { IPhotoDataDb, IPhotoImageDb } from "../gateways";
-import { GetPhotoField, IPhoto, IPhotoData } from "../models";
+import {
+  IPhoto,
+  IPhotoData,
+  IPhotoStoredData,
+  IReplacePhotoParams,
+} from "../models";
 import { DbPhotoTestUtils } from "./db-photo.test-utils";
 
 export class PhotoTestUtils<TUseCaseResult = unknown> extends DbPhotoTestUtils {
@@ -26,36 +36,50 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends DbPhotoTestUtils {
     await this.testedUseCase.execute(...args);
 
   expectMatchingPhotos(photo1: IPhoto, photo2: IPhoto): void {
-    expect(photo1._id).toEqual(photo2._id);
-    this.assertionsCounter.increase();
-    this.expectMatchingPhotoDatas(photo1, photo2);
+    this.expectMatchingIds(photo1, photo1);
+    this.expectMatchingPhotoBases(photo1, photo2);
     this.expectMatchingPhotoImages(photo1, photo2);
   }
 
-  expectMatchingPhotoDatas(photo1: IPhoto, photo2: IPhoto): void {
-    const photoData1 = this.convertToPhotoData(photo1);
-    const photoData2 = this.convertToPhotoData(photo2);
-    expect(photoData1).toEqual(photoData2);
+  private expectMatchingIds(photo1: IPhoto, photo2: IPhoto): void {
+    expect(photo1._id).toEqual(photo2._id);
     this.assertionsCounter.increase();
   }
 
-  private convertToPhotoData(photo: IPhoto): IPhotoData {
-    const photoData: IPhotoData = omit(["imageBuffer"], photo);
-    return photoData;
+  private expectMatchingPhotoBases(photo1: IPhoto, photo2: IPhoto): void {
+    const photoData1 = this.getPhotoData(photo1);
+    const photoData2 = this.getPhotoData(photo2);
+    expect(photoData2).toEqual(photoData1);
+    this.assertionsCounter.increase();
   }
 
-  async expectPhotoDataToBeInDb(photo: IPhoto): Promise<void> {
-    const photoData: IPhotoData = this.convertToPhotoData(photo);
-    const dbPhotoData = await this.getPhotoDataStoreFromDb(photo._id);
-    this.expectMatchingPhotoDatas(photoData, dbPhotoData);
+  getPhotoData(photo: IPhoto): IPhotoData {
+    return omit(["imageBuffer"], photo);
   }
 
-  async expectPhotoImageToBeInDb(photo: IPhoto): Promise<void> {
-    const dbImage = await this.getPhotoImageFromDb(photo._id);
-    this.expectMatchingBuffers(photo.imageBuffer, dbImage);
+  async expectPhotoStoredDataToBe(
+    id: IPhoto["_id"],
+    expectedValue: IPhotoStoredData,
+  ): Promise<void> {
+    const storedPhotoData = await this.getPhotoStoredDataFromDb(id);
+    expect(storedPhotoData).toEqual(expectedValue);
+    this.assertionsCounter.increase();
   }
 
-  expectMatchingPhotoImages(photo1: IPhoto, photo2: IPhoto): void {
+  async expectPhotoStoredImageToBe(
+    id: IPhoto["_id"],
+    expectedImageBuffer: IPhoto["imageBuffer"],
+  ): Promise<void> {
+    const dbImage = await this.getPhotoImageFromDb(id);
+    if (!expectedImageBuffer) {
+      expect(dbImage).toBeFalsy();
+      this.assertionsCounter.increase();
+      return;
+    }
+    this.expectMatchingBuffers(expectedImageBuffer, dbImage);
+  }
+
+  private expectMatchingPhotoImages(photo1: IPhoto, photo2: IPhoto): void {
     if (!photo1.imageBuffer || !photo2.imageBuffer) {
       return;
     }
@@ -69,60 +93,52 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends DbPhotoTestUtils {
   }
 
   async expectPhotoToBeUploaded(photo: IPhoto): Promise<void> {
-    await this.expectPhotoDataToBeInDb(photo);
-    await this.expectPhotoImageToBeInDb(photo);
+    const photoData = this.getPhotoData(photo);
+    await this.expectPhotoStoredDataToBe(photo._id, photoData);
+    await this.expectPhotoStoredImageToBe(photo._id, photo.imageBuffer);
   }
 
-  async executeUseCaseAndExpectToThrow(
-    ...useCaseParams: unknown[]
-  ): Promise<void> {
+  async executeUseCaseAndExpectToThrow({
+    useCaseParams,
+    expectedStatus,
+  }: {
+    expectedStatus?: HttpErrorCode;
+    useCaseParams: unknown[];
+  }): Promise<void> {
     try {
-      await this.testedUseCase.execute(useCaseParams);
+      await this.testedUseCase.execute(...useCaseParams);
     } catch (err) {
       expect(err).toBeDefined();
+      if (expectedStatus) {
+        const error = err as ErrorWithStatus;
+        expect(error.status).toBe(expectedStatus);
+      }
     } finally {
       this.assertionsCounter.increase();
+      if (expectedStatus) {
+        this.assertionsCounter.increase();
+      }
     }
   }
 
   async expectPhotoToBeDeletedFromDbs(id: IPhoto["_id"]): Promise<void> {
-    const photo = await this.getPhotoFromDb(id);
-    expect(photo.imageBuffer).toBeUndefined();
-    expect(photo.metadata).toBeUndefined();
-    this.assertionsCounter.increase(2);
+    await this.expectPhotoStoredDataToBe(id, undefined);
+    await this.expectPhotoStoredImageToBe(id, undefined);
   }
 
   async expectPhotoToBeReplacedInDb(
-    dbPhotoBefore: IPhoto,
-    expectedPhoto: IPhoto,
+    id: IPhoto["_id"],
+    expectedDbData: IReplacePhotoParams,
   ): Promise<void> {
-    const dbPhotoAfter = await this.getPhotoFromDb(dbPhotoBefore._id);
-
-    expect(dbPhotoAfter).toBeDefined();
-    expect(dbPhotoBefore).toBeDefined();
-    expect(dbPhotoAfter).not.toEqual(dbPhotoBefore);
-    this.assertionsCounter.increase(3);
-
-    this.expectMatchingPhotos(dbPhotoAfter, expectedPhoto);
+    const photoStoredData: IPhotoStoredData = omit(
+      ["imageBuffer"],
+      expectedDbData,
+    );
+    await this.expectPhotoStoredDataToBe(id, photoStoredData);
+    await this.expectPhotoStoredImageToBe(id, expectedDbData.imageBuffer);
   }
 
-  expectPhotoToHaveOnlyRequiredField(
-    photo: IPhoto,
-    requiredField: GetPhotoField,
-  ) {
-    if (requiredField === GetPhotoField.Base) {
-      expect(photo.metadata).toBeDefined();
-      expect(photo.imageBuffer).toBeUndefined();
-      this.assertionsCounter.increase(2);
-    }
-    if (requiredField === GetPhotoField.ImageBuffer) {
-      expect(photo.imageBuffer).toBeDefined();
-      expect(photo.metadata).toBeUndefined();
-      this.assertionsCounter.increase(2);
-    }
-  }
-
-  expectMatchingPhotoArrays(photos1: IPhoto[], photos2: IPhoto[]): void {
+  expectEqualPhotoArrays(photos1: IPhoto[], photos2: IPhoto[]): void {
     expect(photos1).toEqual(photos2);
     this.assertionsCounter.increase();
   }
@@ -136,17 +152,6 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends DbPhotoTestUtils {
 
     expect(subArray[0]).toEqual(expectedFirstSearchResult);
     this.assertionsCounter.increase();
-  }
-
-  expectImagesToBeInPhotosIfRequired(photos: IPhoto[], excludeImages: boolean) {
-    photos.forEach((photo) => {
-      if (excludeImages) {
-        expect(photo.imageBuffer).toBeUndefined();
-      } else {
-        expect(photo.imageBuffer).toBeDefined();
-      }
-    });
-    this.assertionsCounter.increase(photos.length);
   }
 
   expectPhotosOrderToBe(photos: IPhoto[], dateOrdering: SortDirection) {
@@ -164,17 +169,9 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends DbPhotoTestUtils {
     this.assertionsCounter.increase();
   }
 
-  expectPhotosArraySizeToBe(photos: IPhoto[], size: number) {
+  expectArraySizeToBeAtMost(photos: IPhoto[], size: number) {
     expect(photos.length).toBeLessThanOrEqual(size);
     this.assertionsCounter.increase();
-  }
-
-  async expectPhotoDataNotToBeDeleted(photo: IPhoto): Promise<void> {
-    const photoDataFromDb = await this.getPhotoDataStoreFromDb(photo._id);
-    expect(photoDataFromDb).toBeDefined();
-    const photoData = omit(["imageBuffer"], photo);
-    expect(photoDataFromDb).toEqual(photoData);
-    this.assertionsCounter.increase(2);
   }
 
   checkAssertions(): void {

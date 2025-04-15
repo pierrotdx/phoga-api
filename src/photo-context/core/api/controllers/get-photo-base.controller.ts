@@ -40,7 +40,7 @@ export class GetPhotoDataController
 
   protected async executeUseCase(_id: IPhoto["_id"]): Promise<IPhoto> {
     return await this.useCase.execute(_id, {
-      fields: [GetPhotoField.Base],
+      fields: [GetPhotoField.PhotoData],
     });
   }
 

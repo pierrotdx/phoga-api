@@ -1,11 +1,15 @@
+import { ErrorWithStatus, HttpErrorCode } from "#shared/models";
+
 import { IPhotoDataDb, IPhotoImageDb } from "../../gateways";
 import {
   GetPhotoField,
   IGetPhotoOptions,
   IGetPhotoUseCase,
   IPhoto,
+  IPhotoData,
   Photo,
 } from "../../models";
+import { photoStoredDataToPhotoData } from "../../photo-stored-data-to-photo-data";
 
 export class GetPhotoUseCase implements IGetPhotoUseCase {
   constructor(
@@ -16,29 +20,50 @@ export class GetPhotoUseCase implements IGetPhotoUseCase {
   async execute(
     id: IPhoto["_id"],
     options: IGetPhotoOptions = {
-      fields: [GetPhotoField.ImageBuffer, GetPhotoField.Base],
+      fields: [GetPhotoField.ImageBuffer, GetPhotoField.PhotoData],
     },
   ): Promise<IPhoto> {
-    const data: {
-      metadata?: IPhoto["metadata"];
-      imageBuffer?: IPhoto["imageBuffer"];
-    } = {};
+    const photoData = await this.getPhotoData(id, options);
+    const imageBuffer = await this.getImageBuffer(id, options);
+    return new Photo(id, { photoData, imageBuffer });
+  }
 
-    const includeBase = options?.fields?.includes(GetPhotoField.Base);
-    if (includeBase) {
-      data.metadata = (await this.photoDataDb.getById(id))?.metadata;
+  private async getPhotoData(
+    id: IPhoto["_id"],
+    options: IGetPhotoOptions,
+  ): Promise<IPhotoData> {
+    const includeData = options?.fields?.includes(GetPhotoField.PhotoData);
+    if (!includeData) {
+      return;
     }
+    const storedPhotoData = await this.photoDataDb.getById(id);
+    if (!storedPhotoData) {
+      return;
+    }
+    const photoData = photoStoredDataToPhotoData(storedPhotoData);
+    return photoData;
+  }
 
+  private async getImageBuffer(
+    id: IPhoto["_id"],
+    options: IGetPhotoOptions,
+  ): Promise<IPhoto["imageBuffer"]> {
     const includeImageBuffer = options?.fields?.includes(
       GetPhotoField.ImageBuffer,
     );
-    if (includeImageBuffer) {
-      data.imageBuffer = await this.getImage(id);
+    if (!includeImageBuffer) {
+      return;
     }
-    return new Photo(id, data);
-  }
 
-  private async getImage(id: IPhoto["_id"]): Promise<Buffer> {
-    return await this.photoImageDb.getById(id);
+    const imageBuffer = await this.photoImageDb.getById(id);
+    if (!imageBuffer) {
+      const error = new ErrorWithStatus(
+        "photo does not exist",
+        HttpErrorCode.NotFound,
+      );
+      throw error;
+    }
+
+    return imageBuffer;
   }
 }

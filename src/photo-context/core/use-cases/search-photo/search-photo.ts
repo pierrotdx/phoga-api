@@ -1,5 +1,13 @@
+import { clone } from "ramda";
+
 import { IPhotoDataDb, IPhotoImageDb } from "../../gateways";
-import { IPhoto, ISearchPhotoOptions, ISearchPhotoUseCase } from "../../models";
+import {
+  IPhoto,
+  ISearchPhotoOptions,
+  ISearchPhotoUseCase,
+  Photo,
+} from "../../models";
+import { photoStoredDataToPhotoData } from "../../photo-stored-data-to-photo-data";
 
 export class SearchPhotoUseCase implements ISearchPhotoUseCase {
   private photos: IPhoto[] = [];
@@ -10,12 +18,18 @@ export class SearchPhotoUseCase implements ISearchPhotoUseCase {
   ) {}
 
   async execute(options?: ISearchPhotoOptions) {
-    this.resetPhotos();
-    this.photos = await this.photoDataDb.find(options?.rendering);
-    if (!options?.excludeImages) {
-      await this.fetchImages(this.photos);
+    try {
+      await this.setPhotosWithoutImages(options);
+      if (!options?.excludeImages) {
+        await this.fetchImages(this.photos);
+      }
+      const photos = clone(this.photos);
+      return photos;
+    } catch (err) {
+      throw err;
+    } finally {
+      this.resetPhotos();
     }
-    return this.photos;
   }
 
   private resetPhotos() {
@@ -35,6 +49,16 @@ export class SearchPhotoUseCase implements ISearchPhotoUseCase {
       if (photo) {
         photo.imageBuffer = images[id];
       }
+    });
+  }
+
+  private async setPhotosWithoutImages(
+    options: ISearchPhotoOptions,
+  ): Promise<void> {
+    const photosStoredData = await this.photoDataDb.find(options?.rendering);
+    this.photos = photosStoredData.map((p) => {
+      const photoData = photoStoredDataToPhotoData(p);
+      return new Photo(photoData._id, { photoData });
     });
   }
 }

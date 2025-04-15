@@ -1,4 +1,5 @@
 import { IRendering, SortDirection } from "#shared/models";
+import { clone } from "ramda";
 
 import {
   FakePhotoDataDb,
@@ -9,6 +10,7 @@ import {
   IPhoto,
   IPhotoDataDb,
   IPhotoImageDb,
+  ISearchPhotoParams,
   ISearchPhotoUseCase,
   PhotoTestUtils,
 } from "../../../core/";
@@ -45,89 +47,103 @@ describe(`${SearchPhotoUseCase.name}`, () => {
       await testUtils.deletePhotosFromDb(storedPhotoIds);
     });
 
-    it("should return the photos stored in database", async () => {
-      const searchResult = await testUtils.executeTestedUseCase();
+    describe("when no filter is required", () => {
+      let useCaseOptions: ISearchPhotoParams;
 
-      testUtils.expectMatchingPhotoArrays(searchResult, storedPhotos);
-      testUtils.checkAssertions();
-    });
+      it("should return the photos stored in the database", async () => {
+        const searchResult = await testUtils.executeTestedUseCase();
 
-    describe("+ options.rendering.date", () => {
-      it.each`
-        case            | rendering
-        ${"ascending"}  | ${{ dateOrder: SortDirection.Ascending }}
-        ${"descending"} | ${{ dateOrder: SortDirection.Descending }}
-      `(
-        "should sort them by $case date when required",
-        async ({ rendering }: { rendering: IRendering }) => {
-          const searchResult = await testUtils.executeTestedUseCase({
-            rendering,
-          });
+        testUtils.expectEqualPhotoArrays(searchResult, storedPhotos);
+        testUtils.checkAssertions();
+      });
 
-          testUtils.expectPhotosOrderToBe(searchResult, rendering.dateOrder);
+      describe("when using the `rendering.date` option", () => {
+        it.each`
+          case            | rendering
+          ${"ascending"}  | ${{ dateOrder: SortDirection.Ascending }}
+          ${"descending"} | ${{ dateOrder: SortDirection.Descending }}
+        `(
+          "should sort them by $case date when required",
+          async ({ rendering }: { rendering: IRendering }) => {
+            useCaseOptions = { rendering };
+            const expectedOrder = rendering.dateOrder;
 
-          testUtils.checkAssertions();
-        },
-      );
-    });
+            const result = await testUtils.executeTestedUseCase(useCaseOptions);
 
-    describe("+ options.rendering.size", () => {
-      it.each`
-        rendering      | requiredSize
-        ${{ size: 0 }} | ${0}
-        ${{ size: 1 }} | ${1}
-        ${{ size: 2 }} | ${2}
-        ${{ size: 3 }} | ${3}
-      `(
-        "should return at most $requiredSize results when required",
-        async ({ requiredSize, rendering }) => {
-          const searchResult = await testUtils.executeTestedUseCase({
-            rendering,
-          });
+            testUtils.expectPhotosOrderToBe(result, expectedOrder);
+            testUtils.checkAssertions();
+          },
+        );
+      });
 
-          testUtils.expectPhotosArraySizeToBe(searchResult, requiredSize);
-          testUtils.checkAssertions();
-        },
-      );
-    });
+      describe("when using the `rendering.size` options", () => {
+        it.each`
+          rendering      | expectedSize
+          ${{ size: 0 }} | ${0}
+          ${{ size: 1 }} | ${1}
+          ${{ size: 2 }} | ${2}
+          ${{ size: 3 }} | ${3}
+        `(
+          "should return at most $expectedSize results when required",
+          async ({ rendering, expectedSize }) => {
+            useCaseOptions = { rendering };
 
-    describe("+ options.rendering.from", () => {
-      it.each`
-        rendering      | docIndex
-        ${{ from: 1 }} | ${0}
-        ${{ from: 2 }} | ${1}
-        ${{ from: 3 }} | ${2}
-      `(
-        "should return results starting from the $docIndex-th stored photo",
-        async ({ rendering, docIndex }) => {
-          const result = await testUtils.executeTestedUseCase({ rendering });
+            const result = await testUtils.executeTestedUseCase(useCaseOptions);
 
-          testUtils.expectSubArrayToStartFromIndex(
-            storedPhotos,
-            result,
-            docIndex,
-          );
-          testUtils.checkAssertions();
-        },
-      );
-    });
+            testUtils.expectArraySizeToBeAtMost(result, expectedSize);
+            testUtils.checkAssertions();
+          },
+        );
+      });
 
-    describe("+ options.excludeImages", () => {
-      it.each`
-        case                | excludeImages
-        ${"without images"} | ${true}
-        ${"with images"}    | ${false}
-      `(
-        "should return photos $case when excludeImages is `$excludeImages`",
-        async ({ excludeImages }: { excludeImages: boolean }) => {
-          const photos = await testUtils.executeTestedUseCase({
-            excludeImages,
-          });
+      describe("when using the `rendering.from` option", () => {
+        it.each`
+          rendering      | expectedStartIndex
+          ${{ from: 1 }} | ${0}
+          ${{ from: 2 }} | ${1}
+          ${{ from: 3 }} | ${2}
+        `(
+          "should return results starting from the $expectedStartIndex-th stored photo",
+          async ({ rendering, expectedStartIndex }) => {
+            useCaseOptions = { rendering };
 
-          testUtils.expectImagesToBeInPhotosIfRequired(photos, excludeImages);
-          testUtils.checkAssertions();
-        },
-      );
+            const result = await testUtils.executeTestedUseCase(useCaseOptions);
+
+            testUtils.expectSubArrayToStartFromIndex(
+              storedPhotos,
+              result,
+              expectedStartIndex,
+            );
+            testUtils.checkAssertions();
+          },
+        );
+      });
+
+      describe("when using the `excludeImages` option", () => {
+        it.each`
+          case                | excludeImages
+          ${"without images"} | ${true}
+          ${"with images"}    | ${false}
+        `(
+          "should return photos $case when excludeImages is `$excludeImages`",
+          async ({ excludeImages }: { excludeImages: boolean }) => {
+            useCaseOptions = { excludeImages };
+            const expectedPhotos = clone(storedPhotos).map((p) =>
+              excludeImages ? getPhotoWithoutImage(p) : p,
+            );
+
+            const result = await testUtils.executeTestedUseCase(useCaseOptions);
+
+            testUtils.expectEqualPhotoArrays(result, expectedPhotos);
+            testUtils.checkAssertions();
+          },
+        );
+      });
     });
   });
 });
+
+function getPhotoWithoutImage(photo: IPhoto): IPhoto {
+  delete photo.imageBuffer;
+  return photo;
+}

@@ -1,7 +1,14 @@
+import { ErrorWithStatus, HttpErrorCode } from "#shared/models";
 import { isEmpty, isNil } from "ramda";
 
 import { IPhotoDataDb, IPhotoImageDb } from "../../gateways";
-import { IAddPhotoUseCase, IPhoto, Photo } from "../../models";
+import {
+  IAddPhotoParams,
+  IAddPhotoUseCase,
+  IPhoto,
+  IPhotoStoredData,
+  Photo,
+} from "../../models";
 
 export class AddPhotoUseCase implements IAddPhotoUseCase {
   constructor(
@@ -9,15 +16,26 @@ export class AddPhotoUseCase implements IAddPhotoUseCase {
     private readonly photoImageDb: IPhotoImageDb,
   ) {}
 
-  async execute(photo: IPhoto): Promise<void> {
-    await this.uploadImage(photo);
-    await this.photoDataDb.insert(photo);
+  async execute(data: IAddPhotoParams): Promise<void> {
+    await this.uploadImage(data);
+    await this.uploadPhotoData(data);
   }
 
-  private async uploadImage(photo: Photo) {
-    if (isNil(photo.imageBuffer) || isEmpty(photo.imageBuffer)) {
-      throw new Error(`no image to upload for photo: ${photo._id}`);
+  private async uploadImage(data: IAddPhotoParams) {
+    if (isNil(data.imageBuffer) || isEmpty(data.imageBuffer)) {
+      throw new ErrorWithStatus(
+        `no image to upload for photo: ${data._id}`,
+        HttpErrorCode.BadRequest,
+      );
     }
-    await this.photoImageDb.insert(photo);
+    await this.photoImageDb.insert(data);
+  }
+
+  private async uploadPhotoData(data: IAddPhotoParams): Promise<void> {
+    const storedPhotoData: IPhotoStoredData = {
+      _id: data._id,
+      metadata: data.metadata,
+    };
+    await this.photoDataDb.insert(storedPhotoData);
   }
 }

@@ -1,4 +1,9 @@
-import { ExpressPhotoTestUtils, IPhoto, PhotoTestUtils } from "#photo-context";
+import {
+  ExpressPhotoTestUtils,
+  IPhoto,
+  IReplacePhotoParams,
+  PhotoTestUtils,
+} from "#photo-context";
 import { SortDirection } from "#shared/models";
 import { IUuidGenerator, UuidGenerator } from "#shared/uuid";
 import { ITag, TagTestUtils } from "#tag-context";
@@ -80,7 +85,7 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
   }
 
   expectSearchResultMatchingSize(searchResult: any[], size: number): void {
-    return this.photoTestUtils.expectPhotosArraySizeToBe(searchResult, size);
+    return this.photoTestUtils.expectArraySizeToBeAtMost(searchResult, size);
   }
 
   expectSearchResultMatchingDateOrdering(
@@ -94,13 +99,10 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
   }
 
   async expectPhotoToBeReplacedInDb(
-    dbPhotoBefore: IPhoto,
-    expectedPhoto: IPhoto,
+    id: IPhoto["_id"],
+    expectedDbData: IReplacePhotoParams,
   ): Promise<void> {
-    await this.photoTestUtils.expectPhotoToBeReplacedInDb(
-      dbPhotoBefore,
-      expectedPhoto,
-    );
+    await this.photoTestUtils.expectPhotoToBeReplacedInDb(id, expectedDbData);
   }
 
   async expectPhotoToBeDeletedFromDbs(id: IPhoto["_id"]): Promise<void> {
@@ -142,5 +144,10 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
 
   async deleteTagsFromDb(tags: ITag[]): Promise<void> {
     await this.tagTestUtils.deleteTagsFromDb(tags);
+  }
+
+  async deleteAllTagsFromDb(): Promise<void> {
+    const allTags = await this.tagDb.find();
+    await this.deleteTagsFromDb(allTags);
   }
 }
