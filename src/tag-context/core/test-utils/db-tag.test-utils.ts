@@ -26,4 +26,9 @@ export class DbTagTestUtils {
   async getTagFromDb(id: ITag["_id"]): Promise<ITag> {
     return await this.tagDb.getById(id);
   }
+
+  async deleteAllTagsFromDb(): Promise<void> {
+    const allTags = await this.tagDb.find();
+    await this.deleteTagsFromDb(allTags);
+  }
 }

@@ -1,7 +1,12 @@
 import { ILogger } from "#logger-context";
 import { IPhoto, PhotoEntryPointId, dumbPhotoGenerator } from "#photo-context";
 import { HttpErrorCode, IRendering, SortDirection } from "#shared/models";
-import { ISearchTagFilter, ITag, TagEntryPointId } from "#tag-context";
+import {
+  ISearchTagFilter,
+  ITag,
+  TagEntryPointId,
+  TagTestUtils,
+} from "#tag-context";
 import { type Express } from "express";
 import { omit } from "ramda";
 import request from "supertest";
@@ -25,42 +30,54 @@ import {
 import { AppServerTestUtils } from "./test-utils/app-server.e2e-test-utils";
 
 describe("ExpressAppServer", () => {
-  const testUtils = new AppServerTestUtils(global);
+  const appTestUtils = new AppServerTestUtils(global);
 
   let expressHttpServer: ExpressAppServer;
   let app: Express;
   let logger: ILogger;
 
   beforeEach(async () => {
-    await testUtils.globalBeforeEach();
-    expressHttpServer = testUtils.getServer();
+    await appTestUtils.globalBeforeEach();
+    expressHttpServer = appTestUtils.getServer();
     app = expressHttpServer.app;
-    logger = testUtils.getLogger();
+    logger = appTestUtils.getLogger();
   });
 
   afterEach(async () => {
-    await testUtils.globalAfterEach();
+    await appTestUtils.globalAfterEach();
   });
 
   afterAll(async () => {
-    await testUtils.globalAfterAll();
+    await appTestUtils.globalAfterAll();
   });
 
   describe("tag requests", () => {
+    let tagTestUtils: TagTestUtils;
+
+    beforeEach(() => {
+      const tagDb = appTestUtils.getTagDb();
+      tagTestUtils = new TagTestUtils(tagDb);
+    });
+
+    afterAll(async () => {
+      // making sure to clean up the db
+      await tagTestUtils.deleteAllTagsFromDb();
+    });
+
     describe(`POST ${addTagPath}`, () => {
       let tagToAdd: ITag;
 
       beforeEach(() => {
-        tagToAdd = { _id: testUtils.generateId(), name: "tag name" };
+        tagToAdd = { _id: appTestUtils.generateId(), name: "tag name" };
       });
 
       afterEach(async () => {
-        await testUtils.deleteTagFromDb(tagToAdd._id);
+        await tagTestUtils.deleteTagFromDb(tagToAdd._id);
       });
 
       afterAll(async () => {
         // making sure the db is cleaned up after tests
-        await testUtils.deleteAllTagsFromDb();
+        await tagTestUtils.deleteAllTagsFromDb();
       });
 
       describe("when the requester does not have the expected right", () => {
@@ -76,7 +93,7 @@ describe("ExpressAppServer", () => {
         let token: string;
 
         beforeEach(async () => {
-          token = await testUtils.getToken();
+          token = await appTestUtils.getToken();
         });
 
         describe("when the requested tag does not exist in db yet", () => {
@@ -87,7 +104,7 @@ describe("ExpressAppServer", () => {
               .auth(token, { type: "bearer" });
 
             expect(response.statusCode).toBe(200);
-            testUtils.expectTagToBeInDb(tagToAdd);
+            tagTestUtils.expectTagToBeInDb(tagToAdd);
             expect.assertions(2);
           });
         });
@@ -97,7 +114,7 @@ describe("ExpressAppServer", () => {
 
           beforeEach(async () => {
             tagAlreadyInDb = { _id: tagToAdd._id, name: "tag in db" };
-            await testUtils.insertTagInDb(tagAlreadyInDb);
+            await tagTestUtils.insertTagInDb(tagAlreadyInDb);
           });
 
           it(`should respond with status code ${HttpErrorCode.Conflict} (conflict)`, async () => {
@@ -117,11 +134,11 @@ describe("ExpressAppServer", () => {
       let newTag: ITag;
 
       beforeEach(() => {
-        newTag = { _id: testUtils.generateId(), name: "new tag name" };
+        newTag = { _id: appTestUtils.generateId(), name: "new tag name" };
       });
 
       afterEach(async () => {
-        await testUtils.deleteTagFromDb(newTag._id);
+        await tagTestUtils.deleteTagFromDb(newTag._id);
       });
 
       describe("when the requester does not have the expected right", () => {
@@ -137,7 +154,7 @@ describe("ExpressAppServer", () => {
         let token: string;
 
         beforeEach(async () => {
-          token = await testUtils.getToken();
+          token = await appTestUtils.getToken();
         });
 
         describe("when the requested tag does not exist in db yet", () => {
@@ -148,7 +165,7 @@ describe("ExpressAppServer", () => {
               .auth(token, { type: "bearer" });
 
             expect(response.statusCode).toBe(200);
-            testUtils.expectTagToBeInDb(newTag);
+            tagTestUtils.expectTagToBeInDb(newTag);
             expect.assertions(2);
           });
         });
@@ -158,7 +175,7 @@ describe("ExpressAppServer", () => {
 
           beforeEach(async () => {
             tagAlreadyInDb = { _id: newTag._id, name: "tag in db" };
-            await testUtils.insertTagInDb(tagAlreadyInDb);
+            await tagTestUtils.insertTagInDb(tagAlreadyInDb);
           });
 
           it(`should replace the existing tag with the requested one`, async () => {
@@ -168,7 +185,7 @@ describe("ExpressAppServer", () => {
               .auth(token, { type: "bearer" });
 
             expect(response.statusCode).toBe(200);
-            await testUtils.expectTagToBeInDb(newTag);
+            await tagTestUtils.expectTagToBeInDb(newTag);
             expect.assertions(2);
           });
         });
@@ -180,7 +197,7 @@ describe("ExpressAppServer", () => {
       let url: string;
 
       beforeEach(() => {
-        tagToGet = { _id: testUtils.generateId(), name: "tag name" };
+        tagToGet = { _id: appTestUtils.generateId(), name: "tag name" };
         url = tagEntryPoints.getFullPathWithParams(TagEntryPointId.GetTag, {
           id: tagToGet._id,
         });
@@ -197,11 +214,11 @@ describe("ExpressAppServer", () => {
 
       describe("when the requested tag exists in db", () => {
         beforeEach(async () => {
-          await testUtils.insertTagInDb(tagToGet);
+          await tagTestUtils.insertTagInDb(tagToGet);
         });
 
         afterEach(async () => {
-          await testUtils.deleteTagFromDb(tagToGet._id);
+          await tagTestUtils.deleteTagFromDb(tagToGet._id);
         });
 
         it("should return the requested tag", async () => {
@@ -214,7 +231,7 @@ describe("ExpressAppServer", () => {
           const tagResponse: ITag = response.body;
 
           expect(response.statusCode).toBe(200);
-          testUtils.expectTagsToBeEqual(tagToGet, tagResponse);
+          tagTestUtils.expectTagsToBeEqual(tagToGet, tagResponse);
           expect.assertions(2);
         });
       });
@@ -227,11 +244,11 @@ describe("ExpressAppServer", () => {
       ];
 
       beforeEach(async () => {
-        await testUtils.insertTagsInDb(dbTags);
+        await tagTestUtils.insertTagsInDb(dbTags);
       });
 
       afterEach(async () => {
-        await testUtils.deleteTagsFromDb(dbTags);
+        await tagTestUtils.deleteTagsFromDb(dbTags);
       });
 
       describe("when there is no filter", () => {
@@ -241,7 +258,7 @@ describe("ExpressAppServer", () => {
           const expectedTags = dbTags;
           const responseTags = response.body;
 
-          testUtils.expectEqualTagArrays(responseTags, expectedTags);
+          tagTestUtils.expectEqualTagArrays(responseTags, expectedTags);
         });
       });
 
@@ -254,7 +271,7 @@ describe("ExpressAppServer", () => {
           const response = await request(app).get(searchTagPath).query(filter);
 
           const responseTags: ITag[] = response.body;
-          testUtils.expectEqualTagArrays(responseTags, expectedTags);
+          tagTestUtils.expectEqualTagArrays(responseTags, expectedTags);
         });
       });
     });
@@ -264,7 +281,7 @@ describe("ExpressAppServer", () => {
       let url: string;
 
       beforeEach(() => {
-        tagToDelete = { _id: testUtils.generateId(), name: "tag to delete" };
+        tagToDelete = { _id: appTestUtils.generateId(), name: "tag to delete" };
         url = tagEntryPoints.getFullPathWithParams(TagEntryPointId.DeleteTag, {
           id: tagToDelete._id,
         });
@@ -283,14 +300,14 @@ describe("ExpressAppServer", () => {
         let token: string;
 
         beforeEach(async () => {
-          token = await testUtils.getToken();
+          token = await appTestUtils.getToken();
 
-          await testUtils.insertTagInDb(tagToDelete);
+          await tagTestUtils.insertTagInDb(tagToDelete);
         });
 
         // making sure to clear db in case of failing test
         afterEach(async () => {
-          await testUtils.deleteTagFromDb(tagToDelete._id);
+          await tagTestUtils.deleteTagFromDb(tagToDelete._id);
         });
 
         it("should delete the requested tag from db", async () => {
@@ -299,7 +316,7 @@ describe("ExpressAppServer", () => {
             .auth(token, { type: "bearer" });
 
           expect(response.statusCode).toBe(200);
-          await testUtils.expectTagToBeDeleted(tagToDelete._id);
+          await tagTestUtils.expectTagToBeDeleted(tagToDelete._id);
           expect.assertions(2);
         });
       });
@@ -315,17 +332,17 @@ describe("ExpressAppServer", () => {
       });
 
       afterEach(async () => {
-        await testUtils.deletePhotoFromDb(photoToAdd._id);
+        await appTestUtils.deletePhotoFromDb(photoToAdd._id);
       });
 
       it("should add the photo image and base data to their respective DBs", async () => {
-        const token = await testUtils.getToken();
+        const token = await appTestUtils.getToken();
         const addReq = request(app)
           .post(addPhotoPath)
           .auth(token, { type: "bearer" });
-        testUtils.addFormDataToReq(addReq, photoToAdd);
+        appTestUtils.addFormDataToReq(addReq, photoToAdd);
         await addReq;
-        await testUtils.expectPhotoToBeUploaded(photoToAdd);
+        await appTestUtils.expectPhotoToBeUploaded(photoToAdd);
       });
     });
 
@@ -339,11 +356,11 @@ describe("ExpressAppServer", () => {
         );
         delete expectedPhoto.imageBuffer;
 
-        await testUtils.insertPhotoInDbs(expectedPhoto);
+        await appTestUtils.insertPhotoInDbs(expectedPhoto);
       });
 
       afterEach(async () => {
-        await testUtils.deletePhotoFromDb(expectedPhoto._id);
+        await appTestUtils.deletePhotoFromDb(expectedPhoto._id);
       });
 
       it("should return the base data of the photo with matching id", async () => {
@@ -352,8 +369,8 @@ describe("ExpressAppServer", () => {
           { id: expectedPhoto._id },
         );
         const response = await request(app).get(url);
-        const responsePhoto = testUtils.getPhotoFromResponse(response);
-        testUtils.expectMatchingPhotos(expectedPhoto, responsePhoto);
+        const responsePhoto = appTestUtils.getPhotoFromResponse(response);
+        appTestUtils.expectMatchingPhotos(expectedPhoto, responsePhoto);
       });
     });
 
@@ -364,11 +381,11 @@ describe("ExpressAppServer", () => {
         expectedPhoto = await dumbPhotoGenerator.generatePhoto();
         delete expectedPhoto.metadata;
 
-        await testUtils.insertPhotoInDbs(expectedPhoto);
+        await appTestUtils.insertPhotoInDbs(expectedPhoto);
       });
 
       afterEach(async () => {
-        await testUtils.deletePhotoFromDb(expectedPhoto._id);
+        await appTestUtils.deletePhotoFromDb(expectedPhoto._id);
       });
 
       it("should return the image buffer of the photo with matching id", async () => {
@@ -377,8 +394,8 @@ describe("ExpressAppServer", () => {
           { id: expectedPhoto._id },
         );
         const response = await request(app).get(url);
-        const responsePhoto = testUtils.getPhotoFromResponse(response);
-        testUtils.expectMatchingPhotos(expectedPhoto, responsePhoto);
+        const responsePhoto = appTestUtils.getPhotoFromResponse(response);
+        appTestUtils.expectMatchingPhotos(expectedPhoto, responsePhoto);
       });
     });
 
@@ -394,7 +411,7 @@ describe("ExpressAppServer", () => {
         ]);
         await Promise.all(
           storedPhotos.map(
-            async (photo) => await testUtils.insertPhotoInDbs(photo),
+            async (photo) => await appTestUtils.insertPhotoInDbs(photo),
           ),
         );
       }, timeout);
@@ -402,7 +419,7 @@ describe("ExpressAppServer", () => {
       afterEach(async () => {
         await Promise.all(
           storedPhotos.map(
-            async (photo) => await testUtils.deletePhotoFromDb(photo._id),
+            async (photo) => await appTestUtils.deletePhotoFromDb(photo._id),
           ),
         );
       }, timeout);
@@ -421,14 +438,14 @@ describe("ExpressAppServer", () => {
           const searchResult = response.body as IPhoto[];
 
           if (queryParams.size) {
-            testUtils.expectSearchResultMatchingSize(
+            appTestUtils.expectSearchResultMatchingSize(
               searchResult,
               queryParams.size,
             );
           }
 
           if (queryParams.date) {
-            testUtils.expectSearchResultMatchingDateOrdering(
+            appTestUtils.expectSearchResultMatchingDateOrdering(
               searchResult,
               queryParams.date,
             );
@@ -444,7 +461,7 @@ describe("ExpressAppServer", () => {
 
       beforeEach(async () => {
         storedPhoto = await dumbPhotoGenerator.generatePhoto();
-        await testUtils.insertPhotoInDbs(storedPhoto);
+        await appTestUtils.insertPhotoInDbs(storedPhoto);
 
         newPhoto = await dumbPhotoGenerator.generatePhoto({
           _id: storedPhoto._id,
@@ -455,18 +472,20 @@ describe("ExpressAppServer", () => {
       });
 
       afterEach(async () => {
-        await testUtils.deletePhotoFromDb(storedPhoto._id);
+        await appTestUtils.deletePhotoFromDb(storedPhoto._id);
       });
 
       it("should replace the photo with the one in the request", async () => {
-        const dbPhotoBefore = await testUtils.getPhotoFromDb(storedPhoto._id);
-        const token = await testUtils.getToken();
+        const dbPhotoBefore = await appTestUtils.getPhotoFromDb(
+          storedPhoto._id,
+        );
+        const token = await appTestUtils.getToken();
         const replaceReq = request(app)
           .put(newPhotoUrl)
           .auth(token, { type: "bearer" });
-        testUtils.addFormDataToReq(replaceReq, newPhoto);
+        appTestUtils.addFormDataToReq(replaceReq, newPhoto);
         await replaceReq;
-        await testUtils.expectPhotoToBeReplacedInDb(
+        await appTestUtils.expectPhotoToBeReplacedInDb(
           dbPhotoBefore._id,
           newPhoto,
         );
@@ -485,18 +504,18 @@ describe("ExpressAppServer", () => {
             id: photoToDelete._id,
           },
         );
-        await testUtils.insertPhotoInDbs(photoToDelete);
+        await appTestUtils.insertPhotoInDbs(photoToDelete);
       });
 
       afterEach(async () => {
         // in case a test fails
-        await testUtils.deletePhotoFromDb(photoToDelete._id);
+        await appTestUtils.deletePhotoFromDb(photoToDelete._id);
       });
 
       it("should delete the image and base data from their respective DBs of the targeted photo", async () => {
-        const token = await testUtils.getToken();
+        const token = await appTestUtils.getToken();
         await request(app).delete(url).auth(token, { type: "bearer" });
-        await testUtils.expectPhotoToBeDeletedFromDbs(photoToDelete._id);
+        await appTestUtils.expectPhotoToBeDeletedFromDbs(photoToDelete._id);
       });
     });
   });
@@ -507,7 +526,7 @@ describe("ExpressAppServer", () => {
       const errorInducingQueryParams: IRendering = {
         dateOrder: "abc" as SortDirection,
       };
-      const token = await testUtils.getToken();
+      const token = await appTestUtils.getToken();
 
       const response = await request(app)
         .get(searchPhotoPath)

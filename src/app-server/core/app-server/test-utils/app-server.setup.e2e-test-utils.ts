@@ -133,4 +133,8 @@ export class AppServerSetupE2ETestUtils {
   getLogger(): ILogger {
     return this.logger;
   }
+
+  getTagDb(): ITagDb {
+    return this.tagDb;
+  }
 }
