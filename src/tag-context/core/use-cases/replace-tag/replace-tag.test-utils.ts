@@ -1,6 +1,7 @@
+import { TagTestUtils } from "#shared/test-utils";
+
 import { ITagDb } from "../../gateways";
 import { IReplaceTagUseCase, ITag } from "../../models";
-import { TagTestUtils } from "../../test-utils";
 import { ReplaceTagUseCase } from "./replace-tag";
 
 export class ReplaceTagTestUtils {

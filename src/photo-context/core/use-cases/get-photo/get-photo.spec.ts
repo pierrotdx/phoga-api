@@ -1,6 +1,6 @@
 import { HttpErrorCode } from "#shared/models";
 import { readFile } from "fs/promises";
-
+import { PhotoTestUtils } from "#shared/test-utils";
 import {
   FakePhotoDataDb,
   FakePhotoImageDb,
@@ -15,7 +15,6 @@ import {
   IPhoto,
   Photo,
 } from "../../models";
-import { PhotoTestUtils } from "../../test-utils";
 import { GetPhotoUseCase } from "./get-photo";
 
 describe(`${GetPhotoUseCase.name}`, () => {

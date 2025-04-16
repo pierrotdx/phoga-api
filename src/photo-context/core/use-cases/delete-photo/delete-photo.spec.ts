@@ -1,4 +1,5 @@
 import { HttpErrorCode } from "#shared/models";
+import { PhotoTestUtils } from "#shared/test-utils";
 
 import {
   FakePhotoDataDb,
@@ -6,7 +7,6 @@ import {
   dumbPhotoGenerator,
 } from "../../../adapters/";
 import { IPhotoDataDb, IPhotoImageDb } from "../../../core/gateways";
-import { PhotoTestUtils } from "../../../core/test-utils";
 import {
   IDeletePhotoParams,
   IDeletePhotoUseCase,

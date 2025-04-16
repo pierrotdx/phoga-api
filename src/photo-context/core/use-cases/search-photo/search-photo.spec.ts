@@ -1,4 +1,5 @@
 import { IRendering, SortDirection } from "#shared/models";
+import { PhotoTestUtils } from "#shared/test-utils";
 import { clone } from "ramda";
 
 import {
@@ -12,7 +13,6 @@ import {
   IPhotoImageDb,
   ISearchPhotoParams,
   ISearchPhotoUseCase,
-  PhotoTestUtils,
 } from "../../../core/";
 import { SearchPhotoUseCase } from "./search-photo";
 

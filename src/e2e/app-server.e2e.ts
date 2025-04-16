@@ -6,17 +6,12 @@ import {
   IPhotoStoredData,
   IReplacePhotoParams,
   ISearchPhotoParams,
-  PhotoTestUtils,
   comparePhotoDates,
   dumbPhotoGenerator,
 } from "#photo-context";
 import { HttpErrorCode, IRendering, SortDirection } from "#shared/models";
-import {
-  ISearchTagFilter,
-  ITag,
-  TagEntryPointId,
-  TagTestUtils,
-} from "#tag-context";
+import { PhotoTestUtils, TagTestUtils } from "#shared/test-utils";
+import { ISearchTagFilter, ITag, TagEntryPointId } from "#tag-context";
 import { type Express } from "express";
 import { clone, omit, pick } from "ramda";
 import request from "supertest";

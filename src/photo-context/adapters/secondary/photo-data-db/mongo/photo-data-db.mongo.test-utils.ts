@@ -8,10 +8,10 @@ import {
   IPhoto,
   IPhotoData,
   IPhotoStoredData,
-  PhotoTestUtils,
   comparePhotoDates,
 } from "../../../../core";
 import { PhotoDataDbMongo } from "./photo-data-db.mongo";
+import { PhotoTestUtils } from "#shared/test-utils";
 
 type TDoc = IPhotoData;
 

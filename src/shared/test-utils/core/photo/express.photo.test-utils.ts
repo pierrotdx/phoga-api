@@ -1,8 +1,7 @@
+import { IPhoto, Photo } from "#photo-context";
 import { imageBufferEncoding } from "#shared/models";
 import { isUuid } from "#shared/uuid";
 import { Response, Test } from "supertest";
-
-import { IPhoto, Photo } from "../models";
 
 export class ExpressPhotoTestUtils {
   getPayloadFromPhoto(photo: IPhoto, encoding = imageBufferEncoding) {

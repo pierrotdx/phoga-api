@@ -1,6 +1,7 @@
+import { TagTestUtils } from "#shared/test-utils";
+
 import { ITagDb } from "../../gateways";
 import { IDeleteTagUseCase, ITag } from "../../models";
-import { TagTestUtils } from "../../test-utils";
 import { DeleteTagUseCase } from "./delete-tag";
 
 export class DeleteTagTestUtils {

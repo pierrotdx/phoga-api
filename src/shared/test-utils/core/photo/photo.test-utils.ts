@@ -1,4 +1,12 @@
 import {
+  IAddPhotoParams,
+  IPhoto,
+  IPhotoData,
+  IPhotoDataDb,
+  IPhotoImageDb,
+  IPhotoStoredData,
+} from "#photo-context";
+import {
   AssertionsCounter,
   IAssertionsCounter,
 } from "#shared/assertions-counter";
@@ -11,13 +19,6 @@ import {
 } from "#shared/models";
 import { equals, omit } from "ramda";
 
-import { IPhotoDataDb, IPhotoImageDb } from "../gateways";
-import {
-  IAddPhotoParams,
-  IPhoto,
-  IPhotoData,
-  IPhotoStoredData,
-} from "../models";
 import { DbPhotoTestUtils } from "./db-photo.test-utils";
 
 export class PhotoTestUtils<TUseCaseResult = unknown> extends DbPhotoTestUtils {

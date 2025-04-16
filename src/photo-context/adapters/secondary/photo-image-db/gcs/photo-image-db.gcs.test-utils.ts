@@ -3,8 +3,9 @@ import { randomInt } from "node:crypto";
 
 import { Storage } from "@google-cloud/storage";
 
-import { IPhoto, PhotoTestUtils } from "../../../../core";
+import { IPhoto } from "../../../../core";
 import { PhotoImageDbGcs } from "./photo-image-db.gcs";
+import { PhotoTestUtils } from "#shared/test-utils";
 
 export class PhotoImageDbGcsTestUtils {
   private readonly storage: Storage;

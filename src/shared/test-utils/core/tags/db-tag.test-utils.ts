@@ -1,4 +1,4 @@
-import { ITag, ITagDb } from "../../core";
+import { ITag, ITagDb } from "#tag-context";
 
 export class DbTagTestUtils {
   constructor(private readonly tagDb: ITagDb) {}

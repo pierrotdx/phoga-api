@@ -1,5 +1,4 @@
 import {
-  ExpressPhotoTestUtils,
   IAddPhotoParams,
   IDeletePhotoParams,
   IGetPhotoParams,
@@ -19,6 +18,7 @@ import {
   searchPhotoPath,
 } from "./app-server.paths.e2e-test-utils";
 import { AppServerSetupE2ETestUtils } from "./app-server.setup.e2e-test-utils";
+import { ExpressPhotoTestUtils } from "#shared/test-utils";
 
 export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
   private expressSharedTestUtils: ExpressPhotoTestUtils;

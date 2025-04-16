@@ -1,9 +1,10 @@
+import { TagTestUtils } from "#shared/test-utils";
+
 import {
   ISearchTagFilter,
   ISearchTagUseCase,
   ITag,
   ITagDb,
-  TagTestUtils,
 } from "../../../core/";
 import { SearchTagUseCase } from "./search-tag";
 

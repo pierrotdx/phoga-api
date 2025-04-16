@@ -3,10 +3,9 @@ import {
   IAssertionsCounter,
 } from "#shared/assertions-counter";
 import { IUseCase } from "#shared/models";
+import { ITag, ITagDb } from "#tag-context";
 import { equals } from "ramda";
 
-import { ITagDb } from "../gateways";
-import { ITag } from "../models";
 import { DbTagTestUtils } from "./db-tag.test-utils";
 
 export class TagTestUtils extends DbTagTestUtils {

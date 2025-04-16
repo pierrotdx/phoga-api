@@ -1,7 +1,12 @@
+import {
+  IPhoto,
+  IPhotoData,
+  IPhotoDataDb,
+  IPhotoImageDb,
+  IPhotoStoredData,
+  Photo,
+} from "#photo-context";
 import { omit } from "ramda";
-
-import { IPhotoDataDb, IPhotoImageDb } from "../gateways";
-import { IPhoto, IPhotoData, IPhotoStoredData, Photo } from "../models";
 
 export class DbPhotoTestUtils {
   constructor(
