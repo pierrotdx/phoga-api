@@ -1,5 +1,5 @@
 import { Auth0TokenProvider, ExpressAuthHandler } from "#auth-context";
-import { ILogger, LoggerWinston } from "#logger-context";
+import { LoggerWinston } from "#logger-context";
 import {
   IPhotoDataDb,
   IPhotoImageDb,
@@ -18,7 +18,6 @@ export class AppServerSetupE2ETestUtils {
   private readonly storage: Storage;
   protected readonly tokenProvider: Auth0TokenProvider;
   private readonly authHandler: ExpressAuthHandler;
-  private logger: ILogger;
 
   protected readonly username: string;
   protected readonly password: string;
@@ -30,7 +29,7 @@ export class AppServerSetupE2ETestUtils {
   protected photoImageDb: IPhotoImageDb;
   protected tagDb: ITagDb;
 
-  private appServer: ExpressAppServer;
+  protected appServer: ExpressAppServer;
 
   constructor(testEnv: any) {
     const mongoParams = this.getMongoParams(testEnv);
@@ -106,13 +105,13 @@ export class AppServerSetupE2ETestUtils {
 
   private setupServer(): void {
     const silentLogger = true;
-    this.logger = new LoggerWinston(silentLogger);
+    const logger = new LoggerWinston(silentLogger);
 
     this.appServer = new ExpressAppServer(
       this.photoDataDb,
       this.photoImageDb,
       this.tagDb,
-      this.logger,
+      logger,
       this.authHandler,
     );
     this.appServer.listen();
@@ -128,10 +127,6 @@ export class AppServerSetupE2ETestUtils {
 
   getServer(): ExpressAppServer {
     return this.appServer;
-  }
-
-  getLogger(): ILogger {
-    return this.logger;
   }
 
   getTagDb(): ITagDb {

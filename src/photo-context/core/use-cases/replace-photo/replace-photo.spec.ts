@@ -5,12 +5,7 @@ import {
   FakePhotoImageDb,
   dumbPhotoGenerator,
 } from "../../../adapters/";
-import {
-  AddPhotoUseCase,
-  IPhotoDataDb,
-  IPhotoImageDb,
-  PhotoTestUtils,
-} from "../../../core";
+import { IPhotoDataDb, IPhotoImageDb, PhotoTestUtils } from "../../../core";
 import {
   IPhoto,
   IPhotoStoredData,
@@ -96,7 +91,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
 
         it("should not update the data (other than image) in the photo-data db", async () => {
           const expectedStoreData: IPhotoStoredData =
-            getExpectedPhotoDataStored(photoToReplace);
+            testUtils.getPhotoStoredData(photoToReplace);
 
           try {
             await testUtils.executeTestedUseCase(useCaseParams);
@@ -134,7 +129,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
         describe("when the photo to replace had data already stored in the photo-data db", () => {
           it("should replace the data with the new one in the photo-data db", async () => {
             const expectedStoredData =
-              getExpectedPhotoDataStored(useCaseParams);
+              testUtils.getPhotoStoredData(useCaseParams);
 
             await testUtils.executeTestedUseCase(useCaseParams);
 
@@ -147,17 +142,28 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
         });
 
         describe("when the photo to replace did non have any data stored in the photo-data db", () => {
+          let photoWithoutDataToReplace: IPhoto;
+
           beforeEach(async () => {
-            const newPhotoWithoutData = await dumbPhotoGenerator.generatePhoto({
-              _id: photoToReplace._id,
+            photoWithoutDataToReplace =
+              await dumbPhotoGenerator.generatePhoto();
+            delete photoWithoutDataToReplace.metadata;
+            await testUtils.insertPhotoInDbs(photoWithoutDataToReplace);
+
+            const newPhoto = await dumbPhotoGenerator.generatePhoto({
+              _id: photoWithoutDataToReplace._id,
             });
-            delete newPhotoWithoutData.metadata;
-            useCaseParams = newPhotoWithoutData;
+
+            useCaseParams = newPhoto;
+          });
+
+          afterEach(async () => {
+            await testUtils.deletePhotoFromDb(photoWithoutDataToReplace._id);
           });
 
           it("should add the new data in the photo-data db", async () => {
             const expectedStoredData =
-              getExpectedPhotoDataStored(useCaseParams);
+              testUtils.getPhotoStoredData(useCaseParams);
 
             await testUtils.executeTestedUseCase(useCaseParams);
 
@@ -172,13 +178,3 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
     });
   });
 });
-
-function getExpectedPhotoDataStored(
-  useCaseParams: Parameters<typeof AddPhotoUseCase.prototype.execute>[0],
-): IPhotoStoredData {
-  const photoStoredData: IPhotoStoredData = {
-    _id: useCaseParams._id,
-    metadata: useCaseParams.metadata,
-  };
-  return photoStoredData;
-}

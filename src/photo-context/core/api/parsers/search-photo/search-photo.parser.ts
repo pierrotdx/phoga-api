@@ -6,8 +6,8 @@ import { assertSearchPhotoOptions } from "../../../assertions";
 import { ISearchPhotoOptions, ISearchPhotoParser } from "../../../models";
 
 export class SearchPhotoParser implements ISearchPhotoParser {
-  parse(data: Request): ISearchPhotoOptions {
-    const query = data.query;
+  parse(req: Request): ISearchPhotoOptions {
+    const query = req.query;
     if (isEmpty(query)) {
       return;
     }

@@ -9,14 +9,14 @@ import {
   IUseCase,
   SortDirection,
 } from "#shared/models";
-import { omit } from "ramda";
+import { equals, omit } from "ramda";
 
 import { IPhotoDataDb, IPhotoImageDb } from "../gateways";
 import {
+  IAddPhotoParams,
   IPhoto,
   IPhotoData,
   IPhotoStoredData,
-  IReplacePhotoParams,
 } from "../models";
 import { DbPhotoTestUtils } from "./db-photo.test-utils";
 
@@ -92,12 +92,6 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends DbPhotoTestUtils {
     this.assertionsCounter.increase();
   }
 
-  async expectPhotoToBeUploaded(photo: IPhoto): Promise<void> {
-    const photoData = this.getPhotoData(photo);
-    await this.expectPhotoStoredDataToBe(photo._id, photoData);
-    await this.expectPhotoStoredImageToBe(photo._id, photo.imageBuffer);
-  }
-
   async executeUseCaseAndExpectToThrow({
     useCaseParams,
     expectedStatus,
@@ -121,26 +115,15 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends DbPhotoTestUtils {
     }
   }
 
-  async expectPhotoToBeDeletedFromDbs(id: IPhoto["_id"]): Promise<void> {
-    await this.expectPhotoStoredDataToBe(id, undefined);
-    await this.expectPhotoStoredImageToBe(id, undefined);
-  }
-
-  async expectPhotoToBeReplacedInDb(
-    id: IPhoto["_id"],
-    expectedDbData: IReplacePhotoParams,
-  ): Promise<void> {
-    const photoStoredData: IPhotoStoredData = omit(
-      ["imageBuffer"],
-      expectedDbData,
-    );
-    await this.expectPhotoStoredDataToBe(id, photoStoredData);
-    await this.expectPhotoStoredImageToBe(id, expectedDbData.imageBuffer);
-  }
-
   expectEqualPhotoArrays(photos1: IPhoto[], photos2: IPhoto[]): void {
-    expect(photos1).toEqual(photos2);
+    expect(photos1.length).toEqual(photos2.length);
     this.assertionsCounter.increase();
+
+    photos1.forEach((photo1) => {
+      const isInPhotos2 = photos2.some((photo2) => equals(photo1, photo2));
+      expect(isInPhotos2).toBe(true);
+      this.assertionsCounter.increase();
+    });
   }
 
   expectSubArrayToStartFromIndex(
@@ -149,23 +132,17 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends DbPhotoTestUtils {
     requiredIndex: number,
   ): void {
     const expectedFirstSearchResult = baseArray[requiredIndex];
-
     expect(subArray[0]).toEqual(expectedFirstSearchResult);
     this.assertionsCounter.increase();
   }
 
   expectPhotosOrderToBe(photos: IPhoto[], dateOrdering: SortDirection) {
-    const searchResultDates = photos.map((data) => {
-      const stringDate = data.metadata?.date;
-      if (stringDate) {
-        return new Date(stringDate);
-      }
-    });
-    const orderedDates = [...searchResultDates].sort(compareDates);
+    const photosDates = photos.map((photo) => photo.metadata?.date);
+    const orderedDates = [...photosDates].sort(compareDates);
     if (dateOrdering === SortDirection.Descending) {
       orderedDates.reverse();
     }
-    expect(searchResultDates).toEqual(orderedDates);
+    expect(photosDates).toEqual(orderedDates);
     this.assertionsCounter.increase();
   }
 
@@ -176,5 +153,9 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends DbPhotoTestUtils {
 
   checkAssertions(): void {
     this.assertionsCounter.checkAssertions();
+  }
+
+  getPhotoStoredData(addPhotoParams: IAddPhotoParams): IPhotoStoredData {
+    return omit(["imageBuffer"], addPhotoParams);
   }
 }

@@ -32,8 +32,14 @@ export class SearchPhotoUseCase implements ISearchPhotoUseCase {
     }
   }
 
-  private resetPhotos() {
-    this.photos = [];
+  private async setPhotosWithoutImages(
+    options: ISearchPhotoOptions,
+  ): Promise<void> {
+    const photosStoredData = await this.photoDataDb.find(options?.rendering);
+    this.photos = photosStoredData.map((p) => {
+      const photoData = photoStoredDataToPhotoData(p);
+      return new Photo(photoData._id, { photoData });
+    });
   }
 
   private async fetchImages(photos: IPhoto[]): Promise<void> {
@@ -52,13 +58,7 @@ export class SearchPhotoUseCase implements ISearchPhotoUseCase {
     });
   }
 
-  private async setPhotosWithoutImages(
-    options: ISearchPhotoOptions,
-  ): Promise<void> {
-    const photosStoredData = await this.photoDataDb.find(options?.rendering);
-    this.photos = photosStoredData.map((p) => {
-      const photoData = photoStoredDataToPhotoData(p);
-      return new Photo(photoData._id, { photoData });
-    });
+  private resetPhotos() {
+    this.photos = [];
   }
 }

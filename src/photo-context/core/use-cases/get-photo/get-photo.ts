@@ -1,4 +1,5 @@
 import { ErrorWithStatus, HttpErrorCode } from "#shared/models";
+import { isNil } from "ramda";
 
 import { IPhotoDataDb, IPhotoImageDb } from "../../gateways";
 import {
@@ -12,6 +13,11 @@ import {
 import { photoStoredDataToPhotoData } from "../../photo-stored-data-to-photo-data";
 
 export class GetPhotoUseCase implements IGetPhotoUseCase {
+  private readonly photoDoesNotExistError = new ErrorWithStatus(
+    "photo does not exist",
+    HttpErrorCode.NotFound,
+  );
+
   constructor(
     private readonly photoDataDb: IPhotoDataDb,
     private readonly photoImageDb: IPhotoImageDb,
@@ -25,6 +31,9 @@ export class GetPhotoUseCase implements IGetPhotoUseCase {
   ): Promise<IPhoto> {
     const photoData = await this.getPhotoData(id, options);
     const imageBuffer = await this.getImageBuffer(id, options);
+    if (isNil(photoData) && isNil(imageBuffer)) {
+      throw this.photoDoesNotExistError;
+    }
     return new Photo(id, { photoData, imageBuffer });
   }
 
@@ -57,11 +66,7 @@ export class GetPhotoUseCase implements IGetPhotoUseCase {
 
     const imageBuffer = await this.photoImageDb.getById(id);
     if (!imageBuffer) {
-      const error = new ErrorWithStatus(
-        "photo does not exist",
-        HttpErrorCode.NotFound,
-      );
-      throw error;
+      throw this.photoDoesNotExistError;
     }
 
     return imageBuffer;

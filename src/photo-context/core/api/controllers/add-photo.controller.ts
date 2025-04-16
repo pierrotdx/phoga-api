@@ -3,7 +3,12 @@ import { AjvValidator, IValidator } from "#shared/validators";
 import { type Request, type Response } from "express";
 
 import { IPhotoDataDb, IPhotoImageDb } from "../../gateways";
-import { IAddPhotoParser, IAddPhotoUseCase, IPhoto } from "../../models";
+import {
+  IAddPhotoParams,
+  IAddPhotoParser,
+  IAddPhotoUseCase,
+  IPhoto,
+} from "../../models";
 import { AddPhotoUseCase } from "../../use-cases";
 import { AddPhotoParser } from "../parsers";
 import { AddPhotoSchema } from "../schemas";
@@ -27,13 +32,16 @@ export class AddPhotoController
   }
 
   protected async getParamsFromRequest(req: Request): Promise<IPhoto> {
-    const photo = await this.parser.parse(req);
-    this.validator.validate(photo);
-    return photo;
+    // ATM for multipart/formData, we parse before validation...
+    const parsedData = await this.parser.parse(req);
+    this.validator.validate(parsedData);
+    return parsedData;
   }
 
-  protected async executeUseCase(photo: IPhoto): Promise<void> {
-    await this.useCase.execute(photo);
+  protected async executeUseCase(
+    addPhotoParams: IAddPhotoParams,
+  ): Promise<void> {
+    await this.useCase.execute(addPhotoParams);
   }
 
   protected sendResponse(res: Response): void {

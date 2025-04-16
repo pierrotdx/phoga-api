@@ -9,7 +9,6 @@ import { IPhotoDataDb, IPhotoImageDb, PhotoTestUtils } from "../../../core";
 import {
   IAddPhotoParams,
   IAddPhotoUseCase,
-  IPhoto,
   IPhotoStoredData,
 } from "../../models";
 import { AddPhotoUseCase } from "./add-photo";
@@ -85,7 +84,6 @@ describe(`${AddPhotoUseCase.name}`, () => {
           metadata: useCaseParams.metadata,
         };
 
-        console.log("useCaseParams", useCaseParams);
         await testUtils.executeTestedUseCase(useCaseParams);
 
         await testUtils.expectPhotoStoredDataToBe(

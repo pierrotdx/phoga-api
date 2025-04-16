@@ -2,7 +2,6 @@ import { Request } from "express";
 import formidable, { Fields } from "formidable";
 import { isEmpty } from "ramda";
 
-import { assertPhoto } from "../../../assertions";
 import {
   IAddPhotoParams,
   IAddPhotoParser,
@@ -24,7 +23,6 @@ export class AddPhotoParser implements IAddPhotoParser {
     this.photo = new Photo(_id);
     this.addMetadata(fields);
     await this.addImageBuffer(files);
-    assertPhoto(this.photo);
     return this.photo;
   }
 

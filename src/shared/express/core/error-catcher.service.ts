@@ -12,8 +12,8 @@ export function wrapWithErrorCatcher(handler: Handler): Handler {
   };
 }
 
-function setResponseStatusCode(err: any, res: Response): void {
-  const errorCode = err.code;
+function setResponseStatusCode(res: Response, err: any): void {
+  const errorCode = err.status;
   if (!errorCode) {
     return;
   }

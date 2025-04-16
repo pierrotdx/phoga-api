@@ -1,7 +1,5 @@
 import { imageBufferEncoding } from "#shared/models";
 import { isUuid } from "#shared/uuid";
-import bodyParser from "body-parser";
-import express, { type Express, Router } from "express";
 import { Response, Test } from "supertest";
 
 import { IPhoto, Photo } from "../models";
@@ -41,15 +39,6 @@ export class ExpressPhotoTestUtils {
         undefined,
       );
     return new Photo(id, { imageBuffer });
-  }
-
-  generateDumbApp(router?: Router): Express {
-    const app = express();
-    app.use(bodyParser.json());
-    if (router) {
-      app.use(router);
-    }
-    return app;
   }
 
   addFormDataToReq(req: Test, photo: IPhoto): void {

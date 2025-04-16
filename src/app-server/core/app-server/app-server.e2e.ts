@@ -1,8 +1,13 @@
-import { ILogger } from "#logger-context";
 import {
+  IAddPhotoParams,
+  IDeletePhotoParams,
+  IGetPhotoParams,
   IPhoto,
-  PhotoEntryPointId,
+  IPhotoStoredData,
+  IReplacePhotoParams,
+  ISearchPhotoParams,
   PhotoTestUtils,
+  comparePhotoDates,
   dumbPhotoGenerator,
 } from "#photo-context";
 import { HttpErrorCode, IRendering, SortDirection } from "#shared/models";
@@ -13,7 +18,7 @@ import {
   TagTestUtils,
 } from "#tag-context";
 import { type Express } from "express";
-import { omit } from "ramda";
+import { clone, omit, pick } from "ramda";
 import request from "supertest";
 
 import { ExpressAppServer } from "./app-server";
@@ -25,7 +30,6 @@ import {
   getImagePath,
   getPhotoDataPath,
   getTagPath,
-  photoEntryPoints,
   replacePhotoPath,
   replaceTagPath,
   searchPhotoPath,
@@ -39,13 +43,11 @@ describe("ExpressAppServer", () => {
 
   let expressHttpServer: ExpressAppServer;
   let app: Express;
-  let logger: ILogger;
 
   beforeEach(async () => {
     await appTestUtils.globalBeforeEach();
     expressHttpServer = appTestUtils.getServer();
     app = expressHttpServer.app;
-    logger = appTestUtils.getLogger();
   });
 
   afterEach(async () => {
@@ -338,82 +340,202 @@ describe("ExpressAppServer", () => {
     });
 
     describe(`POST ${addPhotoPath}`, () => {
-      let photoToAdd: IPhoto;
+      let addPhotoParams: IAddPhotoParams;
 
       beforeEach(async () => {
-        photoToAdd = await dumbPhotoGenerator.generatePhoto();
+        addPhotoParams = await dumbPhotoGenerator.generatePhoto();
       });
 
       afterEach(async () => {
-        await photoTestUtils.deletePhotoFromDb(photoToAdd._id);
+        await photoTestUtils.deletePhotoFromDb(addPhotoParams._id);
       });
 
-      it("should add the photo image and base data to their respective DBs", async () => {
-        const token = await appTestUtils.getToken();
-        const addReq = request(app)
-          .post(addPhotoPath)
-          .auth(token, { type: "bearer" });
-        appTestUtils.addFormDataToReq(addReq, photoToAdd);
-        await addReq;
-        await photoTestUtils.expectPhotoToBeUploaded(photoToAdd);
+      describe("when the requester does not have the expected right", () => {
+        it(`should respond with status code ${HttpErrorCode.Unauthorized} (unauthorized)`, async () => {
+          const response = await appTestUtils.sendAddPhotoReq({
+            addPhotoParams,
+            withToken: false,
+          });
+
+          expect(response.statusCode).toBe(HttpErrorCode.Unauthorized);
+          expect.assertions(1);
+        });
+      });
+
+      describe("when the requester has the expected right", () => {
+        describe("when there is no image to upload", () => {
+          beforeEach(async () => {
+            const photoWithoutImage = await dumbPhotoGenerator.generatePhoto();
+            delete photoWithoutImage.imageBuffer;
+            addPhotoParams = photoWithoutImage;
+          });
+
+          it(`should respond with status code ${HttpErrorCode.BadRequest} (bad request)`, async () => {
+            const expectedStatus = HttpErrorCode.BadRequest;
+
+            const response = await appTestUtils.sendAddPhotoReq({
+              addPhotoParams,
+              withToken: true,
+            });
+
+            expect(response.statusCode).toBe(expectedStatus);
+            expect.assertions(1);
+          });
+
+          it(`should not upload anything to the photo-data db`, async () => {
+            await appTestUtils.sendAddPhotoReq({
+              addPhotoParams,
+              withToken: true,
+            });
+
+            const expectedPhotoStoredData = undefined;
+            await photoTestUtils.expectPhotoStoredDataToBe(
+              addPhotoParams._id,
+              expectedPhotoStoredData,
+            );
+            photoTestUtils.checkAssertions();
+          });
+        });
+
+        describe("when there is an image to upload", () => {
+          beforeEach(async () => {
+            addPhotoParams = await dumbPhotoGenerator.generatePhoto();
+          });
+
+          afterEach(async () => {
+            await photoTestUtils.deletePhotoFromDb(addPhotoParams._id);
+          });
+
+          it("should upload the image to the photo-image db", async () => {
+            await appTestUtils.sendAddPhotoReq({
+              addPhotoParams,
+              withToken: true,
+            });
+
+            await photoTestUtils.expectPhotoStoredImageToBe(
+              addPhotoParams._id,
+              addPhotoParams.imageBuffer,
+            );
+            photoTestUtils.checkAssertions();
+          });
+
+          it("should upload the data (other than image) to the photo-data db", async () => {
+            const expectedStoredData: IPhotoStoredData = {
+              _id: addPhotoParams._id,
+              metadata: addPhotoParams.metadata,
+            };
+
+            await appTestUtils.sendAddPhotoReq({
+              addPhotoParams,
+              withToken: true,
+            });
+
+            await photoTestUtils.expectPhotoStoredDataToBe(
+              addPhotoParams._id,
+              expectedStoredData,
+            );
+            photoTestUtils.checkAssertions();
+          });
+        });
       });
     });
 
     describe(`GET ${getPhotoDataPath}`, () => {
-      let expectedPhoto: IPhoto;
+      let getPhotoParams: IGetPhotoParams;
 
-      beforeEach(async () => {
-        expectedPhoto = omit(
-          ["imageBuffer"],
-          await dumbPhotoGenerator.generatePhoto(),
-        );
-        delete expectedPhoto.imageBuffer;
+      describe("when the required photo does not exist in photo-data db", () => {
+        beforeEach(async () => {
+          const idNotInDb = appTestUtils.generateId();
+          getPhotoParams = idNotInDb;
+        });
 
-        await photoTestUtils.insertPhotoInDbs(expectedPhoto);
+        it(`should throw an error with status code ${HttpErrorCode.NotFound} (not found)`, async () => {
+          const expectedStatus = HttpErrorCode.NotFound;
+
+          const response =
+            await appTestUtils.sendGetPhotoDataReq(getPhotoParams);
+
+          expect(response.statusCode).toBe(expectedStatus);
+          expect.assertions(1);
+        });
       });
 
-      afterEach(async () => {
-        await photoTestUtils.deletePhotoFromDb(expectedPhoto._id);
-      });
+      describe("when the required photo exists in photo-data db", () => {
+        let photoToGet: IPhoto;
 
-      it("should return the base data of the photo with matching id", async () => {
-        const url = photoEntryPoints.getFullPathWithParams(
-          PhotoEntryPointId.GetPhotoData,
-          { id: expectedPhoto._id },
-        );
-        const response = await request(app).get(url);
-        const responsePhoto = appTestUtils.getPhotoFromResponse(response);
-        photoTestUtils.expectMatchingPhotos(expectedPhoto, responsePhoto);
+        beforeEach(async () => {
+          photoToGet = await dumbPhotoGenerator.generatePhoto();
+          await photoTestUtils.insertPhotoInDbs(photoToGet);
+
+          getPhotoParams = photoToGet._id;
+        });
+
+        afterEach(async () => {
+          await photoTestUtils.deletePhotoFromDb(photoToGet._id);
+        });
+
+        it(`should return the required photo data`, async () => {
+          const expectedResult = omit(["imageBuffer"], photoToGet);
+
+          const response =
+            await appTestUtils.sendGetPhotoDataReq(getPhotoParams);
+
+          const result = appTestUtils.getPhotoFromResponse(response);
+          photoTestUtils.expectMatchingPhotos(expectedResult, result);
+          photoTestUtils.checkAssertions();
+        });
       });
     });
 
     describe(`GET ${getImagePath}`, () => {
-      let expectedPhoto: IPhoto;
+      let getPhotoParams: IGetPhotoParams;
 
-      beforeEach(async () => {
-        expectedPhoto = await dumbPhotoGenerator.generatePhoto();
-        delete expectedPhoto.metadata;
+      describe("when the required photo does not have an image in db", () => {
+        beforeEach(async () => {
+          const idNotInDb = appTestUtils.generateId();
+          getPhotoParams = idNotInDb;
+        });
 
-        await photoTestUtils.insertPhotoInDbs(expectedPhoto);
+        it(`should throw an error with status code ${HttpErrorCode.NotFound} (not found)`, async () => {
+          const expectedStatus = HttpErrorCode.NotFound;
+
+          const response =
+            await appTestUtils.sendGetPhotoImageReq(getPhotoParams);
+
+          expect(response.statusCode).toBe(expectedStatus);
+          expect.assertions(1);
+        });
       });
 
-      afterEach(async () => {
-        await photoTestUtils.deletePhotoFromDb(expectedPhoto._id);
-      });
+      describe("when the required photo has an image in db", () => {
+        let photoToGet: IPhoto;
 
-      it("should return the image buffer of the photo with matching id", async () => {
-        const url = photoEntryPoints.getFullPathWithParams(
-          PhotoEntryPointId.GetPhotoImage,
-          { id: expectedPhoto._id },
-        );
-        const response = await request(app).get(url);
-        const responsePhoto = appTestUtils.getPhotoFromResponse(response);
-        photoTestUtils.expectMatchingPhotos(expectedPhoto, responsePhoto);
+        beforeEach(async () => {
+          photoToGet = await dumbPhotoGenerator.generatePhoto();
+          await photoTestUtils.insertPhotoInDbs(photoToGet);
+
+          getPhotoParams = photoToGet._id;
+        });
+
+        afterEach(async () => {
+          await photoTestUtils.deletePhotoFromDb(photoToGet._id);
+        });
+
+        it("should return the required photo image", async () => {
+          const expectedResult = pick(["_id", "imageBuffer"], photoToGet);
+
+          const response =
+            await appTestUtils.sendGetPhotoImageReq(getPhotoParams);
+
+          const responsePhoto = appTestUtils.getPhotoFromResponse(response);
+          photoTestUtils.expectMatchingPhotos(expectedResult, responsePhoto);
+        });
       });
     });
 
     describe(`GET ${searchPhotoPath}`, () => {
       let storedPhotos: IPhoto[];
+      let searchPhotoParams: ISearchPhotoParams;
       const timeout = 10000;
 
       beforeEach(async () => {
@@ -422,133 +544,444 @@ describe("ExpressAppServer", () => {
           await dumbPhotoGenerator.generatePhoto(),
           await dumbPhotoGenerator.generatePhoto(),
         ]);
-        await Promise.all(
-          storedPhotos.map(
-            async (photo) => await photoTestUtils.insertPhotoInDbs(photo),
-          ),
-        );
+        await photoTestUtils.insertPhotosInDbs(storedPhotos);
       }, timeout);
 
       afterEach(async () => {
-        await Promise.all(
-          storedPhotos.map(
-            async (photo) => await photoTestUtils.deletePhotoFromDb(photo._id),
-          ),
-        );
+        const storedPhotosIds = storedPhotos.map((p) => p._id);
+        await photoTestUtils.deletePhotosFromDb(storedPhotosIds);
+
+        searchPhotoParams = undefined;
       }, timeout);
 
-      it.each`
-        queryParams
-        ${{ size: 1 }}
-        ${{ size: 2, dateOrder: SortDirection.Ascending }}
-        ${{ size: 3, dateOrder: SortDirection.Descending }}
-      `(
-        "should return the photos matching the query params: $queryParams",
-        async ({ queryParams }) => {
-          const response = await request(app)
-            .get(searchPhotoPath)
-            .query(queryParams);
-          const searchResult = response.body as IPhoto[];
+      describe("when using the `rendering.date` option", () => {
+        it.each`
+          case            | rendering
+          ${"ascending"}  | ${{ dateOrder: SortDirection.Ascending }}
+          ${"descending"} | ${{ dateOrder: SortDirection.Descending }}
+        `(
+          "should sort them by $case date when required",
+          async ({ rendering }: { rendering: IRendering }) => {
+            const expectedOrder = rendering.dateOrder;
+            searchPhotoParams = { rendering };
 
-          if (queryParams.size) {
-            photoTestUtils.expectArraySizeToBeAtMost(
-              searchResult,
-              queryParams.size,
-            );
-          }
+            const response =
+              await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
+            const result = appTestUtils.getPhotosFromSearchResponse(response);
 
-          if (queryParams.date) {
-            photoTestUtils.expectPhotosOrderToBe(
-              searchResult,
-              queryParams.date,
+            photoTestUtils.expectPhotosOrderToBe(result, expectedOrder);
+            photoTestUtils.checkAssertions();
+          },
+        );
+      });
+
+      describe("when using the `rendering.size` options", () => {
+        it.each`
+          rendering      | expectedSize
+          ${{ size: 0 }} | ${0}
+          ${{ size: 1 }} | ${1}
+          ${{ size: 2 }} | ${2}
+          ${{ size: 3 }} | ${3}
+        `(
+          "should return at most $expectedSize results when required",
+          async ({ rendering, expectedSize }) => {
+            searchPhotoParams = { rendering };
+
+            const response =
+              await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
+            const result = appTestUtils.getPhotosFromSearchResponse(response);
+
+            photoTestUtils.expectArraySizeToBeAtMost(result, expectedSize);
+            photoTestUtils.checkAssertions();
+          },
+        );
+      });
+
+      describe("when using the `rendering.from` option", () => {
+        // using dateOrder to be sure the results are always ordered identically
+        let orderedStoredPhotos: IPhoto[];
+
+        beforeEach(() => {
+          orderedStoredPhotos = clone(storedPhotos).sort(comparePhotoDates);
+        });
+
+        it.each`
+          rendering                                          | expectedStartIndex
+          ${{ from: 1, dateOrder: SortDirection.Ascending }} | ${0}
+          ${{ from: 2, dateOrder: SortDirection.Ascending }} | ${1}
+          ${{ from: 3, dateOrder: SortDirection.Ascending }} | ${2}
+        `(
+          "should return results starting from the $expectedStartIndex-th stored photo",
+          async ({
+            rendering,
+            expectedStartIndex,
+          }: {
+            rendering: IRendering;
+            expectedStartIndex: number;
+          }) => {
+            searchPhotoParams = { rendering };
+
+            const response =
+              await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
+            const result = appTestUtils.getPhotosFromSearchResponse(response);
+
+            photoTestUtils.expectSubArrayToStartFromIndex(
+              orderedStoredPhotos,
+              result,
+              expectedStartIndex,
             );
-          }
-        },
-      );
+            photoTestUtils.checkAssertions();
+          },
+        );
+      });
+
+      describe("when using the `excludeImages` option", () => {
+        it.each`
+          case                | excludeImages
+          ${"without images"} | ${true}
+          ${"with images"}    | ${false}
+        `(
+          "should return photos $case when excludeImages is `$excludeImages`",
+          async ({ excludeImages }: { excludeImages: boolean }) => {
+            searchPhotoParams = { excludeImages };
+
+            const expectedPhotos = clone(storedPhotos).map((p) =>
+              excludeImages ? omit(["imageBuffer"], p) : p,
+            );
+
+            const response =
+              await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
+            const result = appTestUtils.getPhotosFromSearchResponse(response);
+
+            photoTestUtils.expectEqualPhotoArrays(result, expectedPhotos);
+            photoTestUtils.checkAssertions();
+          },
+        );
+      });
     });
 
     describe(`PUT ${replacePhotoPath}`, () => {
       let storedPhoto: IPhoto;
-      let newPhoto: IPhoto;
-      let newPhotoUrl: string;
+      let replacePhotoParams: IReplacePhotoParams;
 
-      beforeEach(async () => {
-        storedPhoto = await dumbPhotoGenerator.generatePhoto();
-        await photoTestUtils.insertPhotoInDbs(storedPhoto);
-
-        newPhoto = await dumbPhotoGenerator.generatePhoto({
-          _id: storedPhoto._id,
+      describe("when the requester does not have the expected right", () => {
+        beforeEach(() => {
+          replacePhotoParams = {
+            _id: appTestUtils.generateId(),
+            imageBuffer: Buffer.from("required image buffer"),
+          };
         });
-        newPhotoUrl = photoEntryPoints
-          .get(PhotoEntryPointId.ReplacePhoto)
-          .getFullPathWithParams({ id: storedPhoto._id });
+
+        it(`should respond with status code ${HttpErrorCode.Unauthorized} (unauthorized)`, async () => {
+          const expectedStatusCode = HttpErrorCode.Unauthorized;
+
+          const response = await appTestUtils.sendReplacePhotoReq({
+            replacePhotoParams,
+            withToken: false,
+          });
+
+          expect(response.statusCode).toBe(expectedStatusCode);
+          expect.assertions(1);
+        });
       });
 
-      afterEach(async () => {
-        await photoTestUtils.deletePhotoFromDb(storedPhoto._id);
-      });
+      describe("when the requester has the expected right", () => {
+        describe("when there is no photo to replace", () => {
+          beforeEach(async () => {
+            replacePhotoParams = {
+              _id: appTestUtils.generateId(),
+              imageBuffer: Buffer.from("required image buffer"),
+            };
+          });
 
-      it("should replace the photo with the one in the request", async () => {
-        const dbPhotoBefore = await photoTestUtils.getPhotoFromDb(
-          storedPhoto._id,
-        );
-        const token = await appTestUtils.getToken();
-        const replaceReq = request(app)
-          .put(newPhotoUrl)
-          .auth(token, { type: "bearer" });
-        appTestUtils.addFormDataToReq(replaceReq, newPhoto);
-        await replaceReq;
-        await photoTestUtils.expectPhotoToBeReplacedInDb(
-          dbPhotoBefore._id,
-          newPhoto,
-        );
+          it(`should respond with status code ${HttpErrorCode.NotFound} (not found)`, async () => {
+            const expectedStatus = HttpErrorCode.NotFound;
+
+            const response = await appTestUtils.sendReplacePhotoReq({
+              replacePhotoParams,
+              withToken: true,
+            });
+
+            expect(response.statusCode).toBe(expectedStatus);
+          });
+        });
+
+        describe("when there is a photo to replace", () => {
+          beforeEach(async () => {
+            storedPhoto = await dumbPhotoGenerator.generatePhoto();
+            await photoTestUtils.insertPhotoInDbs(storedPhoto);
+
+            replacePhotoParams = {
+              _id: storedPhoto._id,
+              imageBuffer: Buffer.from("required image buffer"),
+            };
+          });
+
+          afterEach(async () => {
+            await photoTestUtils.deletePhotoFromDb(storedPhoto._id);
+          });
+
+          describe("when there is no image in the new photo", () => {
+            beforeEach(() => {
+              replacePhotoParams = { _id: storedPhoto._id };
+            });
+
+            it(`should respond with status code ${HttpErrorCode.BadRequest} (bad request)`, async () => {
+              const expectedStatus = HttpErrorCode.BadRequest;
+
+              const response = await appTestUtils.sendReplacePhotoReq({
+                replacePhotoParams,
+                withToken: true,
+              });
+
+              expect(response.statusCode).toBe(expectedStatus);
+              expect.assertions(1);
+            });
+
+            it("should not update the data (other than image) in the photo-data db", async () => {
+              const expectedStoreData =
+                photoTestUtils.getPhotoStoredData(storedPhoto);
+
+              await appTestUtils.sendReplacePhotoReq({
+                replacePhotoParams,
+                withToken: true,
+              });
+
+              await photoTestUtils.expectPhotoStoredDataToBe(
+                storedPhoto._id,
+                expectedStoreData,
+              );
+              photoTestUtils.checkAssertions();
+            });
+          });
+
+          describe("when there is an image in the new photo", () => {
+            beforeEach(async () => {
+              const newPhoto = await dumbPhotoGenerator.generatePhoto({
+                _id: storedPhoto._id,
+              });
+              replacePhotoParams = newPhoto;
+            });
+
+            it("should replace the photo image in the photo-image db", async () => {
+              const expectedStoredPhotoImage = replacePhotoParams.imageBuffer;
+
+              await appTestUtils.sendReplacePhotoReq({
+                replacePhotoParams,
+                withToken: true,
+              });
+
+              await photoTestUtils.expectPhotoStoredImageToBe(
+                replacePhotoParams._id,
+                expectedStoredPhotoImage,
+              );
+              photoTestUtils.checkAssertions();
+            });
+
+            describe("when the photo to replace had data already stored in the photo-data db", () => {
+              it("should replace the data with the new one in the photo-data db", async () => {
+                const expectedStoredData =
+                  photoTestUtils.getPhotoStoredData(replacePhotoParams);
+
+                await appTestUtils.sendReplacePhotoReq({
+                  replacePhotoParams,
+                  withToken: true,
+                });
+
+                await photoTestUtils.expectPhotoStoredDataToBe(
+                  replacePhotoParams._id,
+                  expectedStoredData,
+                );
+                photoTestUtils.checkAssertions();
+              });
+            });
+
+            describe("when the photo to replace did non have any data stored in the photo-data db", () => {
+              let photoWithoutDataToReplace: IPhoto;
+
+              beforeEach(async () => {
+                photoWithoutDataToReplace =
+                  await dumbPhotoGenerator.generatePhoto();
+                delete photoWithoutDataToReplace.metadata;
+
+                await photoTestUtils.insertPhotoInDbs(
+                  photoWithoutDataToReplace,
+                );
+
+                const newPhoto = await dumbPhotoGenerator.generatePhoto({
+                  _id: photoWithoutDataToReplace._id,
+                });
+                replacePhotoParams = newPhoto;
+              });
+
+              afterEach(async () => {
+                await photoTestUtils.deletePhotoFromDb(
+                  photoWithoutDataToReplace._id,
+                );
+              });
+
+              it("should add the new data in the photo-data db", async () => {
+                const expectedStoredData =
+                  photoTestUtils.getPhotoStoredData(replacePhotoParams);
+
+                await appTestUtils.sendReplacePhotoReq({
+                  replacePhotoParams,
+                  withToken: true,
+                });
+
+                await photoTestUtils.expectPhotoStoredDataToBe(
+                  replacePhotoParams._id,
+                  expectedStoredData,
+                );
+                photoTestUtils.checkAssertions();
+              });
+            });
+          });
+        });
       });
     });
 
     describe(`DELETE ${deletePhotoPath}`, () => {
-      let photoToDelete: IPhoto;
-      let url: string;
+      let deletePhotoParams: IDeletePhotoParams;
 
-      beforeEach(async () => {
-        photoToDelete = await dumbPhotoGenerator.generatePhoto();
-        url = photoEntryPoints.getFullPathWithParams(
-          PhotoEntryPointId.DeletePhoto,
-          {
-            id: photoToDelete._id,
-          },
-        );
-        await photoTestUtils.insertPhotoInDbs(photoToDelete);
+      describe("when the requester does not have the expected right", () => {
+        beforeEach(() => {
+          deletePhotoParams = appTestUtils.generateId();
+        });
+
+        it(`should respond with status code ${HttpErrorCode.Unauthorized} (unauthorized)`, async () => {
+          const response = await appTestUtils.sendDeletePhotoReq({
+            deletePhotoParams,
+            withToken: false,
+          });
+
+          expect(response.statusCode).toBe(HttpErrorCode.Unauthorized);
+          expect.assertions(1);
+        });
       });
 
-      afterEach(async () => {
-        // in case a test fails
-        await photoTestUtils.deletePhotoFromDb(photoToDelete._id);
+      describe("when the requester has the expected right", () => {
+        let photoToDelete: IPhoto;
+
+        beforeEach(async () => {
+          photoToDelete = await dumbPhotoGenerator.generatePhoto();
+          await photoTestUtils.insertPhotoInDbs(photoToDelete);
+
+          deletePhotoParams = photoToDelete._id;
+        });
+
+        afterEach(async () => {
+          // in case a test fails
+          await photoTestUtils.deletePhotoFromDb(photoToDelete._id);
+        });
+
+        it("should delete photo\'s data (other than image) from the photo-data db", async () => {
+          const expectedStoreData = undefined;
+
+          await appTestUtils.sendDeletePhotoReq({
+            deletePhotoParams,
+            withToken: true,
+          });
+
+          await photoTestUtils.expectPhotoStoredDataToBe(
+            deletePhotoParams,
+            expectedStoreData,
+          );
+          photoTestUtils.checkAssertions();
+        });
+
+        it("should delete photo's image the photo-image db", async () => {
+          const expectedStoredImage = undefined;
+
+          await appTestUtils.sendDeletePhotoReq({
+            deletePhotoParams,
+            withToken: true,
+          });
+
+          await photoTestUtils.expectPhotoStoredImageToBe(
+            deletePhotoParams,
+            expectedStoredImage,
+          );
+          photoTestUtils.checkAssertions();
+        });
+
+        describe("when the deletion of photo data (other than image) fails", () => {
+          beforeEach(() => {
+            const photoDataDb = appTestUtils.getPhotoDataDb();
+            jest
+              .spyOn(photoDataDb, "delete")
+              .mockImplementationOnce(() =>
+                Promise.reject("data-deletion failed"),
+              );
+          });
+
+          it(`should respond with status code ${HttpErrorCode.InternalServerError} (internal server error)`, async () => {
+            const expectedStatusCode = HttpErrorCode.InternalServerError;
+
+            const response = await appTestUtils.sendDeletePhotoReq({
+              deletePhotoParams,
+              withToken: true,
+            });
+
+            expect(response.statusCode).toBe(expectedStatusCode);
+            expect.assertions(1);
+          });
+
+          it("should not delete the photo's image", async () => {
+            const expectedStoredImage = photoToDelete.imageBuffer;
+
+            await appTestUtils.sendDeletePhotoReq({
+              deletePhotoParams,
+              withToken: true,
+            });
+
+            await photoTestUtils.expectPhotoStoredImageToBe(
+              deletePhotoParams,
+              expectedStoredImage,
+            );
+            photoTestUtils.checkAssertions();
+          });
+        });
+
+        describe("when the deletion of photo image fails", () => {
+          beforeEach(() => {
+            const photoImageDb = appTestUtils.getPhotoImageDb();
+            jest
+              .spyOn(photoImageDb, "delete")
+              .mockImplementationOnce(() =>
+                Promise.reject("image-deletion failed"),
+              );
+          });
+
+          it(`should respond with status code ${HttpErrorCode.InternalServerError} (internal server error)`, async () => {
+            const expectedStatusCode = HttpErrorCode.InternalServerError;
+
+            const response = await appTestUtils.sendDeletePhotoReq({
+              deletePhotoParams,
+              withToken: true,
+            });
+
+            expect(response.statusCode).toBe(expectedStatusCode);
+            expect.assertions(1);
+          });
+
+          it("should not delete photo's data in photo-data db", async () => {
+            const expectedPhotoStoredData: IPhotoStoredData =
+              photoTestUtils.getPhotoStoredData(photoToDelete);
+
+            await appTestUtils.sendDeletePhotoReq({
+              deletePhotoParams,
+              withToken: true,
+            });
+
+            await photoTestUtils.expectPhotoStoredDataToBe(
+              deletePhotoParams,
+              expectedPhotoStoredData,
+            );
+            photoTestUtils.checkAssertions();
+          });
+        });
       });
-
-      it("should delete the image and base data from their respective DBs of the targeted photo", async () => {
-        const token = await appTestUtils.getToken();
-        await request(app).delete(url).auth(token, { type: "bearer" });
-        await photoTestUtils.expectPhotoToBeDeletedFromDbs(photoToDelete._id);
-      });
-    });
-  });
-
-  describe("unhandled error", () => {
-    it("should log the error and respond with status code 500", async () => {
-      const errorLogSpy = jest.spyOn(logger, "error");
-      const errorInducingQueryParams: IRendering = {
-        dateOrder: "abc" as SortDirection,
-      };
-      const token = await appTestUtils.getToken();
-
-      const response = await request(app)
-        .get(searchPhotoPath)
-        .query(errorInducingQueryParams)
-        .auth(token, { type: "bearer" });
-
-      expect(response.statusCode).toBe(500);
-      expect(errorLogSpy).toHaveBeenCalledTimes(1);
-      expect.assertions(2);
     });
   });
 });
