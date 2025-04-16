@@ -1,5 +1,10 @@
 import { HttpErrorCode } from "#shared/models";
-import { PhotoTestUtils } from "#shared/test-utils";
+import {
+  DbTagTestUtils,
+  PhotoTestUtils,
+  TagTestUtils,
+} from "#shared/test-utils";
+import { ITag, ITagDb, TagDbFake } from "#tag-context";
 
 import {
   FakePhotoDataDb,
@@ -18,18 +23,27 @@ import { ReplacePhotoUseCase } from "./replace-photo";
 describe(`${ReplacePhotoUseCase.name}`, () => {
   let photoDataDb: IPhotoDataDb;
   let photoImageDb: IPhotoImageDb;
+  let tagDb: ITagDb;
 
   let testedUseCase: IReplacePhotoUseCase;
 
-  let testUtils: PhotoTestUtils;
+  let photoTestUtils: PhotoTestUtils;
+  let tagTestUtils: DbTagTestUtils;
 
   beforeEach(async () => {
     photoDataDb = new FakePhotoDataDb();
     photoImageDb = new FakePhotoImageDb();
+    tagDb = new TagDbFake();
 
-    testedUseCase = new ReplacePhotoUseCase(photoDataDb, photoImageDb);
+    testedUseCase = new ReplacePhotoUseCase(photoDataDb, photoImageDb, tagDb);
 
-    testUtils = new PhotoTestUtils(photoDataDb, photoImageDb, testedUseCase);
+    photoTestUtils = new PhotoTestUtils(
+      photoDataDb,
+      photoImageDb,
+      testedUseCase,
+      tagDb,
+    );
+    tagTestUtils = new DbTagTestUtils(tagDb);
   });
 
   describe(`${ReplacePhotoUseCase.prototype.execute.name}`, () => {
@@ -48,12 +62,12 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
       it(`should throw an error with status code ${HttpErrorCode.NotFound} (not found)`, async () => {
         const expectedStatus = HttpErrorCode.NotFound;
 
-        await testUtils.executeUseCaseAndExpectToThrow({
+        await photoTestUtils.executeUseCaseAndExpectToThrow({
           useCaseParams: [useCaseParams],
           expectedStatus,
         });
 
-        testUtils.checkAssertions();
+        photoTestUtils.checkAssertions();
       });
     });
 
@@ -62,11 +76,11 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
 
       beforeEach(async () => {
         photoToReplace = await dumbPhotoGenerator.generatePhoto();
-        await testUtils.insertPhotoInDbs(photoToReplace);
+        await photoTestUtils.insertPhotoInDbs(photoToReplace);
       });
 
       afterEach(async () => {
-        await testUtils.deletePhotoFromDb(photoToReplace._id);
+        await photoTestUtils.deletePhotoFromDb(photoToReplace._id);
       });
 
       describe("when there is no image in the new photo", () => {
@@ -82,63 +96,76 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
         it(`should throw an error with status code ${HttpErrorCode.BadRequest} (bad request)`, async () => {
           const expectedStatus = HttpErrorCode.BadRequest;
 
-          await testUtils.executeUseCaseAndExpectToThrow({
+          await photoTestUtils.executeUseCaseAndExpectToThrow({
             useCaseParams: [useCaseParams],
             expectedStatus,
           });
 
-          testUtils.checkAssertions();
+          photoTestUtils.checkAssertions();
         });
 
         it("should not update the data (other than image) in the photo-data db", async () => {
           const expectedStoreData: IPhotoStoredData =
-            testUtils.getPhotoStoredData(photoToReplace);
+            await photoTestUtils.getPhotoStoredData(photoToReplace);
 
           try {
-            await testUtils.executeTestedUseCase(useCaseParams);
+            await photoTestUtils.executeTestedUseCase(useCaseParams);
           } catch (err) {
           } finally {
-            await testUtils.expectPhotoStoredDataToBe(
+            await photoTestUtils.expectPhotoStoredDataToBe(
               photoToReplace._id,
               expectedStoreData,
             );
-            testUtils.checkAssertions();
+            photoTestUtils.checkAssertions();
           }
         });
       });
 
       describe("when there is an image in the new photo", () => {
+        const tags: ITag[] = [
+          { _id: "tag1", name: "tag1" },
+          { _id: "tag2", name: "tag2" },
+        ];
+        const tagIds = tags.map((t) => t._id);
+
         beforeEach(async () => {
           const newPhoto = await dumbPhotoGenerator.generatePhoto({
             _id: photoToReplace._id,
           });
-          useCaseParams = newPhoto;
+
+          await tagTestUtils.insertTagsInDb(tags);
+
+          useCaseParams = { ...newPhoto, tagIds };
+        });
+
+        afterEach(async () => {
+          await tagTestUtils.deleteTagsFromDb(tags);
         });
 
         it("should replace the photo image in the photo-image db", async () => {
           const expectedPhotoImage = useCaseParams.imageBuffer;
 
-          await testUtils.executeTestedUseCase(useCaseParams);
+          await photoTestUtils.executeTestedUseCase(useCaseParams);
 
-          await testUtils.expectPhotoStoredImageToBe(
+          await photoTestUtils.expectPhotoStoredImageToBe(
             useCaseParams._id,
             expectedPhotoImage,
           );
-          testUtils.checkAssertions();
+          photoTestUtils.checkAssertions();
         });
 
         describe("when the photo to replace had data already stored in the photo-data db", () => {
           it("should replace the data with the new one in the photo-data db", async () => {
             const expectedStoredData =
-              testUtils.getPhotoStoredData(useCaseParams);
+              await photoTestUtils.getPhotoStoredData(useCaseParams);
 
-            await testUtils.executeTestedUseCase(useCaseParams);
+            await photoTestUtils.executeTestedUseCase(useCaseParams);
 
-            await testUtils.expectPhotoStoredDataToBe(
+            await photoTestUtils.expectPhotoStoredDataToBe(
               useCaseParams._id,
               expectedStoredData,
             );
-            testUtils.checkAssertions();
+            photoTestUtils.checkAssertions();
           });
         });
 
@@ -149,7 +176,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
             photoWithoutDataToReplace =
               await dumbPhotoGenerator.generatePhoto();
             delete photoWithoutDataToReplace.metadata;
-            await testUtils.insertPhotoInDbs(photoWithoutDataToReplace);
+            await photoTestUtils.insertPhotoInDbs(photoWithoutDataToReplace);
 
             const newPhoto = await dumbPhotoGenerator.generatePhoto({
               _id: photoWithoutDataToReplace._id,
@@ -159,20 +186,22 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
           });
 
           afterEach(async () => {
-            await testUtils.deletePhotoFromDb(photoWithoutDataToReplace._id);
+            await photoTestUtils.deletePhotoFromDb(
+              photoWithoutDataToReplace._id,
+            );
           });
 
           it("should add the new data in the photo-data db", async () => {
             const expectedStoredData =
-              testUtils.getPhotoStoredData(useCaseParams);
+              await photoTestUtils.getPhotoStoredData(useCaseParams);
 
-            await testUtils.executeTestedUseCase(useCaseParams);
+            await photoTestUtils.executeTestedUseCase(useCaseParams);
 
-            await testUtils.expectPhotoStoredDataToBe(
+            await photoTestUtils.expectPhotoStoredDataToBe(
               useCaseParams._id,
               expectedStoredData,
             );
-            testUtils.checkAssertions();
+            photoTestUtils.checkAssertions();
           });
         });
       });

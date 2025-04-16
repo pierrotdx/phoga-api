@@ -1,5 +1,6 @@
 import { IAuthHandler } from "#auth-context";
 import { IEntryPoints } from "#shared/entry-points";
+import { ITagDb } from "#tag-context";
 import { Handler, Router } from "express";
 
 import {
@@ -22,6 +23,7 @@ export class AdminPhotoRouter implements IAdminPhotoRouter {
     private readonly authHandler: IAuthHandler,
     private readonly photoDataDb: IPhotoDataDb,
     private readonly imageDb: IPhotoImageDb,
+    private readonly tagDb: ITagDb,
   ) {
     this.setAddPhotoRoute();
     this.setReplacePhotoRoute();
@@ -33,7 +35,11 @@ export class AdminPhotoRouter implements IAdminPhotoRouter {
     const permissionsHandler = this.getPermissionHandler(
       PhotoEntryPointId.AddPhoto,
     );
-    const controller = new AddPhotoController(this.photoDataDb, this.imageDb);
+    const controller = new AddPhotoController(
+      this.photoDataDb,
+      this.imageDb,
+      this.tagDb,
+    );
     this.router.post(path, permissionsHandler, controller.handler);
   }
 
@@ -45,6 +51,7 @@ export class AdminPhotoRouter implements IAdminPhotoRouter {
     const controller = new ReplacePhotoController(
       this.photoDataDb,
       this.imageDb,
+      this.tagDb
     );
     this.router.put(path, permissionsHandler, controller.handler);
   }

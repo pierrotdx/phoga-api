@@ -17,7 +17,8 @@ import {
   IUseCase,
   SortDirection,
 } from "#shared/models";
-import { equals, omit } from "ramda";
+import { ITag, ITagDb } from "#tag-context";
+import { add, equals, omit } from "ramda";
 
 import { DbPhotoTestUtils } from "./db-photo.test-utils";
 
@@ -29,6 +30,7 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends DbPhotoTestUtils {
     photoDataDb?: IPhotoDataDb,
     photoImageDb?: IPhotoImageDb,
     protected testedUseCase?: IUseCase<TUseCaseResult>,
+    private readonly tagDb?: ITagDb,
   ) {
     super(photoDataDb, photoImageDb);
   }
@@ -156,7 +158,26 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends DbPhotoTestUtils {
     this.assertionsCounter.checkAssertions();
   }
 
-  getPhotoStoredData(addPhotoParams: IAddPhotoParams): IPhotoStoredData {
-    return omit(["imageBuffer"], addPhotoParams);
+  async getPhotoStoredData(
+    addPhotoParams: IAddPhotoParams,
+  ): Promise<IPhotoStoredData> {
+    const photoStoredData: IPhotoStoredData = {
+      _id: addPhotoParams._id,
+      metadata: addPhotoParams.metadata,
+    };
+    if (addPhotoParams.tagIds) {
+      photoStoredData.tags = await this.getTags(addPhotoParams.tagIds);
+    }
+    return photoStoredData;
+  }
+
+  private async getTags(tagIds: ITag["_id"][]): Promise<ITag[]> {
+    const tags$ = tagIds.map(async (id) => await this.tagDb.getById(id));
+    const tags = await Promise.all(tags$);
+    const hasInvalidTag = tags.some((t) => !t);
+    if (hasInvalidTag) {
+      throw new Error("failed retrieving tags");
+    }
+    return tags;
   }
 }

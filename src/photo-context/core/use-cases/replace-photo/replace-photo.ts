@@ -1,4 +1,5 @@
 import { ErrorWithStatus, HttpErrorCode } from "#shared/models";
+import { ITag, ITagDb } from "#tag-context";
 
 import { IPhotoDataDb, IPhotoImageDb } from "../../gateways";
 import {
@@ -12,6 +13,7 @@ export class ReplacePhotoUseCase implements IReplacePhotoUseCase {
   constructor(
     private readonly photoDataDb: IPhotoDataDb,
     private readonly photoImageDb: IPhotoImageDb,
+    private readonly tagDb: ITagDb,
   ) {}
 
   async execute(data: IReplacePhotoParams): Promise<void> {
@@ -51,6 +53,15 @@ export class ReplacePhotoUseCase implements IReplacePhotoUseCase {
       _id: data._id,
       metadata: data.metadata,
     };
+    if (data.tagIds) {
+      photoStoredData.tags = await this.getTags(data.tagIds);
+    }
     await this.photoDataDb.replace(photoStoredData);
+  }
+
+  private async getTags(tagIds: ITag["_id"][]): Promise<ITag[]> {
+    const tags$ = tagIds.map(async (id) => await this.tagDb.getById(id));
+    const tags = await Promise.all(tags$);
+    return tags;
   }
 }

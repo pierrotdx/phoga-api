@@ -57,8 +57,8 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
     return this.expressSharedTestUtils.getPayloadFromPhoto(photo);
   }
 
-  addFormDataToReq(req: Test, photo: IPhoto): void {
-    this.expressSharedTestUtils.addFormDataToReq(req, photo);
+  addFormDataToReq(req: Test, addPhotoParams: IAddPhotoParams): void {
+    this.expressSharedTestUtils.addFormDataToReq(req, addPhotoParams);
   }
 
   getPhotoFromResponse(res: Response): IPhoto {

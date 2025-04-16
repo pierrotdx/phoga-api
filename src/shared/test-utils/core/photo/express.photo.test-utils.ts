@@ -1,4 +1,4 @@
-import { IPhoto, Photo } from "#photo-context";
+import { IAddPhotoParams, IPhoto, Photo } from "#photo-context";
 import { imageBufferEncoding } from "#shared/models";
 import { isUuid } from "#shared/uuid";
 import { Response, Test } from "supertest";
@@ -40,26 +40,29 @@ export class ExpressPhotoTestUtils {
     return new Photo(id, { imageBuffer });
   }
 
-  addFormDataToReq(req: Test, photo: IPhoto): void {
-    req.field("_id", photo._id);
-    if (photo.imageBuffer) {
-      req.attach("image", photo.imageBuffer);
+  addFormDataToReq(req: Test, addPhotoParams: IAddPhotoParams): void {
+    req.field("_id", addPhotoParams._id);
+    if (addPhotoParams.imageBuffer) {
+      req.attach("image", addPhotoParams.imageBuffer);
     }
-    if (!photo.metadata) {
+    if (!addPhotoParams.metadata) {
       return;
     }
-    if (photo.metadata.date) {
-      const stringDate = photo.metadata.date.toISOString();
+    if (addPhotoParams.metadata.date) {
+      const stringDate = addPhotoParams.metadata.date.toISOString();
       req.field("date", stringDate);
     }
-    if (photo.metadata.location) {
-      req.field("location", photo.metadata.location);
+    if (addPhotoParams.metadata.location) {
+      req.field("location", addPhotoParams.metadata.location);
     }
-    if (photo.metadata.description) {
-      req.field("description", photo.metadata.description);
+    if (addPhotoParams.metadata.description) {
+      req.field("description", addPhotoParams.metadata.description);
     }
-    if (photo.metadata.titles?.length) {
-      req.field("titles", photo.metadata.titles);
+    if (addPhotoParams.metadata.titles?.length) {
+      req.field("titles", addPhotoParams.metadata.titles);
+    }
+    if (addPhotoParams.tagIds) {
+      req.field("tagIds", addPhotoParams.tagIds);
     }
   }
 }

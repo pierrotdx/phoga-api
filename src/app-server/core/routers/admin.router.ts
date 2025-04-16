@@ -33,6 +33,7 @@ export class AdminRouter implements IExpressRouter {
       this.authHandler,
       this.photoDataDb,
       this.imageDb,
+      this.tagDb,
     ).get();
     this.router.use(path, adminPhotoRouter);
   }

@@ -1,5 +1,6 @@
 import { ExpressController, IExpressController } from "#shared/express";
 import { AjvValidator, IValidator } from "#shared/validators";
+import { ITagDb } from "#tag-context";
 import { type Request, type Response } from "express";
 
 import { IPhotoDataDb, IPhotoImageDb } from "../../gateways";
@@ -24,9 +25,14 @@ export class AddPhotoController
   constructor(
     private readonly photoDataDb: IPhotoDataDb,
     private readonly imageDb: IPhotoImageDb,
+    private readonly tagDb: ITagDb,
   ) {
     super();
-    this.useCase = new AddPhotoUseCase(this.photoDataDb, this.imageDb);
+    this.useCase = new AddPhotoUseCase(
+      this.photoDataDb,
+      this.imageDb,
+      this.tagDb,
+    );
     this.validator = new AjvValidator(AddPhotoSchema);
     this.parser = new AddPhotoParser();
   }

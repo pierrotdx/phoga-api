@@ -5,6 +5,7 @@ import fetch from "node-fetch";
 import request, { Test } from "supertest";
 
 import {
+  IAddPhotoParams,
   IAddPhotoParser,
   IPhoto,
   IPhotoMetadata,
@@ -60,6 +61,7 @@ export class AddPhotoParserTestUtils extends ParserTestUtils<IAddPhotoParser> {
       description: this.loremIpsum.generateSentences(4).join(" "),
       location: this.loremIpsum.generateWords(1).join(),
       titles: this.loremIpsum.generateWords(3),
+      tagIds: [this.uuidGenerator.generate(), this.uuidGenerator.generate()],
     };
   }
 
@@ -72,7 +74,7 @@ export class AddPhotoParserTestUtils extends ParserTestUtils<IAddPhotoParser> {
     }
   }
   getExpectedDataFromPayload(payload: TPayload): IPhoto {
-    const expectedData: IPhoto = new Photo(payload._id, {
+    const expectedData: IAddPhotoParams = new Photo(payload._id, {
       imageBuffer: payload.imageBuffer,
     });
     const metadata: IPhotoMetadata = {
@@ -82,6 +84,7 @@ export class AddPhotoParserTestUtils extends ParserTestUtils<IAddPhotoParser> {
       titles: payload.titles,
     };
     expectedData.metadata = metadata;
+    expectedData.tagIds = payload.tagIds;
     return expectedData;
   }
 }

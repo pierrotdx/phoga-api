@@ -10,7 +10,11 @@ import {
   dumbPhotoGenerator,
 } from "#photo-context";
 import { HttpErrorCode, IRendering, SortDirection } from "#shared/models";
-import { PhotoTestUtils, TagTestUtils } from "#shared/test-utils";
+import {
+  DbTagTestUtils,
+  PhotoTestUtils,
+  TagTestUtils,
+} from "#shared/test-utils";
 import { ISearchTagFilter, ITag, TagEntryPointId } from "#tag-context";
 import { type Express } from "express";
 import { clone, omit, pick } from "ramda";
@@ -331,7 +335,13 @@ describe("ExpressAppServer", () => {
     beforeEach(() => {
       const photoDataDb = appTestUtils.getPhotoDataDb();
       const photoImageDb = appTestUtils.getPhotoImageDb();
-      photoTestUtils = new PhotoTestUtils(photoDataDb, photoImageDb);
+      const tagDb = appTestUtils.getTagDb();
+      photoTestUtils = new PhotoTestUtils(
+        photoDataDb,
+        photoImageDb,
+        undefined,
+        tagDb,
+      );
     });
 
     describe(`POST ${addPhotoPath}`, () => {
@@ -393,11 +403,27 @@ describe("ExpressAppServer", () => {
         });
 
         describe("when there is an image to upload", () => {
+          let tags: ITag[];
+          let tagIds: ITag["_id"][];
+          let dbTagTestUtils: DbTagTestUtils;
+
           beforeEach(async () => {
-            addPhotoParams = await dumbPhotoGenerator.generatePhoto();
+            tags = [
+              { _id: appTestUtils.generateId(), name: "tag1" },
+              { _id: appTestUtils.generateId(), name: "tag2" },
+            ];
+            tagIds = tags.map((t) => t._id);
+            const tagDb = appTestUtils.getTagDb();
+            dbTagTestUtils = new DbTagTestUtils(tagDb);
+            await dbTagTestUtils.insertTagsInDb(tags);
+
+            const photo = await dumbPhotoGenerator.generatePhoto();
+
+            addPhotoParams = { ...photo, tagIds };
           });
 
           afterEach(async () => {
+            await dbTagTestUtils.deleteTagsFromDb(tags);
             await photoTestUtils.deletePhotoFromDb(addPhotoParams._id);
           });
 
@@ -418,6 +444,7 @@ describe("ExpressAppServer", () => {
             const expectedStoredData: IPhotoStoredData = {
               _id: addPhotoParams._id,
               metadata: addPhotoParams.metadata,
+              tags,
             };
 
             await appTestUtils.sendAddPhotoReq({
@@ -735,7 +762,7 @@ describe("ExpressAppServer", () => {
 
             it("should not update the data (other than image) in the photo-data db", async () => {
               const expectedStoreData =
-                photoTestUtils.getPhotoStoredData(storedPhoto);
+                await photoTestUtils.getPhotoStoredData(storedPhoto);
 
               await appTestUtils.sendReplacePhotoReq({
                 replacePhotoParams,
@@ -751,11 +778,30 @@ describe("ExpressAppServer", () => {
           });
 
           describe("when there is an image in the new photo", () => {
+            let tags: ITag[];
+            let tagIds: ITag["_id"][];
+            let dbTagTestUtils: DbTagTestUtils;
+
             beforeEach(async () => {
+              tags = [
+                { _id: appTestUtils.generateId(), name: "tag1" },
+                { _id: appTestUtils.generateId(), name: "tag2" },
+              ];
+              tagIds = tags.map((t) => t._id);
+              const tagDb = appTestUtils.getTagDb();
+              dbTagTestUtils = new DbTagTestUtils(tagDb);
+              await dbTagTestUtils.insertTagsInDb(tags);
+
               const newPhoto = await dumbPhotoGenerator.generatePhoto({
                 _id: storedPhoto._id,
               });
-              replacePhotoParams = newPhoto;
+
+              replacePhotoParams = { ...newPhoto, tagIds };
+            });
+
+            afterEach(async () => {
+              await dbTagTestUtils.deleteTagsFromDb(tags);
+              await photoTestUtils.deletePhotoFromDb(replacePhotoParams._id);
             });
 
             it("should replace the photo image in the photo-image db", async () => {
@@ -776,7 +822,7 @@ describe("ExpressAppServer", () => {
             describe("when the photo to replace had data already stored in the photo-data db", () => {
               it("should replace the data with the new one in the photo-data db", async () => {
                 const expectedStoredData =
-                  photoTestUtils.getPhotoStoredData(replacePhotoParams);
+                  await photoTestUtils.getPhotoStoredData(replacePhotoParams);
 
                 await appTestUtils.sendReplacePhotoReq({
                   replacePhotoParams,
@@ -806,7 +852,7 @@ describe("ExpressAppServer", () => {
                 const newPhoto = await dumbPhotoGenerator.generatePhoto({
                   _id: photoWithoutDataToReplace._id,
                 });
-                replacePhotoParams = newPhoto;
+                replacePhotoParams = { ...newPhoto, tagIds };
               });
 
               afterEach(async () => {
@@ -817,7 +863,7 @@ describe("ExpressAppServer", () => {
 
               it("should add the new data in the photo-data db", async () => {
                 const expectedStoredData =
-                  photoTestUtils.getPhotoStoredData(replacePhotoParams);
+                  await photoTestUtils.getPhotoStoredData(replacePhotoParams);
 
                 await appTestUtils.sendReplacePhotoReq({
                   replacePhotoParams,
@@ -962,7 +1008,7 @@ describe("ExpressAppServer", () => {
 
           it("should not delete photo's data in photo-data db", async () => {
             const expectedPhotoStoredData: IPhotoStoredData =
-              photoTestUtils.getPhotoStoredData(photoToDelete);
+              await photoTestUtils.getPhotoStoredData(photoToDelete);
 
             await appTestUtils.sendDeletePhotoReq({
               deletePhotoParams,
