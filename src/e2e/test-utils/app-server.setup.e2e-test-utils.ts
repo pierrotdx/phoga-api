@@ -11,7 +11,7 @@ import { ITagDb, TagDbMongo } from "#tag-context";
 
 import { Storage } from "@google-cloud/storage";
 
-import { ExpressAppServer } from "../app-server";
+import { ExpressAppServer } from "../../app-server/core/app-server/app-server";
 
 export class AppServerSetupE2ETestUtils {
   private readonly mongoManager: MongoManager;

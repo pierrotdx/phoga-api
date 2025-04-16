@@ -21,7 +21,7 @@ import { type Express } from "express";
 import { clone, omit, pick } from "ramda";
 import request from "supertest";
 
-import { ExpressAppServer } from "./app-server";
+import { ExpressAppServer } from "../app-server";
 import {
   addPhotoPath,
   addTagPath,
