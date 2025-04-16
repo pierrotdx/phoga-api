@@ -1,5 +1,6 @@
 import { IRendering, SortDirection } from "#shared/models";
 import { PhotoTestUtils } from "#shared/test-utils";
+import { ITag } from "#tag-context";
 import { clone } from "ramda";
 
 import {
@@ -11,8 +12,11 @@ import {
   IPhoto,
   IPhotoDataDb,
   IPhotoImageDb,
+  IPhotoStoredData,
   ISearchPhotoParams,
   ISearchPhotoUseCase,
+  Photo,
+  photoStoredDataToPhotoData,
 } from "../../../core/";
 import { SearchPhotoUseCase } from "./search-photo";
 
@@ -48,13 +52,44 @@ describe(`${SearchPhotoUseCase.name}`, () => {
     });
 
     describe("when no filter is required", () => {
-      let useCaseOptions: ISearchPhotoParams;
+      let useCaseParams: ISearchPhotoParams;
 
       it("should return the photos stored in the database", async () => {
         const searchResult = await testUtils.executeTestedUseCase();
 
         testUtils.expectEqualPhotoArrays(searchResult, storedPhotos);
         testUtils.checkAssertions();
+      });
+
+      describe("when using the `tagId` filter", () => {
+        const tag: ITag = { _id: "tag-id", name: "tag name" };
+        let storedPhotosWithTag: IPhotoStoredData[];
+
+        beforeEach(async () => {
+          storedPhotosWithTag = dumbPhotoGenerator.generatePhotosStoredData(3, {
+            tags: [tag],
+          });
+          await testUtils.insertStoredPhotosDataInDb(storedPhotosWithTag);
+
+          useCaseParams = { filter: { tagId: tag._id } };
+        });
+
+        afterEach(async () => {
+          const ids = storedPhotosWithTag.map((p) => p._id);
+          await testUtils.deletePhotosFromDb(ids);
+        });
+
+        it("should return the photos whose tags include the required tag", async () => {
+          const expectedPhotos: IPhoto[] = storedPhotosWithTag.map(
+            (p) =>
+              new Photo(p._id, { photoData: photoStoredDataToPhotoData(p) }),
+          );
+
+          const result = await testUtils.executeTestedUseCase(useCaseParams);
+
+          testUtils.expectEqualPhotoArrays(expectedPhotos, result);
+          testUtils.checkAssertions();
+        });
       });
 
       describe("when using the `rendering.date` option", () => {
@@ -65,10 +100,10 @@ describe(`${SearchPhotoUseCase.name}`, () => {
         `(
           "should sort them by $case date when required",
           async ({ rendering }: { rendering: IRendering }) => {
-            useCaseOptions = { rendering };
+            useCaseParams = { options: { rendering } };
             const expectedOrder = rendering.dateOrder;
 
-            const result = await testUtils.executeTestedUseCase(useCaseOptions);
+            const result = await testUtils.executeTestedUseCase(useCaseParams);
 
             testUtils.expectPhotosOrderToBe(result, expectedOrder);
             testUtils.checkAssertions();
@@ -86,9 +121,9 @@ describe(`${SearchPhotoUseCase.name}`, () => {
         `(
           "should return at most $expectedSize results when required",
           async ({ rendering, expectedSize }) => {
-            useCaseOptions = { rendering };
+            useCaseParams = { options: { rendering } };
 
-            const result = await testUtils.executeTestedUseCase(useCaseOptions);
+            const result = await testUtils.executeTestedUseCase(useCaseParams);
 
             testUtils.expectArraySizeToBeAtMost(result, expectedSize);
             testUtils.checkAssertions();
@@ -105,9 +140,9 @@ describe(`${SearchPhotoUseCase.name}`, () => {
         `(
           "should return results starting from the $expectedStartIndex-th stored photo",
           async ({ rendering, expectedStartIndex }) => {
-            useCaseOptions = { rendering };
+            useCaseParams = { options: { rendering } };
 
-            const result = await testUtils.executeTestedUseCase(useCaseOptions);
+            const result = await testUtils.executeTestedUseCase(useCaseParams);
 
             testUtils.expectSubArrayToStartFromIndex(
               storedPhotos,
@@ -127,12 +162,12 @@ describe(`${SearchPhotoUseCase.name}`, () => {
         `(
           "should return photos $case when excludeImages is `$excludeImages`",
           async ({ excludeImages }: { excludeImages: boolean }) => {
-            useCaseOptions = { excludeImages };
+            useCaseParams = { options: { excludeImages } };
             const expectedPhotos = clone(storedPhotos).map((p) =>
               excludeImages ? getPhotoWithoutImage(p) : p,
             );
 
-            const result = await testUtils.executeTestedUseCase(useCaseOptions);
+            const result = await testUtils.executeTestedUseCase(useCaseParams);
 
             testUtils.expectEqualPhotoArrays(result, expectedPhotos);
             testUtils.checkAssertions();

@@ -9,6 +9,7 @@ import {
   Photo,
   PhotoEntryPointId,
 } from "#photo-context";
+import { ExpressPhotoTestUtils } from "#shared/test-utils";
 import { IUuidGenerator, UuidGenerator } from "#shared/uuid";
 import request, { Response, Test } from "supertest";
 
@@ -18,7 +19,6 @@ import {
   searchPhotoPath,
 } from "./app-server.paths.e2e-test-utils";
 import { AppServerSetupE2ETestUtils } from "./app-server.setup.e2e-test-utils";
-import { ExpressPhotoTestUtils } from "#shared/test-utils";
 
 export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
   private expressSharedTestUtils: ExpressPhotoTestUtils;
@@ -120,11 +120,14 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
     searchPhotoParams: ISearchPhotoParams,
   ): Promise<Test> {
     const req = request(this.appServer.app).get(searchPhotoPath);
-    if (searchPhotoParams?.rendering) {
-      req.query(searchPhotoParams.rendering);
+    if (searchPhotoParams?.filter?.tagId) {
+      req.query({ tagId: searchPhotoParams?.filter?.tagId });
     }
-    if (searchPhotoParams?.excludeImages) {
-      req.query({ excludeImages: searchPhotoParams.excludeImages });
+    if (searchPhotoParams?.options?.rendering) {
+      req.query(searchPhotoParams.options?.rendering);
+    }
+    if (searchPhotoParams?.options?.excludeImages) {
+      req.query({ excludeImages: searchPhotoParams.options?.excludeImages });
     }
     return req;
   }

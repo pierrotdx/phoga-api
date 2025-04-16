@@ -6,8 +6,10 @@ import {
   IPhotoStoredData,
   IReplacePhotoParams,
   ISearchPhotoParams,
+  Photo,
   comparePhotoDates,
   dumbPhotoGenerator,
+  photoStoredDataToPhotoData,
 } from "#photo-context";
 import { HttpErrorCode, IRendering, SortDirection } from "#shared/models";
 import {
@@ -17,7 +19,7 @@ import {
 } from "#shared/test-utils";
 import { ISearchTagFilter, ITag, TagEntryPointId } from "#tag-context";
 import { type Express } from "express";
-import { clone, omit, pick } from "ramda";
+import { add, clone, omit, pick } from "ramda";
 import request from "supertest";
 
 import { ExpressAppServer } from "../app-server";
@@ -561,11 +563,7 @@ describe("ExpressAppServer", () => {
       const timeout = 10000;
 
       beforeEach(async () => {
-        storedPhotos = await Promise.all([
-          await dumbPhotoGenerator.generatePhoto(),
-          await dumbPhotoGenerator.generatePhoto(),
-          await dumbPhotoGenerator.generatePhoto(),
-        ]);
+        storedPhotos = await dumbPhotoGenerator.generatePhotos(3);
         await photoTestUtils.insertPhotosInDbs(storedPhotos);
       }, timeout);
 
@@ -576,6 +574,54 @@ describe("ExpressAppServer", () => {
         searchPhotoParams = undefined;
       }, timeout);
 
+      describe("when using the `tagId` filter", () => {
+        let dbTagTestUtils: DbTagTestUtils;
+        let storedPhotosWithTag: IPhoto[];
+        let tag: ITag;
+
+        beforeEach(async () => {
+          tag = {
+            _id: appTestUtils.generateId(),
+            name: "tag name",
+          };
+
+          const tagDb = appTestUtils.getTagDb();
+          dbTagTestUtils = new DbTagTestUtils(tagDb);
+          await dbTagTestUtils.insertTagInDb(tag);
+
+          storedPhotosWithTag = await dumbPhotoGenerator.generatePhotos(3);
+          for await (let photo of storedPhotosWithTag) {
+            const addPhotoParams: IAddPhotoParams = {
+              ...photo,
+              tagIds: [tag._id],
+            };
+            await appTestUtils.sendAddPhotoReq({
+              addPhotoParams,
+              withToken: true,
+            });
+          }
+
+          searchPhotoParams = { filter: { tagId: tag._id } };
+        });
+
+        afterEach(async () => {
+          const ids = storedPhotosWithTag.map((p) => p._id);
+          await photoTestUtils.deletePhotosFromDb(ids);
+          await dbTagTestUtils.deleteTagFromDb(tag._id);
+        });
+
+        it("should return the photos whose tags include the required tag", async () => {
+          const expectedPhotos: IPhoto[] = storedPhotosWithTag;
+
+          const response =
+            await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
+          const result = appTestUtils.getPhotosFromSearchResponse(response);
+
+          photoTestUtils.expectEqualPhotoArrays(expectedPhotos, result);
+          photoTestUtils.checkAssertions();
+        });
+      });
+
       describe("when using the `rendering.date` option", () => {
         it.each`
           case            | rendering
@@ -585,7 +631,7 @@ describe("ExpressAppServer", () => {
           "should sort them by $case date when required",
           async ({ rendering }: { rendering: IRendering }) => {
             const expectedOrder = rendering.dateOrder;
-            searchPhotoParams = { rendering };
+            searchPhotoParams = { options: { rendering } };
 
             const response =
               await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
@@ -607,7 +653,7 @@ describe("ExpressAppServer", () => {
         `(
           "should return at most $expectedSize results when required",
           async ({ rendering, expectedSize }) => {
-            searchPhotoParams = { rendering };
+            searchPhotoParams = { options: { rendering } };
 
             const response =
               await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
@@ -641,7 +687,7 @@ describe("ExpressAppServer", () => {
             rendering: IRendering;
             expectedStartIndex: number;
           }) => {
-            searchPhotoParams = { rendering };
+            searchPhotoParams = { options: { rendering } };
 
             const response =
               await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
@@ -665,7 +711,7 @@ describe("ExpressAppServer", () => {
         `(
           "should return photos $case when excludeImages is `$excludeImages`",
           async ({ excludeImages }: { excludeImages: boolean }) => {
-            searchPhotoParams = { excludeImages };
+            searchPhotoParams = { options: { excludeImages } };
 
             const expectedPhotos = clone(storedPhotos).map((p) =>
               excludeImages ? omit(["imageBuffer"], p) : p,

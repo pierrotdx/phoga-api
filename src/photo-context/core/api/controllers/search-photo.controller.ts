@@ -8,6 +8,7 @@ import {
   IPhotoDataDb,
   IPhotoImageDb,
   ISearchPhotoOptions,
+  ISearchPhotoParams,
   ISearchPhotoParser,
   ISearchPhotoUseCase,
   SearchPhotoUseCase,
@@ -33,10 +34,10 @@ export class SearchPhotoController
     this.parser = new SearchPhotoParser();
   }
 
-  protected getParamsFromRequest(req: Request): ISearchPhotoOptions {
+  protected getParamsFromRequest(req: Request): ISearchPhotoParams {
     this.validator.validate(req.query);
-    const searchOptions = this.parser.parse(req);
-    return searchOptions;
+    const searchPhotoParams = this.parser.parse(req);
+    return searchPhotoParams;
   }
 
   protected async executeUseCase(

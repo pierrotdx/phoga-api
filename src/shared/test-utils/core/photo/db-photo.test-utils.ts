@@ -28,6 +28,15 @@ export class DbPhotoTestUtils {
     await this.photoDataDb?.insert(photoStoredData);
   }
 
+  async insertStoredPhotosDataInDb(
+    photosStoredData: IPhotoStoredData[],
+  ): Promise<void> {
+    const insertAll$ = photosStoredData.map(
+      async (p) => await this.photoDataDb.insert(p),
+    );
+    await Promise.all(insertAll$);
+  }
+
   async getPhotoImageFromDb(id: IPhoto["_id"]): Promise<IPhoto["imageBuffer"]> {
     return await this.photoImageDb?.getById(id);
   }

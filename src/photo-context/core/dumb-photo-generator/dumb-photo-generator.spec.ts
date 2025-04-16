@@ -5,7 +5,7 @@ import {
 import { ILoremIpsumGenerator, LoremIpsumGenerator } from "#shared/lorem-ipsum";
 import { IUuidGenerator, UuidGenerator } from "#shared/uuid";
 
-import { IDumbPhotoGenerator, IDumbPhotoGeneratorOptions } from "../models";
+import { IDumbPhotoGenerator, IGeneratePhotoOptions } from "../models";
 import { DumbPhotoGenerator } from "./dumb-photo-generator";
 import { DumbPhotoGeneratorTestUtils } from "./dumb-photo-generator.test-utils";
 
@@ -52,7 +52,7 @@ describe("dumbPhotoGenerator", () => {
         options,
       }: {
         fieldPath: string[];
-        options: IDumbPhotoGeneratorOptions;
+        options: IGeneratePhotoOptions;
       }) => {
         const photo = await dumbPhotoGenerator.generatePhoto(options);
         testUtils.expectAnInstanceOfPhoto(photo, assertionsCounter);

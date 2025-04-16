@@ -6,11 +6,12 @@ import {
   IPhotoData,
   IPhotoDataDb,
   IPhotoStoredData,
+  ISearchPhotoFilter,
   comparePhotoDates,
 } from "../../../..";
 
 export class FakePhotoDataDb implements IPhotoDataDb {
-  public readonly docs: Record<IPhoto["_id"], IPhotoData> = {};
+  public readonly docs: Record<IPhoto["_id"], IPhotoStoredData> = {};
 
   async insert(storedPhotoData: IPhotoStoredData) {
     this.docs[storedPhotoData._id] = storedPhotoData;
@@ -28,8 +29,21 @@ export class FakePhotoDataDb implements IPhotoDataDb {
     this.docs[storedPhotoData._id] = storedPhotoData;
   }
 
-  async find(rendering?: IRendering): Promise<IPhotoStoredData[]> {
+  async find({
+    filter,
+    rendering,
+  }: {
+    filter?: ISearchPhotoFilter;
+    rendering?: IRendering;
+  }): Promise<IPhotoStoredData[]> {
     let photos = this.getPhotosFromDocs();
+
+    if (filter?.tagId) {
+      photos = photos.filter((p) =>
+        p.tags?.some((t) => t._id === filter.tagId),
+      );
+    }
+
     if (rendering?.dateOrder) {
       this.sortByDate(photos, rendering.dateOrder);
     }
@@ -44,7 +58,7 @@ export class FakePhotoDataDb implements IPhotoDataDb {
     return photos;
   }
 
-  private getPhotosFromDocs(): IPhoto[] {
+  private getPhotosFromDocs(): IPhotoStoredData[] {
     const docs = clone(this.docs);
     return Object.values(docs);
   }

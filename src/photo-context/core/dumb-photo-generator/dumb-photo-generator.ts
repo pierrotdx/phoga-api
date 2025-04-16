@@ -1,5 +1,6 @@
 import { ILoremIpsumGenerator } from "#shared/lorem-ipsum";
 import { IUuidGenerator } from "#shared/uuid";
+import { ITag } from "#tag-context";
 import { readFile } from "fs/promises";
 import fetch from "node-fetch";
 import { clone } from "ramda";
@@ -7,8 +8,10 @@ import { clone } from "ramda";
 import { assertPhoto } from "../assertions/is-photo/is-photo";
 import {
   IDumbPhotoGenerator,
-  IDumbPhotoGeneratorOptions,
+  IGeneratePhotoOptions,
+  IGeneratePhotoStoredDataOptions,
   IPhoto,
+  IPhotoStoredData,
   Photo,
 } from "../models";
 
@@ -18,14 +21,18 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     private readonly loremIpsumGenerator: ILoremIpsumGenerator,
   ) {}
 
-  async generatePhoto(options?: IDumbPhotoGeneratorOptions): Promise<IPhoto> {
-    const id = clone(options?._id) || this.uuidGenerator.generate();
+  async generatePhoto(options?: IGeneratePhotoOptions): Promise<IPhoto> {
+    const id = this.generateId(options);
     const imageBuffer =
       clone(options?.imageBuffer) || (await this.generateImageBuffer());
-    const metadata = await this.generateMetadata(options);
+    const metadata = this.generateMetadata(options);
     const photo = new Photo(id, { imageBuffer, photoData: { metadata } });
     assertPhoto(photo);
     return photo;
+  }
+
+  private generateId(options?: IGeneratePhotoOptions): string {
+    return clone(options?._id) || this.uuidGenerator.generate();
   }
 
   private async generateImageBuffer(
@@ -41,9 +48,9 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     }
   }
 
-  private async generateMetadata(
-    options?: IDumbPhotoGeneratorOptions,
-  ): Promise<IPhoto["metadata"]> {
+  private generateMetadata(
+    options?: IGeneratePhotoOptions,
+  ): IPhoto["metadata"] {
     const date = clone(options?.date) || this.randomDate();
     const titles = clone(options?.titles) || this.generateTitles();
     const location =
@@ -99,5 +106,48 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     const imageBuffer = await readFile(imagePath);
     const photo = this.generatePhoto({ _id, imageBuffer });
     return photo;
+  }
+
+  generatePhotosStoredData(
+    nb: number,
+    options?: IGeneratePhotoStoredDataOptions,
+  ): IPhotoStoredData[] {
+    const photosStoredData: IPhotoStoredData[] = [];
+    for (let i = 0; i < nb; i++) {
+      const data = this.generatePhotoStoredData(options);
+      photosStoredData.push(data);
+    }
+    return photosStoredData;
+  }
+
+  generatePhotoStoredData(
+    options?: IGeneratePhotoStoredDataOptions,
+  ): IPhotoStoredData {
+    const photoStoredData: IPhotoStoredData = {
+      _id: this.generateId(options),
+      metadata: this.generateMetadata(options),
+      tags: options?.tags || this.generateTags(options),
+    };
+    return photoStoredData;
+  }
+
+  private generateTags(options?: IGeneratePhotoStoredDataOptions): ITag[] {
+    if (options?.tags) {
+      return options.tags;
+    }
+    const nbTags = 3;
+    const tags: ITag[] = [];
+    for (let i = 0; i < nbTags; i++) {
+      const tag: ITag = this.generateTag();
+      tags.push(tag);
+    }
+    return tags;
+  }
+
+  private generateTag(): ITag {
+    return {
+      _id: this.uuidGenerator.generate(),
+      name: this.loremIpsumGenerator.generateWords(1)[0],
+    };
   }
 }

@@ -3,7 +3,7 @@ import { readFile } from "fs/promises";
 import { path } from "ramda";
 
 import { isPhoto } from "../assertions";
-import { IDumbPhotoGeneratorOptions, IPhoto } from "../models";
+import { IGeneratePhotoOptions, IPhoto } from "../models";
 
 export class DumbPhotoGeneratorTestUtils {
   expectAnInstanceOfPhoto(
@@ -22,7 +22,7 @@ export class DumbPhotoGeneratorTestUtils {
   }: {
     fieldPath: string[];
     photo: IPhoto;
-    options: IDumbPhotoGeneratorOptions;
+    options: IGeneratePhotoOptions;
     assertionsCounter: IAssertionsCounter;
   }): void {
     const field = path(fieldPath, photo);

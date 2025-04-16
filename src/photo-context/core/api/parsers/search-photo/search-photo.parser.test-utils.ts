@@ -1,9 +1,15 @@
 import { IRendering, SortDirection } from "#shared/models";
 import { ParserTestUtils } from "#shared/test-utils";
+import { IUuidGenerator, UuidGenerator } from "#shared/uuid";
 import { isEmpty } from "ramda";
 import request, { Test } from "supertest";
 
-import { ISearchPhotoOptions, ISearchPhotoParser } from "../../../models";
+import {
+  ISearchPhotoFilter,
+  ISearchPhotoOptions,
+  ISearchPhotoParams,
+  ISearchPhotoParser,
+} from "../../../models";
 import { SearchPhotoParser } from "./search-photo.parser";
 
 type TQueryParams = ReturnType<
@@ -13,6 +19,8 @@ type TQueryParams = ReturnType<
 export class SearchPhotoParserTestUtils extends ParserTestUtils<ISearchPhotoParser> {
   protected testedParser: ISearchPhotoParser = new SearchPhotoParser();
   private readonly url = "/";
+
+  private readonly uuidGenerator: IUuidGenerator = new UuidGenerator();
 
   constructor() {
     super();
@@ -37,15 +45,51 @@ export class SearchPhotoParserTestUtils extends ParserTestUtils<ISearchPhotoPars
       size: Math.floor(Math.random() * 100).toString(),
       from: Math.floor(Math.random() * 100).toString(),
       dateOrder,
+      tagId: this.uuidGenerator.generate(),
     };
   }
 
-  getExpectedData(queryParams: TQueryParams): ISearchPhotoOptions {
-    const searchOptions: ISearchPhotoOptions = {};
-    const rendering: IRendering = {};
-    if (queryParams.excludeImages) {
-      searchOptions.excludeImages = JSON.parse(queryParams.excludeImages);
+  getExpectedData(queryParams: TQueryParams): ISearchPhotoParams {
+    const params: ISearchPhotoParams = {};
+    this.addFilter(params, queryParams);
+    this.addOptions(params, queryParams);
+    return params;
+  }
+
+  private addFilter(
+    params: ISearchPhotoParams,
+    queryParams: TQueryParams,
+  ): void {
+    const filter: ISearchPhotoFilter = {};
+    if (queryParams.tagId) {
+      filter.tagId = queryParams.tagId;
     }
+    if (isEmpty(filter)) {
+      return;
+    }
+    params.filter = filter;
+  }
+
+  private addOptions(
+    params: ISearchPhotoParams,
+    queryParams: TQueryParams,
+  ): void {
+    const options: ISearchPhotoOptions = {};
+    this.addRendering(options, queryParams);
+    if (queryParams.excludeImages) {
+      options.excludeImages = JSON.parse(queryParams.excludeImages);
+    }
+    if (isEmpty(options)) {
+      return;
+    }
+    params.options = options;
+  }
+
+  private addRendering(
+    options: ISearchPhotoOptions,
+    queryParams: TQueryParams,
+  ): void {
+    const rendering: IRendering = {};
     if (queryParams.dateOrder) {
       rendering.dateOrder = queryParams.dateOrder as SortDirection;
     }
@@ -55,9 +99,9 @@ export class SearchPhotoParserTestUtils extends ParserTestUtils<ISearchPhotoPars
     if (queryParams.size) {
       rendering.size = parseInt(queryParams.size);
     }
-    if (!isEmpty(rendering)) {
-      searchOptions.rendering = rendering;
+    if (isEmpty(rendering)) {
+      return;
     }
-    return searchOptions;
+    options.rendering = rendering;
   }
 }

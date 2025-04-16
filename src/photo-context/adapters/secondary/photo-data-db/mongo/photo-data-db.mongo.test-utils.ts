@@ -1,6 +1,7 @@
 import { IAssertionsCounter } from "#shared/assertions-counter";
 import { SortDirection } from "#shared/models";
 import { IMongoCollections, MongoManager } from "#shared/mongo";
+import { PhotoTestUtils } from "#shared/test-utils";
 import { clone, omit } from "ramda";
 
 import { dumbPhotoGenerator } from "../../../";
@@ -11,7 +12,6 @@ import {
   comparePhotoDates,
 } from "../../../../core";
 import { PhotoDataDbMongo } from "./photo-data-db.mongo";
-import { PhotoTestUtils } from "#shared/test-utils";
 
 type TDoc = IPhotoData;
 
@@ -50,20 +50,18 @@ export class PhotoDataDbMongoTestUtils {
     await this.photoTestUtils.insertPhotosInDbs(photos);
   }
 
+  async insertPhotosStoredDataInDbs(
+    photosStoreData: IPhotoStoredData[],
+  ): Promise<void> {
+    await this.photoTestUtils.insertStoredPhotosDataInDb(photosStoreData);
+  }
+
   async deletePhotoIfNecessary(photoId: IPhoto["_id"]): Promise<void> {
     await this.photoTestUtils.deletePhotoFromDb(photoId);
   }
 
-  async deletePhotosInDbs(photoIds: IPhoto["_id"][]): Promise<void> {
+  async deletePhotosFromDbs(photoIds: IPhoto["_id"][]): Promise<void> {
     await this.photoTestUtils.deletePhotosFromDb(photoIds);
-  }
-
-  async generatePhotoDataStore(params?: {
-    _id?: string;
-  }): Promise<IPhotoStoredData> {
-    const photo = await dumbPhotoGenerator.generatePhoto({ ...params });
-    const photoDataStore: IPhotoStoredData = omit(["imageBuffer"], photo);
-    return photoDataStore;
   }
 
   expectMatchingPhotos(
@@ -76,7 +74,7 @@ export class PhotoDataDbMongoTestUtils {
     assertionsCounter.increase(2);
   }
 
-  expectMatchingPhotoArrays(
+  expectEqualPhotoArrays(
     expectedPhotos: IPhoto[],
     result: IPhoto[],
     assertionsCounter: IAssertionsCounter,

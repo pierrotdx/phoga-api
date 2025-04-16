@@ -1,6 +1,6 @@
 import { IRendering } from "#shared/models";
 import { MongoManager } from "#shared/mongo";
-import { Collection, FindCursor, Sort } from "mongodb";
+import { Collection, Filter, FindCursor, Sort } from "mongodb";
 import { isEmpty } from "ramda";
 
 import {
@@ -8,10 +8,11 @@ import {
   IPhotoData,
   IPhotoDataDb,
   IPhotoStoredData,
+  ISearchPhotoFilter,
 } from "../../../../core";
 
 export class PhotoDataDbMongo implements IPhotoDataDb {
-  private readonly collection: Collection<IPhotoData>;
+  private readonly collection: Collection<IPhotoStoredData>;
   private readonly defaultSize = 20;
 
   constructor(private readonly mongoManager: MongoManager) {
@@ -46,17 +47,24 @@ export class PhotoDataDbMongo implements IPhotoDataDb {
     await this.collection.deleteOne({ _id });
   }
 
-  async find(rendering?: IRendering): Promise<IPhotoStoredData[]> {
+  async find(params?: {
+    filter?: ISearchPhotoFilter;
+    rendering?: IRendering;
+  }): Promise<IPhotoStoredData[]> {
+    const { filter, rendering } = { ...params };
+
     if (rendering?.size == 0) {
       return [];
     }
+
     const cursor = this.collection.find();
+    this.setCurserFilter(cursor, filter);
     this.setCursorRendering(cursor, rendering);
     const photos = await cursor.toArray();
     return photos as IPhotoStoredData[];
   }
 
-  private setCursorRendering(cursor: FindCursor, rendering: IRendering) {
+  private setCursorRendering(cursor: FindCursor, rendering: IRendering): void {
     cursor.limit(rendering?.size || this.defaultSize);
 
     const sort: Sort = {};
@@ -72,5 +80,26 @@ export class PhotoDataDbMongo implements IPhotoDataDb {
     if (skipValue >= 1) {
       cursor.skip(skipValue);
     }
+  }
+
+  private setCurserFilter(
+    cursor: FindCursor,
+    filter: ISearchPhotoFilter,
+  ): void {
+    if (!filter) {
+      return;
+    }
+
+    const mongoFilter: Filter<IPhotoStoredData> = {};
+
+    if (filter.tagId) {
+      mongoFilter["tags._id"] = filter.tagId;
+    }
+
+    if (isEmpty(mongoFilter)) {
+      return;
+    }
+
+    cursor.filter(mongoFilter);
   }
 }

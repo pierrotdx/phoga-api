@@ -3,9 +3,17 @@ import {
   IAssertionsCounter,
 } from "#shared/assertions-counter";
 import { IRendering, SortDirection } from "#shared/models";
+import { ITag } from "#tag-context";
 import { omit } from "ramda";
 
-import { IPhoto, IPhotoStoredData } from "../../../../core";
+import {
+  IPhoto,
+  IPhotoStoredData,
+  ISearchPhotoFilter,
+  Photo,
+  photoStoredDataToPhotoData,
+} from "../../../../core";
+import { dumbPhotoGenerator } from "../../../primary";
 import { PhotoDataDbMongo } from "./photo-data-db.mongo";
 import { PhotoDataDbMongoTestUtils } from "./photo-data-db.mongo.test-utils";
 
@@ -24,26 +32,24 @@ describe("PhotoDataDbMongo", () => {
   beforeEach(async () => {
     await testUtils.internalSetup();
     photoDataDbMongo = testUtils.photoDataDb;
-    storedPhotos = [
-      await testUtils.generatePhotoDataStore(),
-      await testUtils.generatePhotoDataStore(),
-      await testUtils.generatePhotoDataStore(),
-    ];
+
+    storedPhotos = dumbPhotoGenerator.generatePhotosStoredData(3);
     await testUtils.insertPhotosInDbs(storedPhotos);
+
     assertionsCounter = new AssertionsCounter();
   }, timeout);
 
   afterEach(async () => {
     const storedPhotoIds = storedPhotos.map((photo) => photo._id);
-    await testUtils.deletePhotosInDbs(storedPhotoIds);
+    await testUtils.deletePhotosFromDbs(storedPhotoIds);
     await testUtils.internalTeardown();
   });
 
   describe(`${PhotoDataDbMongo.prototype.insert.name}`, () => {
     let photoToInsert: IPhotoStoredData;
 
-    beforeEach(async () => {
-      photoToInsert = await testUtils.generatePhotoDataStore();
+    beforeEach(() => {
+      photoToInsert = dumbPhotoGenerator.generatePhotoStoredData();
     });
 
     afterEach(async () => {
@@ -74,7 +80,7 @@ describe("PhotoDataDbMongo", () => {
     it("should replace the required doc with the input photo base data", async () => {
       const storedPhoto = storedPhotos[0];
       const docBefore = await testUtils.getDocFromDb(storedPhoto._id);
-      const replacingPhoto = await testUtils.generatePhotoDataStore({
+      const replacingPhoto = dumbPhotoGenerator.generatePhotoStoredData({
         _id: storedPhoto._id,
       });
       await photoDataDbMongo.replace(replacingPhoto);
@@ -101,85 +107,120 @@ describe("PhotoDataDbMongo", () => {
   });
 
   describe(`${PhotoDataDbMongo.prototype.find.name}`, () => {
-    it("should return the docs in DB", async () => {
-      const photos = await photoDataDbMongo.find();
-      testUtils.expectMatchingPhotoArrays(
-        storedPhotos,
-        photos,
-        assertionsCounter,
-      );
-      assertionsCounter.checkAssertions();
+    describe("when no filter is required", () => {
+      it("should return the docs in DB", async () => {
+        const photos = await photoDataDbMongo.find();
+        testUtils.expectEqualPhotoArrays(
+          storedPhotos,
+          photos,
+          assertionsCounter,
+        );
+        assertionsCounter.checkAssertions();
+      });
+
+      describe("- rendering.date", () => {
+        it.each`
+          case            | rendering
+          ${"ascending"}  | ${{ dateOrder: SortDirection.Ascending }}
+          ${"descending"} | ${{ dateOrder: SortDirection.Descending }}
+        `(
+          "should sort the returned docs by date in $case order when required",
+          async ({ rendering }: { rendering: IRendering }) => {
+            const expectedResult = testUtils.getPhotosSortedByDate(
+              storedPhotos,
+              rendering.dateOrder,
+            );
+            const result = await photoDataDbMongo.find({ rendering });
+            testUtils.expectEqualPhotoArrays(
+              expectedResult,
+              result,
+              assertionsCounter,
+            );
+            assertionsCounter.checkAssertions();
+          },
+        );
+      });
+
+      describe("- rendering.size", () => {
+        it.each`
+          rendering
+          ${{ size: 1 }}
+          ${{ size: 2 }}
+          ${{ size: 3 }}
+        `(
+          "should return at most $rendering.size results when required",
+          async ({ rendering }: { rendering: IRendering }) => {
+            const result = await photoDataDbMongo.find({ rendering });
+            expect(result.length).toEqual(rendering.size);
+            expect.assertions(1);
+          },
+        );
+      });
+
+      describe("- rendering.from", () => {
+        // use `rendering.date` to make we are testing `rendering.from` on the same ordered list
+        it.each`
+          rendering                                          | docIndex
+          ${{ from: 1, dateOrder: SortDirection.Ascending }} | ${0}
+          ${{ from: 2, dateOrder: SortDirection.Ascending }} | ${1}
+          ${{ from: 3, dateOrder: SortDirection.Ascending }} | ${2}
+        `(
+          "should return results starting from the $docIndex-th stored photo",
+          async ({
+            rendering,
+            docIndex,
+          }: {
+            rendering: IRendering;
+            docIndex: number;
+          }) => {
+            const ascendingPhotos = testUtils.getPhotosSortedByDate(
+              storedPhotos,
+              SortDirection.Ascending,
+            );
+            const expectedPhoto = ascendingPhotos[docIndex];
+            const result = await photoDataDbMongo.find({ rendering });
+            testUtils.expectMatchingPhotos(
+              expectedPhoto,
+              result[0],
+              assertionsCounter,
+            );
+            assertionsCounter.checkAssertions();
+          },
+        );
+      });
     });
 
-    describe("- rendering.date", () => {
-      it.each`
-        case            | rendering
-        ${"ascending"}  | ${{ dateOrder: SortDirection.Ascending }}
-        ${"descending"} | ${{ dateOrder: SortDirection.Descending }}
-      `(
-        "should sort the returned docs by date in $case order when required",
-        async ({ rendering }: { rendering: IRendering }) => {
-          const expectedResult = testUtils.getPhotosSortedByDate(
-            storedPhotos,
-            rendering.dateOrder,
-          );
-          const result = await photoDataDbMongo.find(rendering);
-          testUtils.expectMatchingPhotoArrays(
-            expectedResult,
-            result,
-            assertionsCounter,
-          );
-          assertionsCounter.checkAssertions();
-        },
-      );
-    });
+    describe("when using the `tagId` filter", () => {
+      const tag: ITag = { _id: "tag-id", name: "tag name" };
+      let storedPhotosWithTag: IPhotoStoredData[];
+      let filter: ISearchPhotoFilter;
 
-    describe("- rendering.size", () => {
-      it.each`
-        rendering
-        ${{ size: 1 }}
-        ${{ size: 2 }}
-        ${{ size: 3 }}
-      `(
-        "should return at most $rendering.size results when required",
-        async ({ rendering }: { rendering: IRendering }) => {
-          const result = await photoDataDbMongo.find(rendering);
-          expect(result.length).toEqual(rendering.size);
-          expect.assertions(1);
-        },
-      );
-    });
+      beforeEach(async () => {
+        storedPhotosWithTag = dumbPhotoGenerator.generatePhotosStoredData(3, {
+          tags: [tag],
+        });
+        await testUtils.insertPhotosStoredDataInDbs(storedPhotosWithTag);
 
-    describe("- rendering.from", () => {
-      // use `rendering.date` to make we are testing `rendering.from` on the same ordered list
-      it.each`
-        rendering                                          | docIndex
-        ${{ from: 1, dateOrder: SortDirection.Ascending }} | ${0}
-        ${{ from: 2, dateOrder: SortDirection.Ascending }} | ${1}
-        ${{ from: 3, dateOrder: SortDirection.Ascending }} | ${2}
-      `(
-        "should return results starting from the $docIndex-th stored photo",
-        async ({
-          rendering,
-          docIndex,
-        }: {
-          rendering: IRendering;
-          docIndex: number;
-        }) => {
-          const ascendingPhotos = testUtils.getPhotosSortedByDate(
-            storedPhotos,
-            SortDirection.Ascending,
-          );
-          const expectedPhoto = ascendingPhotos[docIndex];
-          const result = await photoDataDbMongo.find(rendering);
-          testUtils.expectMatchingPhotos(
-            expectedPhoto,
-            result[0],
-            assertionsCounter,
-          );
-          assertionsCounter.checkAssertions();
-        },
-      );
+        filter = { tagId: tag._id };
+      });
+
+      afterEach(async () => {
+        const ids = storedPhotosWithTag.map((p) => p._id);
+        await testUtils.deletePhotosFromDbs(ids);
+      });
+
+      it("should return the photos whose tags include the required tag", async () => {
+        const expectedPhotos = storedPhotosWithTag;
+
+        const result = await photoDataDbMongo.find({ filter });
+
+        testUtils.expectEqualPhotoArrays(
+          expectedPhotos,
+          result,
+          assertionsCounter,
+        );
+        assertionsCounter.checkAssertions();
+      });
     });
   });
 });
