@@ -20,9 +20,13 @@ import {
 import { ITag, ITagDb } from "#tag-context";
 import { equals, omit } from "ramda";
 
+import { IPhotoExpects } from "./models";
 import { PhotoDbTestUtils } from "./photo-db.test-utils";
 
-export class PhotoTestUtils<TUseCaseResult = unknown> extends PhotoDbTestUtils {
+export class PhotoTestUtils<TUseCaseResult = unknown>
+  extends PhotoDbTestUtils
+  implements IPhotoExpects
+{
   protected readonly assertionsCounter: IAssertionsCounter =
     new AssertionsCounter();
 
