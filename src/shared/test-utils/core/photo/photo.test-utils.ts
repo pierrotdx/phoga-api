@@ -42,7 +42,7 @@ export class PhotoTestUtils<TUseCaseResult = unknown>
   executeTestedUseCase = async (...args: unknown[]): Promise<TUseCaseResult> =>
     await this.testedUseCase.execute(...args);
 
-  expectMatchingPhotos(photo1: IPhoto, photo2: IPhoto): void {
+  expectEqualPhotos(photo1: IPhoto, photo2: IPhoto): void {
     this.expectMatchingIds(photo1, photo1);
     this.expectMatchingPhotoBases(photo1, photo2);
     this.expectMatchingPhotoImages(photo1, photo2);
@@ -73,7 +73,7 @@ export class PhotoTestUtils<TUseCaseResult = unknown>
     this.assertionsCounter.increase();
   }
 
-  async expectPhotoStoredImageToBe(
+  async expectPhotoImageToBe(
     id: IPhoto["_id"],
     expectedImageBuffer: IPhoto["imageBuffer"],
   ): Promise<void> {

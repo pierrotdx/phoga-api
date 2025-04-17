@@ -71,7 +71,7 @@ describe(`${GetPhotoUseCase.name}`, () => {
       it("should return the required photo", async () => {
         const result = await testUtils.executeTestedUseCase(photoToGet._id);
 
-        testUtils.expectMatchingPhotos(photoToGet, result);
+        testUtils.expectEqualPhotos(photoToGet, result);
         testUtils.checkAssertions();
       });
 
@@ -92,7 +92,7 @@ describe(`${GetPhotoUseCase.name}`, () => {
               options,
             );
 
-            testUtils.expectMatchingPhotos(expectedPhoto, result);
+            testUtils.expectEqualPhotos(expectedPhoto, result);
             testUtils.checkAssertions();
           });
         });
@@ -111,7 +111,7 @@ describe(`${GetPhotoUseCase.name}`, () => {
               options,
             );
 
-            testUtils.expectMatchingPhotos(expectedPhoto, result);
+            testUtils.expectEqualPhotos(expectedPhoto, result);
             testUtils.checkAssertions();
           });
         });

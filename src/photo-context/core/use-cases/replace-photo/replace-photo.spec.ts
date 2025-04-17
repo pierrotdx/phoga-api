@@ -147,7 +147,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
 
           await photoTestUtils.executeTestedUseCase(useCaseParams);
 
-          await photoTestUtils.expectPhotoStoredImageToBe(
+          await photoTestUtils.expectPhotoImageToBe(
             useCaseParams._id,
             expectedPhotoImage,
           );

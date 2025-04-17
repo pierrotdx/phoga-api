@@ -432,7 +432,7 @@ describe("ExpressAppServer", () => {
               withToken: true,
             });
 
-            await photoTestUtils.expectPhotoStoredImageToBe(
+            await photoTestUtils.expectPhotoImageToBe(
               addPhotoParams._id,
               addPhotoParams.imageBuffer,
             );
@@ -502,7 +502,7 @@ describe("ExpressAppServer", () => {
             await appTestUtils.sendGetPhotoDataReq(getPhotoParams);
 
           const result = appTestUtils.getPhotoFromResponse(response);
-          photoTestUtils.expectMatchingPhotos(expectedResult, result);
+          photoTestUtils.expectEqualPhotos(expectedResult, result);
           photoTestUtils.checkAssertions();
         });
       });
@@ -549,7 +549,7 @@ describe("ExpressAppServer", () => {
             await appTestUtils.sendGetPhotoImageReq(getPhotoParams);
 
           const responsePhoto = appTestUtils.getPhotoFromResponse(response);
-          photoTestUtils.expectMatchingPhotos(expectedResult, responsePhoto);
+          photoTestUtils.expectEqualPhotos(expectedResult, responsePhoto);
         });
       });
     });
@@ -849,7 +849,7 @@ describe("ExpressAppServer", () => {
                 withToken: true,
               });
 
-              await photoTestUtils.expectPhotoStoredImageToBe(
+              await photoTestUtils.expectPhotoImageToBe(
                 replacePhotoParams._id,
                 expectedStoredPhotoImage,
               );
@@ -979,7 +979,7 @@ describe("ExpressAppServer", () => {
             withToken: true,
           });
 
-          await photoTestUtils.expectPhotoStoredImageToBe(
+          await photoTestUtils.expectPhotoImageToBe(
             deletePhotoParams,
             expectedStoredImage,
           );
@@ -1016,7 +1016,7 @@ describe("ExpressAppServer", () => {
               withToken: true,
             });
 
-            await photoTestUtils.expectPhotoStoredImageToBe(
+            await photoTestUtils.expectPhotoImageToBe(
               deletePhotoParams,
               expectedStoredImage,
             );

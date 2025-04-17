@@ -1,8 +1,5 @@
 import { HttpErrorCode } from "#shared/models";
-import {
-  DbTagTestUtils,
-  PhotoTestUtils,
-} from "#shared/test-utils";
+import { DbTagTestUtils, PhotoTestUtils } from "#shared/test-utils";
 import { ITag, ITagDb, TagDbFake } from "#tag-context";
 
 import {
@@ -99,7 +96,7 @@ describe(`${AddPhotoUseCase.name}`, () => {
       it("should upload the image to the photo-image db", async () => {
         await photoTestUtils.executeTestedUseCase(useCaseParams);
 
-        await photoTestUtils.expectPhotoStoredImageToBe(
+        await photoTestUtils.expectPhotoImageToBe(
           useCaseParams._id,
           useCaseParams.imageBuffer,
         );

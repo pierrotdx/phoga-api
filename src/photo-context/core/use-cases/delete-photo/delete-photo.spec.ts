@@ -64,10 +64,7 @@ describe(`${DeletePhotoUseCase.name}`, () => {
 
       await testUtils.executeTestedUseCase(useCaseParams);
 
-      await testUtils.expectPhotoStoredImageToBe(
-        useCaseParams,
-        expectedStoredImage,
-      );
+      await testUtils.expectPhotoImageToBe(useCaseParams, expectedStoredImage);
       testUtils.checkAssertions();
     });
 
@@ -96,7 +93,7 @@ describe(`${DeletePhotoUseCase.name}`, () => {
           await testUtils.executeTestedUseCase(useCaseParams);
         } catch (err) {
         } finally {
-          await testUtils.expectPhotoStoredImageToBe(
+          await testUtils.expectPhotoImageToBe(
             useCaseParams,
             expectedStoredImage,
           );
