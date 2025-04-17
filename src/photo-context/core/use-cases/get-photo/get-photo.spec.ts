@@ -84,7 +84,7 @@ describe(`${GetPhotoUseCase.name}`, () => {
           });
 
           it("should return the photo with only the photo data", async () => {
-            const photoData = testUtils.getPhotoData(photoToGet);
+            const photoData = testUtils.extractPhotoData(photoToGet);
             const expectedPhoto = new Photo(photoToGet._id, { photoData });
 
             const result = await testUtils.executeTestedUseCase(

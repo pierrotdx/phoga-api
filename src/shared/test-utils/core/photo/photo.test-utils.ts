@@ -50,13 +50,13 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends PhotoDbTestUtils {
   }
 
   private expectMatchingPhotoBases(photo1: IPhoto, photo2: IPhoto): void {
-    const photoData1 = this.getPhotoData(photo1);
-    const photoData2 = this.getPhotoData(photo2);
+    const photoData1 = this.extractPhotoData(photo1);
+    const photoData2 = this.extractPhotoData(photo2);
     expect(photoData2).toEqual(photoData1);
     this.assertionsCounter.increase();
   }
 
-  getPhotoData(photo: IPhoto): IPhotoData {
+  extractPhotoData(photo: IPhoto): IPhotoData {
     return omit(["imageBuffer"], photo);
   }
 
@@ -149,7 +149,7 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends PhotoDbTestUtils {
     this.assertionsCounter.increase();
   }
 
-  expectArraySizeToBeAtMost(photos: IPhoto[], size: number) {
+  expectArraySizeToBeAtMost(photos: IPhoto[], size: number): void {
     expect(photos.length).toBeLessThanOrEqual(size);
     this.assertionsCounter.increase();
   }
