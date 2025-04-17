@@ -2,7 +2,6 @@ import { HttpErrorCode } from "#shared/models";
 import {
   DbTagTestUtils,
   PhotoTestUtils,
-  TagTestUtils,
 } from "#shared/test-utils";
 import { ITag, ITagDb, TagDbFake } from "#tag-context";
 
