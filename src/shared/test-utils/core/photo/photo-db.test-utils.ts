@@ -14,11 +14,11 @@ export class PhotoDbTestUtils implements IPhotoDbTestUtils {
     private readonly photoImageDb?: IPhotoImageDb,
   ) {}
 
-  async getPhotoStoredDataFromDb(id: IPhoto["_id"]): Promise<IPhotoStoredData> {
+  async getPhotoStoredData(id: IPhoto["_id"]): Promise<IPhotoStoredData> {
     return (await this.photoDataDb?.getById(id)) || undefined;
   }
 
-  async insertStoredPhotosDataInDb(
+  async addStoredPhotosData(
     photosStoredData: IPhotoStoredData[],
   ): Promise<void> {
     const insertAll$ = photosStoredData.map(
@@ -27,16 +27,16 @@ export class PhotoDbTestUtils implements IPhotoDbTestUtils {
     await Promise.all(insertAll$);
   }
 
-  async getPhotoImageFromDb(id: IPhoto["_id"]): Promise<IPhoto["imageBuffer"]> {
+  async getPhotoImage(id: IPhoto["_id"]): Promise<IPhoto["imageBuffer"]> {
     return await this.photoImageDb?.getById(id);
   }
 
-  async insertPhotosInDbs(photos: IPhoto[]): Promise<void> {
-    const insertPromises = photos.map(this.insertPhotoInDbs.bind(this));
+  async addPhotos(photos: IPhoto[]): Promise<void> {
+    const insertPromises = photos.map(this.addPhoto.bind(this));
     await Promise.all(insertPromises);
   }
 
-  async insertPhotoInDbs(photo: IPhoto): Promise<void> {
+  async addPhoto(photo: IPhoto): Promise<void> {
     const storedPhotoData: IPhotoStoredData = omit(["imageBuffer"], photo);
     await this.insertStoredPhotoDataInDb(storedPhotoData);
     await this.insertPhotoImageInDb(photo);
@@ -54,12 +54,12 @@ export class PhotoDbTestUtils implements IPhotoDbTestUtils {
     }
   }
 
-  async deletePhotosFromDb(photoIds: IPhoto["_id"][]): Promise<void> {
-    const deletePromises = photoIds.map((id) => this.deletePhotoFromDb(id));
+  async deletePhotos(photoIds: IPhoto["_id"][]): Promise<void> {
+    const deletePromises = photoIds.map((id) => this.deletePhoto(id));
     await Promise.all(deletePromises);
   }
 
-  async deletePhotoFromDb(id: IPhoto["_id"]): Promise<void> {
+  async deletePhoto(id: IPhoto["_id"]): Promise<void> {
     try {
       await this.deletePhotoStoredDataFromDb(id);
       await this.deletePhotoImageFromDb(id);

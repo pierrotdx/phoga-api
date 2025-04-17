@@ -43,12 +43,12 @@ describe(`${SearchPhotoUseCase.name}`, () => {
 
     beforeEach(async () => {
       storedPhotos = await dumbPhotoGenerator.generatePhotos(nbStoredPhotos);
-      await testUtils.insertPhotosInDbs(storedPhotos);
+      await testUtils.addPhotos(storedPhotos);
     });
 
     afterEach(async () => {
       const storedPhotoIds = storedPhotos.map((p) => p._id);
-      await testUtils.deletePhotosFromDb(storedPhotoIds);
+      await testUtils.deletePhotos(storedPhotoIds);
     });
 
     describe("when no filter is required", () => {
@@ -69,14 +69,14 @@ describe(`${SearchPhotoUseCase.name}`, () => {
           storedPhotosWithTag = dumbPhotoGenerator.generatePhotosStoredData(3, {
             tags: [tag],
           });
-          await testUtils.insertStoredPhotosDataInDb(storedPhotosWithTag);
+          await testUtils.addStoredPhotosData(storedPhotosWithTag);
 
           useCaseParams = { filter: { tagId: tag._id } };
         });
 
         afterEach(async () => {
           const ids = storedPhotosWithTag.map((p) => p._id);
-          await testUtils.deletePhotosFromDb(ids);
+          await testUtils.deletePhotos(ids);
         });
 
         it("should return the photos whose tags include the required tag", async () => {

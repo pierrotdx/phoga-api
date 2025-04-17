@@ -64,7 +64,7 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends PhotoDbTestUtils {
     id: IPhoto["_id"],
     expectedValue: IPhotoStoredData,
   ): Promise<void> {
-    const storedPhotoData = await this.getPhotoStoredDataFromDb(id);
+    const storedPhotoData = await this.getPhotoStoredData(id);
     expect(storedPhotoData).toEqual(expectedValue);
     this.assertionsCounter.increase();
   }
@@ -73,7 +73,7 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends PhotoDbTestUtils {
     id: IPhoto["_id"],
     expectedImageBuffer: IPhoto["imageBuffer"],
   ): Promise<void> {
-    const dbImage = await this.getPhotoImageFromDb(id);
+    const dbImage = await this.getPhotoImage(id);
     if (!expectedImageBuffer) {
       expect(dbImage).toBeFalsy();
       this.assertionsCounter.increase();

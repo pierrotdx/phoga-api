@@ -1,11 +1,11 @@
 import { IAssertionsCounter } from "#shared/assertions-counter";
+import { PhotoTestUtils } from "#shared/test-utils";
 import { randomInt } from "node:crypto";
 
 import { Storage } from "@google-cloud/storage";
 
 import { IPhoto } from "../../../../core";
 import { PhotoImageDbGcs } from "./photo-image-db.gcs";
-import { PhotoTestUtils } from "#shared/test-utils";
 
 export class PhotoImageDbGcsTestUtils {
   private readonly storage: Storage;
@@ -65,23 +65,23 @@ export class PhotoImageDbGcsTestUtils {
   }
 
   async insertPhotoInDbs(photo: IPhoto): Promise<void> {
-    await this.photoTestUtils.insertPhotoInDbs(photo);
+    await this.photoTestUtils.addPhoto(photo);
   }
 
   async insertPhotosInDbs(photos: IPhoto[]): Promise<void> {
-    await this.photoTestUtils.insertPhotosInDbs(photos);
+    await this.photoTestUtils.addPhotos(photos);
   }
 
   async deletePhotoIfNecessary(id: IPhoto["_id"]): Promise<void> {
-    await this.photoTestUtils.deletePhotoFromDb(id);
+    await this.photoTestUtils.deletePhoto(id);
   }
 
   async deletePhotosInDbs(ids: IPhoto["_id"][]): Promise<void> {
-    await this.photoTestUtils.deletePhotosFromDb(ids);
+    await this.photoTestUtils.deletePhotos(ids);
   }
 
   async getPhotoImageFromDb(id: IPhoto["_id"]): Promise<IPhoto["imageBuffer"]> {
-    return this.photoTestUtils.getPhotoImageFromDb(id);
+    return this.photoTestUtils.getPhotoImage(id);
   }
 
   pickRandomPhotoIds(photos: IPhoto[]): IPhoto["_id"][] {
@@ -112,7 +112,7 @@ export class PhotoImageDbGcsTestUtils {
   }
 
   async expectImageToBeUploaded(photo: IPhoto): Promise<void> {
-    const dbImage = await this.photoTestUtils.getPhotoImageFromDb(photo._id);
+    const dbImage = await this.photoTestUtils.getPhotoImage(photo._id);
     expect(dbImage).toBeDefined();
     expect(dbImage).toEqual(photo.imageBuffer);
     expect.assertions(2);
@@ -160,7 +160,7 @@ export class PhotoImageDbGcsTestUtils {
   }) {
     expect(initPhoto._id).toBe(replacingPhoto._id);
     expect(dbImageBefore).toEqual(initPhoto.imageBuffer);
-    const imageFromDb = await this.photoTestUtils.getPhotoImageFromDb(
+    const imageFromDb = await this.photoTestUtils.getPhotoImage(
       replacingPhoto._id,
     );
     expect(imageFromDb).not.toEqual(initPhoto.imageBuffer);
@@ -177,9 +177,7 @@ export class PhotoImageDbGcsTestUtils {
     dbImageBefore: Buffer;
     assertionsCounter: IAssertionsCounter;
   }) {
-    const dbImageAfter = await this.photoTestUtils.getPhotoImageFromDb(
-      photo._id,
-    );
+    const dbImageAfter = await this.photoTestUtils.getPhotoImage(photo._id);
     expect(dbImageBefore).toBeDefined();
     expect(dbImageBefore).toEqual(photo.imageBuffer);
     expect(dbImageAfter).toBeUndefined();

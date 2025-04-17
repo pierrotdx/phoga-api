@@ -38,13 +38,13 @@ describe(`${DeletePhotoUseCase.name}`, () => {
 
     beforeEach(async () => {
       photoToDelete = await dumbPhotoGenerator.generatePhoto();
-      await testUtils.insertPhotoInDbs(photoToDelete);
+      await testUtils.addPhoto(photoToDelete);
 
       useCaseParams = photoToDelete._id;
     });
 
     afterEach(async () => {
-      await testUtils.deletePhotoFromDb(photoToDelete._id);
+      await testUtils.deletePhoto(photoToDelete._id);
     });
 
     it("should delete photo\'s data (other than image) from the photo-data db", async () => {

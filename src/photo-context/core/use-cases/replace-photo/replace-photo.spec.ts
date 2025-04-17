@@ -76,11 +76,11 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
 
       beforeEach(async () => {
         photoToReplace = await dumbPhotoGenerator.generatePhoto();
-        await photoTestUtils.insertPhotoInDbs(photoToReplace);
+        await photoTestUtils.addPhoto(photoToReplace);
       });
 
       afterEach(async () => {
-        await photoTestUtils.deletePhotoFromDb(photoToReplace._id);
+        await photoTestUtils.deletePhoto(photoToReplace._id);
       });
 
       describe("when there is no image in the new photo", () => {
@@ -176,7 +176,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
             photoWithoutDataToReplace =
               await dumbPhotoGenerator.generatePhoto();
             delete photoWithoutDataToReplace.metadata;
-            await photoTestUtils.insertPhotoInDbs(photoWithoutDataToReplace);
+            await photoTestUtils.addPhoto(photoWithoutDataToReplace);
 
             const newPhoto = await dumbPhotoGenerator.generatePhoto({
               _id: photoWithoutDataToReplace._id,
@@ -186,9 +186,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
           });
 
           afterEach(async () => {
-            await photoTestUtils.deletePhotoFromDb(
-              photoWithoutDataToReplace._id,
-            );
+            await photoTestUtils.deletePhoto(photoWithoutDataToReplace._id);
           });
 
           it("should add the new data in the photo-data db", async () => {

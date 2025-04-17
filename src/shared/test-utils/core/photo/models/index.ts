@@ -1,1 +1,1 @@
-export * from "./db-photo.test-utils";
+export * from "./photo-db.test-utils";

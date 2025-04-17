@@ -43,25 +43,25 @@ export class PhotoDataDbMongoTestUtils {
   }
 
   async getDocFromDb(_id: IPhoto["_id"]): Promise<TDoc> {
-    return await this.photoTestUtils.getPhotoStoredDataFromDb(_id);
+    return await this.photoTestUtils.getPhotoStoredData(_id);
   }
 
   async insertPhotosInDbs(photos: IPhoto[]): Promise<void> {
-    await this.photoTestUtils.insertPhotosInDbs(photos);
+    await this.photoTestUtils.addPhotos(photos);
   }
 
   async insertPhotosStoredDataInDbs(
     photosStoreData: IPhotoStoredData[],
   ): Promise<void> {
-    await this.photoTestUtils.insertStoredPhotosDataInDb(photosStoreData);
+    await this.photoTestUtils.addStoredPhotosData(photosStoreData);
   }
 
   async deletePhotoIfNecessary(photoId: IPhoto["_id"]): Promise<void> {
-    await this.photoTestUtils.deletePhotoFromDb(photoId);
+    await this.photoTestUtils.deletePhoto(photoId);
   }
 
   async deletePhotosFromDbs(photoIds: IPhoto["_id"][]): Promise<void> {
-    await this.photoTestUtils.deletePhotosFromDb(photoIds);
+    await this.photoTestUtils.deletePhotos(photoIds);
   }
 
   expectMatchingPhotos(

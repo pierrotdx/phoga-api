@@ -1,6 +1,7 @@
 import { HttpErrorCode } from "#shared/models";
-import { readFile } from "fs/promises";
 import { PhotoTestUtils } from "#shared/test-utils";
+import { readFile } from "fs/promises";
+
 import {
   FakePhotoDataDb,
   FakePhotoImageDb,
@@ -60,11 +61,11 @@ describe(`${GetPhotoUseCase.name}`, () => {
 
     describe("when the required photo has a stored image", () => {
       beforeEach(async () => {
-        await testUtils.insertPhotoInDbs(photoToGet);
+        await testUtils.addPhoto(photoToGet);
       });
 
       afterEach(async () => {
-        await testUtils.deletePhotoFromDb(photoToGet._id);
+        await testUtils.deletePhoto(photoToGet._id);
       });
 
       it("should return the required photo", async () => {
