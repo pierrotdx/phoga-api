@@ -18,7 +18,7 @@ import {
   SortDirection,
 } from "#shared/models";
 import { ITag, ITagDb } from "#tag-context";
-import { add, equals, omit } from "ramda";
+import { equals, omit } from "ramda";
 
 import { PhotoDbTestUtils } from "./photo-db.test-utils";
 
@@ -158,7 +158,7 @@ export class PhotoTestUtils<TUseCaseResult = unknown> extends PhotoDbTestUtils {
     this.assertionsCounter.checkAssertions();
   }
 
-  async getPhotoStoredData(
+  async generatePhotoStoredData(
     addPhotoParams: IAddPhotoParams,
   ): Promise<IPhotoStoredData> {
     const photoStoredData: IPhotoStoredData = {

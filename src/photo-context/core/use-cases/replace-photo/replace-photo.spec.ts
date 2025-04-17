@@ -106,7 +106,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
 
         it("should not update the data (other than image) in the photo-data db", async () => {
           const expectedStoreData: IPhotoStoredData =
-            await photoTestUtils.getPhotoStoredData(photoToReplace);
+            await photoTestUtils.generatePhotoStoredData(photoToReplace);
 
           try {
             await photoTestUtils.executeTestedUseCase(useCaseParams);
@@ -157,7 +157,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
         describe("when the photo to replace had data already stored in the photo-data db", () => {
           it("should replace the data with the new one in the photo-data db", async () => {
             const expectedStoredData =
-              await photoTestUtils.getPhotoStoredData(useCaseParams);
+              await photoTestUtils.generatePhotoStoredData(useCaseParams);
 
             await photoTestUtils.executeTestedUseCase(useCaseParams);
 
@@ -193,7 +193,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
 
           it("should add the new data in the photo-data db", async () => {
             const expectedStoredData =
-              await photoTestUtils.getPhotoStoredData(useCaseParams);
+              await photoTestUtils.generatePhotoStoredData(useCaseParams);
 
             await photoTestUtils.executeTestedUseCase(useCaseParams);
 

@@ -801,7 +801,7 @@ describe("ExpressAppServer", () => {
 
             it("should not update the data (other than image) in the photo-data db", async () => {
               const expectedStoreData =
-                await photoTestUtils.getPhotoStoredData(storedPhoto);
+                await photoTestUtils.generatePhotoStoredData(storedPhoto);
 
               await appTestUtils.sendReplacePhotoReq({
                 replacePhotoParams,
@@ -859,7 +859,9 @@ describe("ExpressAppServer", () => {
             describe("when the photo to replace had data already stored in the photo-data db", () => {
               it("should replace the data with the new one in the photo-data db", async () => {
                 const expectedStoredData =
-                  await photoTestUtils.getPhotoStoredData(replacePhotoParams);
+                  await photoTestUtils.generatePhotoStoredData(
+                    replacePhotoParams,
+                  );
 
                 await appTestUtils.sendReplacePhotoReq({
                   replacePhotoParams,
@@ -903,7 +905,9 @@ describe("ExpressAppServer", () => {
 
               it("should add the new data in the photo-data db", async () => {
                 const expectedStoredData =
-                  await photoTestUtils.getPhotoStoredData(replacePhotoParams);
+                  await photoTestUtils.generatePhotoStoredData(
+                    replacePhotoParams,
+                  );
 
                 await appTestUtils.sendReplacePhotoReq({
                   replacePhotoParams,
@@ -1048,7 +1052,7 @@ describe("ExpressAppServer", () => {
 
           it("should not delete photo's data in photo-data db", async () => {
             const expectedPhotoStoredData: IPhotoStoredData =
-              await photoTestUtils.getPhotoStoredData(photoToDelete);
+              await photoTestUtils.generatePhotoStoredData(photoToDelete);
 
             await appTestUtils.sendDeletePhotoReq({
               deletePhotoParams,
