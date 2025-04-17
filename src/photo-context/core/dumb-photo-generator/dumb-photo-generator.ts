@@ -7,7 +7,9 @@ import { clone } from "ramda";
 
 import { assertPhoto } from "../assertions/is-photo/is-photo";
 import {
+  IAddPhotoParams,
   IDumbPhotoGenerator,
+  IGenerateAddPhotoParams,
   IGeneratePhotoOptions,
   IGeneratePhotoStoredDataOptions,
   IPhoto,
@@ -149,5 +151,17 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
       _id: this.uuidGenerator.generate(),
       name: this.loremIpsumGenerator.generateWords(1)[0],
     };
+  }
+
+  async generateAddPhotoParams(
+    options?: IGenerateAddPhotoParams,
+  ): Promise<IAddPhotoParams> {
+    const photo = await this.generatePhoto(options);
+    const tagIds: ITag["_id"][] = options?.tagIds || [
+      this.uuidGenerator.generate(),
+      this.uuidGenerator.generate(),
+    ];
+    const addPhotoParams: IAddPhotoParams = { ...photo, tagIds };
+    return addPhotoParams;
   }
 }

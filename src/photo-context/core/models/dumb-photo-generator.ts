@@ -1,3 +1,5 @@
+import { ITag } from "#tag-context";
+
 import { IPhoto } from "./photo";
 import { IPhotoStoredData } from "./photo-stored-data";
 
@@ -22,4 +24,8 @@ export interface IGeneratePhotoOptions {
 export interface IGeneratePhotoStoredDataOptions
   extends Omit<IGeneratePhotoOptions, "imageBuffer"> {
   tags?: IPhotoStoredData["tags"];
+}
+
+export interface IGenerateAddPhotoParams extends IGeneratePhotoOptions {
+  tagIds?: ITag["_id"][];
 }

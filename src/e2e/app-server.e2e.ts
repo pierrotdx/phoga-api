@@ -333,6 +333,7 @@ describe("ExpressAppServer", () => {
 
   describe("photo requests", () => {
     let photoTestUtils: PhotoTestUtils;
+    let tagTestUtils: TagTestUtils;
 
     beforeEach(() => {
       const photoDataDb = appTestUtils.getPhotoDataDb();
@@ -344,6 +345,7 @@ describe("ExpressAppServer", () => {
         undefined,
         tagDb,
       );
+      tagTestUtils = new TagTestUtils(tagDb);
     });
 
     describe(`POST ${addPhotoPath}`, () => {
@@ -406,26 +408,21 @@ describe("ExpressAppServer", () => {
 
         describe("when there is an image to upload", () => {
           let tags: ITag[];
-          let tagIds: ITag["_id"][];
-          let dbTagTestUtils: DbTagTestUtils;
 
           beforeEach(async () => {
             tags = [
               { _id: appTestUtils.generateId(), name: "tag1" },
               { _id: appTestUtils.generateId(), name: "tag2" },
             ];
-            tagIds = tags.map((t) => t._id);
-            const tagDb = appTestUtils.getTagDb();
-            dbTagTestUtils = new DbTagTestUtils(tagDb);
-            await dbTagTestUtils.insertTagsInDb(tags);
+            await tagTestUtils.insertTagsInDb(tags);
 
             const photo = await dumbPhotoGenerator.generatePhoto();
 
-            addPhotoParams = { ...photo, tagIds };
+            addPhotoParams = { ...photo, tagIds: tags.map((t) => t._id) };
           });
 
           afterEach(async () => {
-            await dbTagTestUtils.deleteTagsFromDb(tags);
+            await tagTestUtils.deleteTagsFromDb(tags);
             await photoTestUtils.deletePhotoFromDb(addPhotoParams._id);
           });
 
@@ -575,31 +572,27 @@ describe("ExpressAppServer", () => {
       }, timeout);
 
       describe("when using the `tagId` filter", () => {
-        let dbTagTestUtils: DbTagTestUtils;
-        let storedPhotosWithTag: IPhoto[];
         let tag: ITag;
+        let storedPhotosWithTag: IPhoto[];
 
         beforeEach(async () => {
           tag = {
             _id: appTestUtils.generateId(),
             name: "tag name",
           };
-
-          const tagDb = appTestUtils.getTagDb();
-          dbTagTestUtils = new DbTagTestUtils(tagDb);
-          await dbTagTestUtils.insertTagInDb(tag);
+          await tagTestUtils.insertTagInDb(tag);
 
           storedPhotosWithTag = await dumbPhotoGenerator.generatePhotos(3);
-          for await (let photo of storedPhotosWithTag) {
-            const addPhotoParams: IAddPhotoParams = {
-              ...photo,
-              tagIds: [tag._id],
-            };
-            await appTestUtils.sendAddPhotoReq({
-              addPhotoParams,
-              withToken: true,
-            });
-          }
+
+          await Promise.all(
+            storedPhotosWithTag.map(async (photo) => {
+              const addPhotoParams: IAddPhotoParams = {
+                ...photo,
+                tagIds: [tag._id],
+              };
+              await appTestUtils.addPhoto(addPhotoParams);
+            }),
+          );
 
           searchPhotoParams = { filter: { tagId: tag._id } };
         });
@@ -607,7 +600,7 @@ describe("ExpressAppServer", () => {
         afterEach(async () => {
           const ids = storedPhotosWithTag.map((p) => p._id);
           await photoTestUtils.deletePhotosFromDb(ids);
-          await dbTagTestUtils.deleteTagFromDb(tag._id);
+          await tagTestUtils.deleteTagFromDb(tag._id);
         });
 
         it("should return the photos whose tags include the required tag", async () => {
@@ -825,28 +818,26 @@ describe("ExpressAppServer", () => {
 
           describe("when there is an image in the new photo", () => {
             let tags: ITag[];
-            let tagIds: ITag["_id"][];
-            let dbTagTestUtils: DbTagTestUtils;
 
             beforeEach(async () => {
               tags = [
                 { _id: appTestUtils.generateId(), name: "tag1" },
                 { _id: appTestUtils.generateId(), name: "tag2" },
               ];
-              tagIds = tags.map((t) => t._id);
-              const tagDb = appTestUtils.getTagDb();
-              dbTagTestUtils = new DbTagTestUtils(tagDb);
-              await dbTagTestUtils.insertTagsInDb(tags);
+              await tagTestUtils.insertTagsInDb(tags);
 
               const newPhoto = await dumbPhotoGenerator.generatePhoto({
                 _id: storedPhoto._id,
               });
 
-              replacePhotoParams = { ...newPhoto, tagIds };
+              replacePhotoParams = {
+                ...newPhoto,
+                tagIds: tags.map((t) => t._id),
+              };
             });
 
             afterEach(async () => {
-              await dbTagTestUtils.deleteTagsFromDb(tags);
+              await tagTestUtils.deleteTagsFromDb(tags);
               await photoTestUtils.deletePhotoFromDb(replacePhotoParams._id);
             });
 
@@ -898,7 +889,10 @@ describe("ExpressAppServer", () => {
                 const newPhoto = await dumbPhotoGenerator.generatePhoto({
                   _id: photoWithoutDataToReplace._id,
                 });
-                replacePhotoParams = { ...newPhoto, tagIds };
+                replacePhotoParams = {
+                  ...newPhoto,
+                  tagIds: tags.map((t) => t._id),
+                };
               });
 
               afterEach(async () => {

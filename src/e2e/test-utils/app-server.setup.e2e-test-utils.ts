@@ -92,14 +92,14 @@ export class AppServerSetupE2ETestUtils {
       this.photoImageBucket,
     );
     this.tagDb = new TagDbMongo(this.mongoManager);
-    this.onDbsSetup();
+    this.onDbsSetupBase();
   }
 
   private async openMongoConnection(): Promise<void> {
     await this.mongoManager.open();
   }
 
-  private onDbsSetup(): void {
+  private onDbsSetupBase(): void {
     this.setupServer();
   }
 

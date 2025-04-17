@@ -1,5 +1,7 @@
 import {
+  AddPhotoUseCase,
   IAddPhotoParams,
+  IAddPhotoUseCase,
   IDeletePhotoParams,
   IGetPhotoParams,
   IPhoto,
@@ -23,6 +25,7 @@ import { AppServerSetupE2ETestUtils } from "./app-server.setup.e2e-test-utils";
 export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
   private expressSharedTestUtils: ExpressPhotoTestUtils;
   private readonly uuidGenerator: IUuidGenerator = new UuidGenerator();
+  private addPhotoUseCase: IAddPhotoUseCase;
 
   constructor(testEnv: any) {
     super(testEnv);
@@ -30,11 +33,20 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
 
   async globalBeforeEach(): Promise<void> {
     await this.setupDbs();
+    this.onDbsSetup();
+  }
+
+  private onDbsSetup(): void {
     this.testUtilsFactory();
   }
 
   private testUtilsFactory() {
     this.expressSharedTestUtils = new ExpressPhotoTestUtils();
+    this.addPhotoUseCase = new AddPhotoUseCase(
+      this.photoDataDb,
+      this.photoImageDb,
+      this.tagDb,
+    );
   }
 
   async globalAfterEach(): Promise<void> {
@@ -173,5 +185,9 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
   private async addTokenToRequest(req: Test): Promise<void> {
     const token = await this.getToken();
     req.auth(token, { type: "bearer" });
+  }
+
+  async addPhoto(params: IAddPhotoParams): Promise<void> {
+    await this.addPhotoUseCase.execute(params);
   }
 }
