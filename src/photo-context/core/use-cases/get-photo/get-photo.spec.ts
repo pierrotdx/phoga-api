@@ -1,6 +1,10 @@
 import { HttpErrorCode } from "#shared/models";
-import { PhotoTestUtils } from "#shared/test-utils";
-import { readFile } from "fs/promises";
+import {
+  IPhotoDbTestUtils,
+  IPhotoExpectsTestUtils,
+  PhotoDbTestUtils,
+  PhotoExpectsTestUtils,
+} from "#shared/test-utils";
 
 import {
   FakePhotoDataDb,
@@ -12,27 +16,33 @@ import {
   GetPhotoField,
   IGetPhotoOptions,
   IGetPhotoParams,
-  IGetPhotoUseCase,
   IPhoto,
+  IPhotoUseCaseTestUtils,
   Photo,
 } from "../../models";
+import { PhotoUseCaseTestUtils } from "../test-utils";
 import { GetPhotoUseCase } from "./get-photo";
 
 describe(`${GetPhotoUseCase.name}`, () => {
   let photoDataDb: IPhotoDataDb;
   let photoImageDb: IPhotoImageDb;
 
-  let testedUseCase: IGetPhotoUseCase;
-
-  let testUtils: PhotoTestUtils<IPhoto>;
+  let dbTestUtils: IPhotoDbTestUtils;
+  let expectsTestUtils: IPhotoExpectsTestUtils;
+  let useCaseTestUtils: IPhotoUseCaseTestUtils<IPhoto>;
 
   beforeEach(async () => {
     photoDataDb = new FakePhotoDataDb();
     photoImageDb = new FakePhotoImageDb();
 
-    testedUseCase = new GetPhotoUseCase(photoDataDb, photoImageDb);
+    const testedUseCase = new GetPhotoUseCase(photoDataDb, photoImageDb);
 
-    testUtils = new PhotoTestUtils(photoDataDb, photoImageDb, testedUseCase);
+    dbTestUtils = new PhotoDbTestUtils(photoDataDb, photoImageDb);
+    expectsTestUtils = new PhotoExpectsTestUtils(dbTestUtils);
+    useCaseTestUtils = new PhotoUseCaseTestUtils(
+      testedUseCase,
+      expectsTestUtils,
+    );
   });
 
   describe(`${GetPhotoUseCase.prototype.execute.name}`, () => {
@@ -40,8 +50,7 @@ describe(`${GetPhotoUseCase.name}`, () => {
     let photoToGet: IPhoto;
 
     beforeEach(async () => {
-      const imageBuffer = await readFile("assets/test-img-1_536x354.jpg");
-      photoToGet = await dumbPhotoGenerator.generatePhoto({ imageBuffer });
+      photoToGet = await dumbPhotoGenerator.generatePhoto();
 
       useCaseParams = photoToGet._id;
     });
@@ -50,29 +59,31 @@ describe(`${GetPhotoUseCase.name}`, () => {
       it(`should throw an error with status code ${HttpErrorCode.NotFound} (not found)`, async () => {
         const expectedStatus = HttpErrorCode.NotFound;
 
-        await testUtils.executeUseCaseAndExpectToThrow({
+        await useCaseTestUtils.executeUseCaseAndExpectToThrow({
           useCaseParams: [useCaseParams],
           expectedStatus,
         });
 
-        testUtils.checkAssertions();
+        expectsTestUtils.checkAssertions();
       });
     });
 
     describe("when the required photo has a stored image", () => {
       beforeEach(async () => {
-        await testUtils.addPhoto(photoToGet);
+        await dbTestUtils.addPhoto(photoToGet);
       });
 
       afterEach(async () => {
-        await testUtils.deletePhoto(photoToGet._id);
+        await dbTestUtils.deletePhoto(photoToGet._id);
       });
 
       it("should return the required photo", async () => {
-        const result = await testUtils.executeTestedUseCase(photoToGet._id);
+        const result = await useCaseTestUtils.executeTestedUseCase(
+          photoToGet._id,
+        );
 
-        testUtils.expectEqualPhotos(photoToGet, result);
-        testUtils.checkAssertions();
+        expectsTestUtils.expectEqualPhotos(photoToGet, result);
+        expectsTestUtils.checkAssertions();
       });
 
       describe("when using the `fields` option", () => {
@@ -84,16 +95,17 @@ describe(`${GetPhotoUseCase.name}`, () => {
           });
 
           it("should return the photo with only the photo data", async () => {
-            const photoData = testUtils.extractPhotoData(photoToGet);
-            const expectedPhoto = new Photo(photoToGet._id, { photoData });
+            const expectedPhoto = new Photo(photoToGet._id, {
+              photoData: { metadata: photoToGet.metadata },
+            });
 
-            const result = await testUtils.executeTestedUseCase(
+            const result = await useCaseTestUtils.executeTestedUseCase(
               useCaseParams,
               options,
             );
 
-            testUtils.expectEqualPhotos(expectedPhoto, result);
-            testUtils.checkAssertions();
+            expectsTestUtils.expectEqualPhotos(expectedPhoto, result);
+            expectsTestUtils.checkAssertions();
           });
         });
 
@@ -103,16 +115,15 @@ describe(`${GetPhotoUseCase.name}`, () => {
           });
 
           it("should return the photo with only the image", async () => {
-            const imageBuffer = photoToGet.imageBuffer;
-            const expectedPhoto = new Photo(photoToGet._id, { imageBuffer });
+            const expectedPhoto = new Photo(photoToGet._id);
 
-            const result = await testUtils.executeTestedUseCase(
+            const result = await useCaseTestUtils.executeTestedUseCase(
               useCaseParams,
               options,
             );
 
-            testUtils.expectEqualPhotos(expectedPhoto, result);
-            testUtils.checkAssertions();
+            expectsTestUtils.expectEqualPhotos(expectedPhoto, result);
+            expectsTestUtils.checkAssertions();
           });
         });
       });

@@ -6,18 +6,20 @@ import {
   IPhotoStoredData,
   IReplacePhotoParams,
   ISearchPhotoParams,
-  Photo,
   comparePhotoDates,
   dumbPhotoGenerator,
-  photoStoredDataToPhotoData,
+  fromAddPhotoParamsToPhotoStoredData,
+  fromPhotoStoredDataToPhotoData,
 } from "#photo-context";
 import { HttpErrorCode, IRendering, SortDirection } from "#shared/models";
 import {
-  DbTagTestUtils,
-  PhotoTestUtils,
+  IPhotoDbTestUtils,
+  IPhotoExpectsTestUtils,
+  PhotoDbTestUtils,
+  PhotoExpectsTestUtils,
   TagTestUtils,
 } from "#shared/test-utils";
-import { ISearchTagFilter, ITag, TagEntryPointId } from "#tag-context";
+import { ISearchTagFilter, ITag, ITagDb, TagEntryPointId } from "#tag-context";
 import { type Express } from "express";
 import { add, clone, omit, pick } from "ramda";
 import request from "supertest";
@@ -332,19 +334,18 @@ describe("ExpressAppServer", () => {
   });
 
   describe("photo requests", () => {
-    let photoTestUtils: PhotoTestUtils;
+    let photoExpectsTestUtils: IPhotoExpectsTestUtils;
+    let photoDbTestUtils: IPhotoDbTestUtils;
     let tagTestUtils: TagTestUtils;
+    let tagDb: ITagDb;
 
     beforeEach(() => {
       const photoDataDb = appTestUtils.getPhotoDataDb();
       const photoImageDb = appTestUtils.getPhotoImageDb();
-      const tagDb = appTestUtils.getTagDb();
-      photoTestUtils = new PhotoTestUtils(
-        photoDataDb,
-        photoImageDb,
-        undefined,
-        tagDb,
-      );
+      tagDb = appTestUtils.getTagDb();
+
+      photoDbTestUtils = new PhotoDbTestUtils(photoDataDb, photoImageDb);
+      photoExpectsTestUtils = new PhotoExpectsTestUtils(photoDbTestUtils);
       tagTestUtils = new TagTestUtils(tagDb);
     });
 
@@ -356,7 +357,7 @@ describe("ExpressAppServer", () => {
       });
 
       afterEach(async () => {
-        await photoTestUtils.deletePhoto(addPhotoParams._id);
+        await photoDbTestUtils.deletePhoto(addPhotoParams._id);
       });
 
       describe("when the requester does not have the expected right", () => {
@@ -398,11 +399,11 @@ describe("ExpressAppServer", () => {
             });
 
             const expectedPhotoStoredData = undefined;
-            await photoTestUtils.expectPhotoStoredDataToBe(
+            await photoExpectsTestUtils.expectPhotoStoredDataToBe(
               addPhotoParams._id,
               expectedPhotoStoredData,
             );
-            photoTestUtils.checkAssertions();
+            photoExpectsTestUtils.checkAssertions();
           });
         });
 
@@ -423,7 +424,7 @@ describe("ExpressAppServer", () => {
 
           afterEach(async () => {
             await tagTestUtils.deleteTagsFromDb(tags);
-            await photoTestUtils.deletePhoto(addPhotoParams._id);
+            await photoDbTestUtils.deletePhoto(addPhotoParams._id);
           });
 
           it("should upload the image to the photo-image db", async () => {
@@ -432,11 +433,11 @@ describe("ExpressAppServer", () => {
               withToken: true,
             });
 
-            await photoTestUtils.expectPhotoImageToBe(
+            await photoExpectsTestUtils.expectPhotoImageToBe(
               addPhotoParams._id,
               addPhotoParams.imageBuffer,
             );
-            photoTestUtils.checkAssertions();
+            photoExpectsTestUtils.checkAssertions();
           });
 
           it("should upload the data (other than image) to the photo-data db", async () => {
@@ -451,11 +452,11 @@ describe("ExpressAppServer", () => {
               withToken: true,
             });
 
-            await photoTestUtils.expectPhotoStoredDataToBe(
+            await photoExpectsTestUtils.expectPhotoStoredDataToBe(
               addPhotoParams._id,
               expectedStoredData,
             );
-            photoTestUtils.checkAssertions();
+            photoExpectsTestUtils.checkAssertions();
           });
         });
       });
@@ -486,13 +487,13 @@ describe("ExpressAppServer", () => {
 
         beforeEach(async () => {
           photoToGet = await dumbPhotoGenerator.generatePhoto();
-          await photoTestUtils.addPhoto(photoToGet);
+          await photoDbTestUtils.addPhoto(photoToGet);
 
           getPhotoParams = photoToGet._id;
         });
 
         afterEach(async () => {
-          await photoTestUtils.deletePhoto(photoToGet._id);
+          await photoDbTestUtils.deletePhoto(photoToGet._id);
         });
 
         it(`should return the required photo data`, async () => {
@@ -502,8 +503,8 @@ describe("ExpressAppServer", () => {
             await appTestUtils.sendGetPhotoDataReq(getPhotoParams);
 
           const result = appTestUtils.getPhotoFromResponse(response);
-          photoTestUtils.expectEqualPhotos(expectedResult, result);
-          photoTestUtils.checkAssertions();
+          photoExpectsTestUtils.expectEqualPhotos(expectedResult, result);
+          photoExpectsTestUtils.checkAssertions();
         });
       });
     });
@@ -533,13 +534,13 @@ describe("ExpressAppServer", () => {
 
         beforeEach(async () => {
           photoToGet = await dumbPhotoGenerator.generatePhoto();
-          await photoTestUtils.addPhoto(photoToGet);
+          await photoDbTestUtils.addPhoto(photoToGet);
 
           getPhotoParams = photoToGet._id;
         });
 
         afterEach(async () => {
-          await photoTestUtils.deletePhoto(photoToGet._id);
+          await photoDbTestUtils.deletePhoto(photoToGet._id);
         });
 
         it("should return the required photo image", async () => {
@@ -549,7 +550,10 @@ describe("ExpressAppServer", () => {
             await appTestUtils.sendGetPhotoImageReq(getPhotoParams);
 
           const responsePhoto = appTestUtils.getPhotoFromResponse(response);
-          photoTestUtils.expectEqualPhotos(expectedResult, responsePhoto);
+          photoExpectsTestUtils.expectEqualPhotos(
+            expectedResult,
+            responsePhoto,
+          );
         });
       });
     });
@@ -561,12 +565,12 @@ describe("ExpressAppServer", () => {
 
       beforeEach(async () => {
         storedPhotos = await dumbPhotoGenerator.generatePhotos(3);
-        await photoTestUtils.addPhotos(storedPhotos);
+        await photoDbTestUtils.addPhotos(storedPhotos);
       }, timeout);
 
       afterEach(async () => {
         const storedPhotosIds = storedPhotos.map((p) => p._id);
-        await photoTestUtils.deletePhotos(storedPhotosIds);
+        await photoDbTestUtils.deletePhotos(storedPhotosIds);
 
         searchPhotoParams = undefined;
       }, timeout);
@@ -599,7 +603,7 @@ describe("ExpressAppServer", () => {
 
         afterEach(async () => {
           const ids = storedPhotosWithTag.map((p) => p._id);
-          await photoTestUtils.deletePhotos(ids);
+          await photoDbTestUtils.deletePhotos(ids);
           await tagTestUtils.deleteTagFromDb(tag._id);
         });
 
@@ -610,8 +614,8 @@ describe("ExpressAppServer", () => {
             await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
           const result = appTestUtils.getPhotosFromSearchResponse(response);
 
-          photoTestUtils.expectEqualPhotoArrays(expectedPhotos, result);
-          photoTestUtils.checkAssertions();
+          photoExpectsTestUtils.expectEqualPhotoArrays(expectedPhotos, result);
+          photoExpectsTestUtils.checkAssertions();
         });
       });
 
@@ -630,8 +634,8 @@ describe("ExpressAppServer", () => {
               await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
             const result = appTestUtils.getPhotosFromSearchResponse(response);
 
-            photoTestUtils.expectPhotosOrderToBe(result, expectedOrder);
-            photoTestUtils.checkAssertions();
+            photoExpectsTestUtils.expectPhotosOrderToBe(result, expectedOrder);
+            photoExpectsTestUtils.checkAssertions();
           },
         );
       });
@@ -652,8 +656,11 @@ describe("ExpressAppServer", () => {
               await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
             const result = appTestUtils.getPhotosFromSearchResponse(response);
 
-            photoTestUtils.expectArraySizeToBeAtMost(result, expectedSize);
-            photoTestUtils.checkAssertions();
+            photoExpectsTestUtils.expectArraySizeToBeAtMost(
+              result,
+              expectedSize,
+            );
+            photoExpectsTestUtils.checkAssertions();
           },
         );
       });
@@ -686,12 +693,12 @@ describe("ExpressAppServer", () => {
               await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
             const result = appTestUtils.getPhotosFromSearchResponse(response);
 
-            photoTestUtils.expectSubArrayToStartFromIndex(
+            photoExpectsTestUtils.expectSubArrayToStartFromIndex(
               orderedStoredPhotos,
               result,
               expectedStartIndex,
             );
-            photoTestUtils.checkAssertions();
+            photoExpectsTestUtils.checkAssertions();
           },
         );
       });
@@ -714,8 +721,11 @@ describe("ExpressAppServer", () => {
               await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
             const result = appTestUtils.getPhotosFromSearchResponse(response);
 
-            photoTestUtils.expectEqualPhotoArrays(result, expectedPhotos);
-            photoTestUtils.checkAssertions();
+            photoExpectsTestUtils.expectEqualPhotoArrays(
+              result,
+              expectedPhotos,
+            );
+            photoExpectsTestUtils.checkAssertions();
           },
         );
       });
@@ -770,7 +780,7 @@ describe("ExpressAppServer", () => {
         describe("when there is a photo to replace", () => {
           beforeEach(async () => {
             storedPhoto = await dumbPhotoGenerator.generatePhoto();
-            await photoTestUtils.addPhoto(storedPhoto);
+            await photoDbTestUtils.addPhoto(storedPhoto);
 
             replacePhotoParams = {
               _id: storedPhoto._id,
@@ -779,7 +789,7 @@ describe("ExpressAppServer", () => {
           });
 
           afterEach(async () => {
-            await photoTestUtils.deletePhoto(storedPhoto._id);
+            await photoDbTestUtils.deletePhoto(storedPhoto._id);
           });
 
           describe("when there is no image in the new photo", () => {
@@ -801,18 +811,18 @@ describe("ExpressAppServer", () => {
 
             it("should not update the data (other than image) in the photo-data db", async () => {
               const expectedStoreData =
-                await photoTestUtils.generatePhotoStoredData(storedPhoto);
+                fromPhotoStoredDataToPhotoData(storedPhoto);
 
               await appTestUtils.sendReplacePhotoReq({
                 replacePhotoParams,
                 withToken: true,
               });
 
-              await photoTestUtils.expectPhotoStoredDataToBe(
+              await photoExpectsTestUtils.expectPhotoStoredDataToBe(
                 storedPhoto._id,
                 expectedStoreData,
               );
-              photoTestUtils.checkAssertions();
+              photoExpectsTestUtils.checkAssertions();
             });
           });
 
@@ -838,7 +848,7 @@ describe("ExpressAppServer", () => {
 
             afterEach(async () => {
               await tagTestUtils.deleteTagsFromDb(tags);
-              await photoTestUtils.deletePhoto(replacePhotoParams._id);
+              await photoDbTestUtils.deletePhoto(replacePhotoParams._id);
             });
 
             it("should replace the photo image in the photo-image db", async () => {
@@ -849,18 +859,19 @@ describe("ExpressAppServer", () => {
                 withToken: true,
               });
 
-              await photoTestUtils.expectPhotoImageToBe(
+              await photoExpectsTestUtils.expectPhotoImageToBe(
                 replacePhotoParams._id,
                 expectedStoredPhotoImage,
               );
-              photoTestUtils.checkAssertions();
+              photoExpectsTestUtils.checkAssertions();
             });
 
             describe("when the photo to replace had data already stored in the photo-data db", () => {
               it("should replace the data with the new one in the photo-data db", async () => {
                 const expectedStoredData =
-                  await photoTestUtils.generatePhotoStoredData(
+                  await fromAddPhotoParamsToPhotoStoredData(
                     replacePhotoParams,
+                    tagDb,
                   );
 
                 await appTestUtils.sendReplacePhotoReq({
@@ -868,11 +879,11 @@ describe("ExpressAppServer", () => {
                   withToken: true,
                 });
 
-                await photoTestUtils.expectPhotoStoredDataToBe(
+                await photoExpectsTestUtils.expectPhotoStoredDataToBe(
                   replacePhotoParams._id,
                   expectedStoredData,
                 );
-                photoTestUtils.checkAssertions();
+                photoExpectsTestUtils.checkAssertions();
               });
             });
 
@@ -884,7 +895,7 @@ describe("ExpressAppServer", () => {
                   await dumbPhotoGenerator.generatePhoto();
                 delete photoWithoutDataToReplace.metadata;
 
-                await photoTestUtils.addPhoto(photoWithoutDataToReplace);
+                await photoDbTestUtils.addPhoto(photoWithoutDataToReplace);
 
                 const newPhoto = await dumbPhotoGenerator.generatePhoto({
                   _id: photoWithoutDataToReplace._id,
@@ -896,13 +907,16 @@ describe("ExpressAppServer", () => {
               });
 
               afterEach(async () => {
-                await photoTestUtils.deletePhoto(photoWithoutDataToReplace._id);
+                await photoDbTestUtils.deletePhoto(
+                  photoWithoutDataToReplace._id,
+                );
               });
 
               it("should add the new data in the photo-data db", async () => {
                 const expectedStoredData =
-                  await photoTestUtils.generatePhotoStoredData(
+                  await fromAddPhotoParamsToPhotoStoredData(
                     replacePhotoParams,
+                    tagDb,
                   );
 
                 await appTestUtils.sendReplacePhotoReq({
@@ -910,11 +924,11 @@ describe("ExpressAppServer", () => {
                   withToken: true,
                 });
 
-                await photoTestUtils.expectPhotoStoredDataToBe(
+                await photoExpectsTestUtils.expectPhotoStoredDataToBe(
                   replacePhotoParams._id,
                   expectedStoredData,
                 );
-                photoTestUtils.checkAssertions();
+                photoExpectsTestUtils.checkAssertions();
               });
             });
           });
@@ -946,14 +960,14 @@ describe("ExpressAppServer", () => {
 
         beforeEach(async () => {
           photoToDelete = await dumbPhotoGenerator.generatePhoto();
-          await photoTestUtils.addPhoto(photoToDelete);
+          await photoDbTestUtils.addPhoto(photoToDelete);
 
           deletePhotoParams = photoToDelete._id;
         });
 
         afterEach(async () => {
           // in case a test fails
-          await photoTestUtils.deletePhoto(photoToDelete._id);
+          await photoDbTestUtils.deletePhoto(photoToDelete._id);
         });
 
         it("should delete photo\'s data (other than image) from the photo-data db", async () => {
@@ -964,11 +978,11 @@ describe("ExpressAppServer", () => {
             withToken: true,
           });
 
-          await photoTestUtils.expectPhotoStoredDataToBe(
+          await photoExpectsTestUtils.expectPhotoStoredDataToBe(
             deletePhotoParams,
             expectedStoreData,
           );
-          photoTestUtils.checkAssertions();
+          photoExpectsTestUtils.checkAssertions();
         });
 
         it("should delete photo's image the photo-image db", async () => {
@@ -979,11 +993,11 @@ describe("ExpressAppServer", () => {
             withToken: true,
           });
 
-          await photoTestUtils.expectPhotoImageToBe(
+          await photoExpectsTestUtils.expectPhotoImageToBe(
             deletePhotoParams,
             expectedStoredImage,
           );
-          photoTestUtils.checkAssertions();
+          photoExpectsTestUtils.checkAssertions();
         });
 
         describe("when the deletion of photo data (other than image) fails", () => {
@@ -1016,11 +1030,11 @@ describe("ExpressAppServer", () => {
               withToken: true,
             });
 
-            await photoTestUtils.expectPhotoImageToBe(
+            await photoExpectsTestUtils.expectPhotoImageToBe(
               deletePhotoParams,
               expectedStoredImage,
             );
-            photoTestUtils.checkAssertions();
+            photoExpectsTestUtils.checkAssertions();
           });
         });
 
@@ -1048,18 +1062,18 @@ describe("ExpressAppServer", () => {
 
           it("should not delete photo's data in photo-data db", async () => {
             const expectedPhotoStoredData: IPhotoStoredData =
-              await photoTestUtils.generatePhotoStoredData(photoToDelete);
+              await fromAddPhotoParamsToPhotoStoredData(photoToDelete, tagDb);
 
             await appTestUtils.sendDeletePhotoReq({
               deletePhotoParams,
               withToken: true,
             });
 
-            await photoTestUtils.expectPhotoStoredDataToBe(
+            await photoExpectsTestUtils.expectPhotoStoredDataToBe(
               deletePhotoParams,
               expectedPhotoStoredData,
             );
-            photoTestUtils.checkAssertions();
+            photoExpectsTestUtils.checkAssertions();
           });
         });
       });

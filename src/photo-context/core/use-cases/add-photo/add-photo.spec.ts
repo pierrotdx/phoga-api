@@ -1,5 +1,11 @@
 import { HttpErrorCode } from "#shared/models";
-import { DbTagTestUtils, PhotoTestUtils } from "#shared/test-utils";
+import {
+  DbTagTestUtils,
+  IPhotoDbTestUtils,
+  IPhotoExpectsTestUtils,
+  PhotoDbTestUtils,
+  PhotoExpectsTestUtils,
+} from "#shared/test-utils";
 import { ITag, ITagDb, TagDbFake } from "#tag-context";
 
 import {
@@ -10,9 +16,10 @@ import {
 import { IPhotoDataDb, IPhotoImageDb } from "../../../core";
 import {
   IAddPhotoParams,
-  IAddPhotoUseCase,
   IPhotoStoredData,
+  IPhotoUseCaseTestUtils,
 } from "../../models";
+import { PhotoUseCaseTestUtils } from "../test-utils";
 import { AddPhotoUseCase } from "./add-photo";
 
 describe(`${AddPhotoUseCase.name}`, () => {
@@ -20,9 +27,9 @@ describe(`${AddPhotoUseCase.name}`, () => {
   let photoImageDb: IPhotoImageDb;
   let tagDb: ITagDb;
 
-  let testedUseCase: IAddPhotoUseCase;
-
-  let photoTestUtils: PhotoTestUtils<void>;
+  let useCaseTestUtils: IPhotoUseCaseTestUtils<void>;
+  let dbTestUtils: IPhotoDbTestUtils;
+  let expectTestUtils: IPhotoExpectsTestUtils;
   let tagTestUtils: DbTagTestUtils;
 
   beforeEach(async () => {
@@ -30,14 +37,14 @@ describe(`${AddPhotoUseCase.name}`, () => {
     photoImageDb = new FakePhotoImageDb();
     tagDb = new TagDbFake();
 
-    testedUseCase = new AddPhotoUseCase(photoDataDb, photoImageDb, tagDb);
+    const testedUseCase = new AddPhotoUseCase(photoDataDb, photoImageDb, tagDb);
 
-    photoTestUtils = new PhotoTestUtils(
-      photoDataDb,
-      photoImageDb,
+    dbTestUtils = new PhotoDbTestUtils(photoDataDb, photoImageDb);
+    expectTestUtils = new PhotoExpectsTestUtils(dbTestUtils);
+    useCaseTestUtils = new PhotoUseCaseTestUtils(
       testedUseCase,
+      expectTestUtils,
     );
-
     tagTestUtils = new DbTagTestUtils(tagDb);
   });
 
@@ -53,23 +60,23 @@ describe(`${AddPhotoUseCase.name}`, () => {
 
       it(`should throw an error with status code ${HttpErrorCode.BadRequest} (bad request)`, async () => {
         const expectedStatus = HttpErrorCode.BadRequest;
-        await photoTestUtils.executeUseCaseAndExpectToThrow({
+        await useCaseTestUtils.executeUseCaseAndExpectToThrow({
           useCaseParams: [useCaseParams],
           expectedStatus,
         });
-        photoTestUtils.checkAssertions();
+        expectTestUtils.checkAssertions();
       });
 
       it(`should not upload anything to the photo-data db`, async () => {
         try {
-          await photoTestUtils.executeTestedUseCase(useCaseParams);
+          await useCaseTestUtils.executeTestedUseCase(useCaseParams);
         } catch (err) {
         } finally {
-          await photoTestUtils.expectPhotoStoredDataToBe(
+          await expectTestUtils.expectPhotoStoredDataToBe(
             useCaseParams._id,
             undefined,
           );
-          photoTestUtils.checkAssertions();
+          expectTestUtils.checkAssertions();
         }
       });
     });
@@ -94,13 +101,13 @@ describe(`${AddPhotoUseCase.name}`, () => {
       });
 
       it("should upload the image to the photo-image db", async () => {
-        await photoTestUtils.executeTestedUseCase(useCaseParams);
+        await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
-        await photoTestUtils.expectPhotoImageToBe(
+        await expectTestUtils.expectPhotoImageToBe(
           useCaseParams._id,
           useCaseParams.imageBuffer,
         );
-        photoTestUtils.checkAssertions();
+        expectTestUtils.checkAssertions();
       });
 
       it("should upload the data (other than image) to the photo-data db", async () => {
@@ -110,13 +117,13 @@ describe(`${AddPhotoUseCase.name}`, () => {
           tags,
         };
 
-        await photoTestUtils.executeTestedUseCase(useCaseParams);
+        await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
-        await photoTestUtils.expectPhotoStoredDataToBe(
+        await expectTestUtils.expectPhotoStoredDataToBe(
           useCaseParams._id,
           expectedStoredData,
         );
-        photoTestUtils.checkAssertions();
+        expectTestUtils.checkAssertions();
       });
     });
   });

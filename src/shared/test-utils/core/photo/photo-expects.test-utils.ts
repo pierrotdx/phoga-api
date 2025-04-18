@@ -1,50 +1,23 @@
-import {
-  IAddPhotoParams,
-  IPhoto,
-  IPhotoData,
-  IPhotoDataDb,
-  IPhotoImageDb,
-  IPhotoStoredData,
-} from "#photo-context";
+import { IPhoto, IPhotoData, IPhotoStoredData } from "#photo-context";
 import {
   AssertionsCounter,
   IAssertionsCounter,
 } from "#shared/assertions-counter";
 import { compareDates } from "#shared/compare-dates";
-import {
-  ErrorWithStatus,
-  HttpErrorCode,
-  IUseCase,
-  SortDirection,
-} from "#shared/models";
-import { ITag, ITagDb } from "#tag-context";
+import { SortDirection } from "#shared/models";
 import { equals, omit } from "ramda";
 
-import { IPhotoExpects } from "./models";
-import { PhotoDbTestUtils } from "./photo-db.test-utils";
+import { IPhotoDbTestUtils, IPhotoExpectsTestUtils } from "./models";
 
-export class PhotoTestUtils<TUseCaseResult = unknown>
-  extends PhotoDbTestUtils
-  implements IPhotoExpects
-{
+export class PhotoExpectsTestUtils implements IPhotoExpectsTestUtils {
   protected readonly assertionsCounter: IAssertionsCounter =
     new AssertionsCounter();
 
-  constructor(
-    photoDataDb?: IPhotoDataDb,
-    photoImageDb?: IPhotoImageDb,
-    protected testedUseCase?: IUseCase<TUseCaseResult>,
-    private readonly tagDb?: ITagDb,
-  ) {
-    super(photoDataDb, photoImageDb);
-  }
-
-  executeTestedUseCase = async (...args: unknown[]): Promise<TUseCaseResult> =>
-    await this.testedUseCase.execute(...args);
+  constructor(protected readonly photoDbTestUtils: IPhotoDbTestUtils) {}
 
   expectEqualPhotos(photo1: IPhoto, photo2: IPhoto): void {
     this.expectMatchingIds(photo1, photo1);
-    this.expectMatchingPhotoBases(photo1, photo2);
+    this.expectMatchingPhotosData(photo1, photo2);
     this.expectMatchingPhotoImages(photo1, photo2);
   }
 
@@ -53,14 +26,14 @@ export class PhotoTestUtils<TUseCaseResult = unknown>
     this.assertionsCounter.increase();
   }
 
-  private expectMatchingPhotoBases(photo1: IPhoto, photo2: IPhoto): void {
+  private expectMatchingPhotosData(photo1: IPhoto, photo2: IPhoto): void {
     const photoData1 = this.extractPhotoData(photo1);
     const photoData2 = this.extractPhotoData(photo2);
     expect(photoData2).toEqual(photoData1);
     this.assertionsCounter.increase();
   }
 
-  extractPhotoData(photo: IPhoto): IPhotoData {
+  private extractPhotoData(photo: IPhoto): IPhotoData {
     return omit(["imageBuffer"], photo);
   }
 
@@ -68,7 +41,7 @@ export class PhotoTestUtils<TUseCaseResult = unknown>
     id: IPhoto["_id"],
     expectedValue: IPhotoStoredData,
   ): Promise<void> {
-    const storedPhotoData = await this.getPhotoStoredData(id);
+    const storedPhotoData = await this.photoDbTestUtils.getPhotoStoredData(id);
     expect(storedPhotoData).toEqual(expectedValue);
     this.assertionsCounter.increase();
   }
@@ -77,7 +50,7 @@ export class PhotoTestUtils<TUseCaseResult = unknown>
     id: IPhoto["_id"],
     expectedImageBuffer: IPhoto["imageBuffer"],
   ): Promise<void> {
-    const dbImage = await this.getPhotoImage(id);
+    const dbImage = await this.photoDbTestUtils.getPhotoImage(id);
     if (!expectedImageBuffer) {
       expect(dbImage).toBeFalsy();
       this.assertionsCounter.increase();
@@ -93,34 +66,11 @@ export class PhotoTestUtils<TUseCaseResult = unknown>
     this.expectMatchingBuffers(photo1.imageBuffer, photo2.imageBuffer);
   }
 
-  private expectMatchingBuffers(bufferA: Buffer, bufferB: Buffer) {
+  private expectMatchingBuffers = (bufferA: Buffer, bufferB: Buffer) => {
     const areEqualBuffers = bufferA.equals(bufferB);
     expect(areEqualBuffers).toBe(true);
     this.assertionsCounter.increase();
-  }
-
-  async executeUseCaseAndExpectToThrow({
-    useCaseParams,
-    expectedStatus,
-  }: {
-    expectedStatus?: HttpErrorCode;
-    useCaseParams: unknown[];
-  }): Promise<void> {
-    try {
-      await this.testedUseCase.execute(...useCaseParams);
-    } catch (err) {
-      expect(err).toBeDefined();
-      if (expectedStatus) {
-        const error = err as ErrorWithStatus;
-        expect(error.status).toBe(expectedStatus);
-      }
-    } finally {
-      this.assertionsCounter.increase();
-      if (expectedStatus) {
-        this.assertionsCounter.increase();
-      }
-    }
-  }
+  };
 
   expectEqualPhotoArrays(photos1: IPhoto[], photos2: IPhoto[]): void {
     expect(photos1.length).toEqual(photos2.length);
@@ -158,30 +108,11 @@ export class PhotoTestUtils<TUseCaseResult = unknown>
     this.assertionsCounter.increase();
   }
 
+  increaseAssertionsCounter(value?: number): void {
+    this.assertionsCounter.increase(value);
+  }
+
   checkAssertions(): void {
     this.assertionsCounter.checkAssertions();
-  }
-
-  async generatePhotoStoredData(
-    addPhotoParams: IAddPhotoParams,
-  ): Promise<IPhotoStoredData> {
-    const photoStoredData: IPhotoStoredData = {
-      _id: addPhotoParams._id,
-      metadata: addPhotoParams.metadata,
-    };
-    if (addPhotoParams.tagIds) {
-      photoStoredData.tags = await this.getTags(addPhotoParams.tagIds);
-    }
-    return photoStoredData;
-  }
-
-  private async getTags(tagIds: ITag["_id"][]): Promise<ITag[]> {
-    const tags$ = tagIds.map(async (id) => await this.tagDb.getById(id));
-    const tags = await Promise.all(tags$);
-    const hasInvalidTag = tags.some((t) => !t);
-    if (hasInvalidTag) {
-      throw new Error("failed retrieving tags");
-    }
-    return tags;
   }
 }

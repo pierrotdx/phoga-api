@@ -1,8 +1,10 @@
 import { HttpErrorCode } from "#shared/models";
 import {
   DbTagTestUtils,
-  PhotoTestUtils,
-  TagTestUtils,
+  IPhotoDbTestUtils,
+  IPhotoExpectsTestUtils,
+  PhotoDbTestUtils,
+  PhotoExpectsTestUtils,
 } from "#shared/test-utils";
 import { ITag, ITagDb, TagDbFake } from "#tag-context";
 
@@ -11,13 +13,18 @@ import {
   FakePhotoImageDb,
   dumbPhotoGenerator,
 } from "../../../adapters/";
-import { IPhotoDataDb, IPhotoImageDb } from "../../../core";
+import {
+  IPhotoDataDb,
+  IPhotoImageDb,
+  fromAddPhotoParamsToPhotoStoredData,
+} from "../../../core";
 import {
   IPhoto,
   IPhotoStoredData,
+  IPhotoUseCaseTestUtils,
   IReplacePhotoParams,
-  IReplacePhotoUseCase,
 } from "../../models";
+import { PhotoUseCaseTestUtils } from "../test-utils";
 import { ReplacePhotoUseCase } from "./replace-photo";
 
 describe(`${ReplacePhotoUseCase.name}`, () => {
@@ -25,9 +32,9 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
   let photoImageDb: IPhotoImageDb;
   let tagDb: ITagDb;
 
-  let testedUseCase: IReplacePhotoUseCase;
-
-  let photoTestUtils: PhotoTestUtils;
+  let dbTestUtils: IPhotoDbTestUtils;
+  let expectsTestUtils: IPhotoExpectsTestUtils;
+  let useCaseTestUtils: IPhotoUseCaseTestUtils<void>;
   let tagTestUtils: DbTagTestUtils;
 
   beforeEach(async () => {
@@ -35,13 +42,17 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
     photoImageDb = new FakePhotoImageDb();
     tagDb = new TagDbFake();
 
-    testedUseCase = new ReplacePhotoUseCase(photoDataDb, photoImageDb, tagDb);
-
-    photoTestUtils = new PhotoTestUtils(
+    const testedUseCase = new ReplacePhotoUseCase(
       photoDataDb,
       photoImageDb,
-      testedUseCase,
       tagDb,
+    );
+
+    dbTestUtils = new PhotoDbTestUtils(photoDataDb, photoImageDb);
+    expectsTestUtils = new PhotoExpectsTestUtils(dbTestUtils);
+    useCaseTestUtils = new PhotoUseCaseTestUtils(
+      testedUseCase,
+      expectsTestUtils,
     );
     tagTestUtils = new DbTagTestUtils(tagDb);
   });
@@ -62,12 +73,12 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
       it(`should throw an error with status code ${HttpErrorCode.NotFound} (not found)`, async () => {
         const expectedStatus = HttpErrorCode.NotFound;
 
-        await photoTestUtils.executeUseCaseAndExpectToThrow({
+        await useCaseTestUtils.executeUseCaseAndExpectToThrow({
           useCaseParams: [useCaseParams],
           expectedStatus,
         });
 
-        photoTestUtils.checkAssertions();
+        expectsTestUtils.checkAssertions();
       });
     });
 
@@ -76,11 +87,11 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
 
       beforeEach(async () => {
         photoToReplace = await dumbPhotoGenerator.generatePhoto();
-        await photoTestUtils.addPhoto(photoToReplace);
+        await dbTestUtils.addPhoto(photoToReplace);
       });
 
       afterEach(async () => {
-        await photoTestUtils.deletePhoto(photoToReplace._id);
+        await dbTestUtils.deletePhoto(photoToReplace._id);
       });
 
       describe("when there is no image in the new photo", () => {
@@ -96,27 +107,27 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
         it(`should throw an error with status code ${HttpErrorCode.BadRequest} (bad request)`, async () => {
           const expectedStatus = HttpErrorCode.BadRequest;
 
-          await photoTestUtils.executeUseCaseAndExpectToThrow({
+          await useCaseTestUtils.executeUseCaseAndExpectToThrow({
             useCaseParams: [useCaseParams],
             expectedStatus,
           });
 
-          photoTestUtils.checkAssertions();
+          expectsTestUtils.checkAssertions();
         });
 
         it("should not update the data (other than image) in the photo-data db", async () => {
           const expectedStoreData: IPhotoStoredData =
-            await photoTestUtils.generatePhotoStoredData(photoToReplace);
+            await fromAddPhotoParamsToPhotoStoredData(photoToReplace, tagDb);
 
           try {
-            await photoTestUtils.executeTestedUseCase(useCaseParams);
+            await useCaseTestUtils.executeTestedUseCase(useCaseParams);
           } catch (err) {
           } finally {
-            await photoTestUtils.expectPhotoStoredDataToBe(
+            await expectsTestUtils.expectPhotoStoredDataToBe(
               photoToReplace._id,
               expectedStoreData,
             );
-            photoTestUtils.checkAssertions();
+            expectsTestUtils.checkAssertions();
           }
         });
       });
@@ -145,27 +156,27 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
         it("should replace the photo image in the photo-image db", async () => {
           const expectedPhotoImage = useCaseParams.imageBuffer;
 
-          await photoTestUtils.executeTestedUseCase(useCaseParams);
+          await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
-          await photoTestUtils.expectPhotoImageToBe(
+          await expectsTestUtils.expectPhotoImageToBe(
             useCaseParams._id,
             expectedPhotoImage,
           );
-          photoTestUtils.checkAssertions();
+          expectsTestUtils.checkAssertions();
         });
 
         describe("when the photo to replace had data already stored in the photo-data db", () => {
           it("should replace the data with the new one in the photo-data db", async () => {
             const expectedStoredData =
-              await photoTestUtils.generatePhotoStoredData(useCaseParams);
+              await fromAddPhotoParamsToPhotoStoredData(useCaseParams, tagDb);
 
-            await photoTestUtils.executeTestedUseCase(useCaseParams);
+            await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
-            await photoTestUtils.expectPhotoStoredDataToBe(
+            await expectsTestUtils.expectPhotoStoredDataToBe(
               useCaseParams._id,
               expectedStoredData,
             );
-            photoTestUtils.checkAssertions();
+            expectsTestUtils.checkAssertions();
           });
         });
 
@@ -176,7 +187,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
             photoWithoutDataToReplace =
               await dumbPhotoGenerator.generatePhoto();
             delete photoWithoutDataToReplace.metadata;
-            await photoTestUtils.addPhoto(photoWithoutDataToReplace);
+            await dbTestUtils.addPhoto(photoWithoutDataToReplace);
 
             const newPhoto = await dumbPhotoGenerator.generatePhoto({
               _id: photoWithoutDataToReplace._id,
@@ -186,20 +197,20 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
           });
 
           afterEach(async () => {
-            await photoTestUtils.deletePhoto(photoWithoutDataToReplace._id);
+            await dbTestUtils.deletePhoto(photoWithoutDataToReplace._id);
           });
 
           it("should add the new data in the photo-data db", async () => {
             const expectedStoredData =
-              await photoTestUtils.generatePhotoStoredData(useCaseParams);
+              await fromAddPhotoParamsToPhotoStoredData(useCaseParams, tagDb);
 
-            await photoTestUtils.executeTestedUseCase(useCaseParams);
+            await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
-            await photoTestUtils.expectPhotoStoredDataToBe(
+            await expectsTestUtils.expectPhotoStoredDataToBe(
               useCaseParams._id,
               expectedStoredData,
             );
-            photoTestUtils.checkAssertions();
+            expectsTestUtils.checkAssertions();
           });
         });
       });

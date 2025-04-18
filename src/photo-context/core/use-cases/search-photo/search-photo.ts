@@ -1,14 +1,13 @@
 import { clone } from "ramda";
 
+import { fromPhotoStoredDataToPhotoData } from "../../";
 import { IPhotoDataDb, IPhotoImageDb } from "../../gateways";
 import {
   IPhoto,
-  ISearchPhotoOptions,
   ISearchPhotoParams,
   ISearchPhotoUseCase,
   Photo,
 } from "../../models";
-import { photoStoredDataToPhotoData } from "../../photo-stored-data-to-photo-data";
 
 export class SearchPhotoUseCase implements ISearchPhotoUseCase {
   private photos: IPhoto[] = [];
@@ -42,7 +41,7 @@ export class SearchPhotoUseCase implements ISearchPhotoUseCase {
       rendering: options?.rendering,
     });
     this.photos = photosStoredData.map((p) => {
-      const photoData = photoStoredDataToPhotoData(p);
+      const photoData = fromPhotoStoredDataToPhotoData(p);
       return new Photo(photoData._id, { photoData });
     });
   }

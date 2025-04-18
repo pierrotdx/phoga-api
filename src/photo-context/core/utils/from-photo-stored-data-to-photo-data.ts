@@ -1,6 +1,6 @@
-import { IPhotoData, IPhotoStoredData } from "./models";
+import { IPhotoData, IPhotoStoredData } from "../models";
 
-export function photoStoredDataToPhotoData(
+export function fromPhotoStoredDataToPhotoData(
   storedPhotoData: IPhotoStoredData,
 ): IPhotoData {
   const photoData: IPhotoData = {

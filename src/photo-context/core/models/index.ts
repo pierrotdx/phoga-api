@@ -7,5 +7,6 @@ export * from "./photo-stored-data";
 export * from "./photo-entry-point-id";
 export * from "./photo-metadata";
 export * from "./photo-use-cases";
+export * from "./photo-use-case.test-utils";
 export * from "./search-photo-options";
 export * from "./search-photo-filter";

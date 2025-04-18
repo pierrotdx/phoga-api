@@ -1,5 +1,10 @@
 import { HttpErrorCode } from "#shared/models";
-import { PhotoTestUtils } from "#shared/test-utils";
+import {
+  IPhotoDbTestUtils,
+  IPhotoExpectsTestUtils,
+  PhotoDbTestUtils,
+  PhotoExpectsTestUtils,
+} from "#shared/test-utils";
 
 import {
   FakePhotoDataDb,
@@ -9,27 +14,33 @@ import {
 import { IPhotoDataDb, IPhotoImageDb } from "../../../core/gateways";
 import {
   IDeletePhotoParams,
-  IDeletePhotoUseCase,
   IPhoto,
   IPhotoStoredData,
+  IPhotoUseCaseTestUtils,
 } from "../../models";
+import { PhotoUseCaseTestUtils } from "../test-utils";
 import { DeletePhotoUseCase } from "./delete-photo";
 
 describe(`${DeletePhotoUseCase.name}`, () => {
   let photoDataDb: IPhotoDataDb;
   let photoImageDb: IPhotoImageDb;
 
-  let testedUseCase: IDeletePhotoUseCase;
-
-  let testUtils: PhotoTestUtils;
+  let dbTestUtils: IPhotoDbTestUtils;
+  let expectsTestUtils: IPhotoExpectsTestUtils;
+  let useCaseTestUtils: IPhotoUseCaseTestUtils<void>;
 
   beforeEach(async () => {
     photoDataDb = new FakePhotoDataDb();
     photoImageDb = new FakePhotoImageDb();
 
-    testedUseCase = new DeletePhotoUseCase(photoDataDb, photoImageDb);
+    const testedUseCase = new DeletePhotoUseCase(photoDataDb, photoImageDb);
 
-    testUtils = new PhotoTestUtils(photoDataDb, photoImageDb, testedUseCase);
+    dbTestUtils = new PhotoDbTestUtils(photoDataDb, photoImageDb);
+    expectsTestUtils = new PhotoExpectsTestUtils(dbTestUtils);
+    useCaseTestUtils = new PhotoUseCaseTestUtils(
+      testedUseCase,
+      expectsTestUtils,
+    );
   });
 
   describe(`${DeletePhotoUseCase.prototype.execute.name}`, () => {
@@ -38,34 +49,37 @@ describe(`${DeletePhotoUseCase.name}`, () => {
 
     beforeEach(async () => {
       photoToDelete = await dumbPhotoGenerator.generatePhoto();
-      await testUtils.addPhoto(photoToDelete);
+      await dbTestUtils.addPhoto(photoToDelete);
 
       useCaseParams = photoToDelete._id;
     });
 
     afterEach(async () => {
-      await testUtils.deletePhoto(photoToDelete._id);
+      await dbTestUtils.deletePhoto(photoToDelete._id);
     });
 
     it("should delete photo\'s data (other than image) from the photo-data db", async () => {
       const expectedStoreData = undefined;
 
-      await testUtils.executeTestedUseCase(useCaseParams);
+      await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
-      await testUtils.expectPhotoStoredDataToBe(
+      await expectsTestUtils.expectPhotoStoredDataToBe(
         useCaseParams,
         expectedStoreData,
       );
-      testUtils.checkAssertions();
+      expectsTestUtils.checkAssertions();
     });
 
     it("should delete photo's image the photo-image db", async () => {
       const expectedStoredImage = undefined;
 
-      await testUtils.executeTestedUseCase(useCaseParams);
+      await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
-      await testUtils.expectPhotoImageToBe(useCaseParams, expectedStoredImage);
-      testUtils.checkAssertions();
+      await expectsTestUtils.expectPhotoImageToBe(
+        useCaseParams,
+        expectedStoredImage,
+      );
+      expectsTestUtils.checkAssertions();
     });
 
     describe("when the deletion of photo data (other than image) fails", () => {
@@ -78,26 +92,26 @@ describe(`${DeletePhotoUseCase.name}`, () => {
       it(`should throw an error with status code ${HttpErrorCode.InternalServerError} (internal server error)`, async () => {
         const expectedStatus = HttpErrorCode.InternalServerError;
 
-        await testUtils.executeUseCaseAndExpectToThrow({
+        await useCaseTestUtils.executeUseCaseAndExpectToThrow({
           useCaseParams: [useCaseParams],
           expectedStatus,
         });
 
-        testUtils.checkAssertions();
+        expectsTestUtils.checkAssertions();
       });
 
       it("should not delete the photo's image", async () => {
         const expectedStoredImage = photoToDelete.imageBuffer;
 
         try {
-          await testUtils.executeTestedUseCase(useCaseParams);
+          await useCaseTestUtils.executeTestedUseCase(useCaseParams);
         } catch (err) {
         } finally {
-          await testUtils.expectPhotoImageToBe(
+          await expectsTestUtils.expectPhotoImageToBe(
             useCaseParams,
             expectedStoredImage,
           );
-          testUtils.checkAssertions();
+          expectsTestUtils.checkAssertions();
         }
       });
     });
@@ -114,26 +128,26 @@ describe(`${DeletePhotoUseCase.name}`, () => {
       it(`should throw an error with status code ${HttpErrorCode.InternalServerError} (internal server error)`, async () => {
         const expectedStatus = HttpErrorCode.InternalServerError;
 
-        await testUtils.executeUseCaseAndExpectToThrow({
+        await useCaseTestUtils.executeUseCaseAndExpectToThrow({
           useCaseParams: [useCaseParams],
           expectedStatus,
         });
 
-        testUtils.checkAssertions();
+        expectsTestUtils.checkAssertions();
       });
 
       it("should not delete photo's data in photo-data db", async () => {
         const expectedPhotoStoredData: IPhotoStoredData =
           getExpectedPhotoDataStored(photoToDelete);
         try {
-          await testUtils.executeTestedUseCase(useCaseParams);
+          await useCaseTestUtils.executeTestedUseCase(useCaseParams);
         } catch (err) {
         } finally {
-          await testUtils.expectPhotoStoredDataToBe(
+          await expectsTestUtils.expectPhotoStoredDataToBe(
             useCaseParams,
             expectedPhotoStoredData,
           );
-          testUtils.checkAssertions();
+          expectsTestUtils.checkAssertions();
         }
       });
     });

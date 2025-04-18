@@ -1,5 +1,10 @@
 import { IRendering, SortDirection } from "#shared/models";
-import { PhotoTestUtils } from "#shared/test-utils";
+import {
+  IPhotoDbTestUtils,
+  IPhotoExpectsTestUtils,
+  PhotoDbTestUtils,
+  PhotoExpectsTestUtils,
+} from "#shared/test-utils";
 import { ITag } from "#tag-context";
 import { clone } from "ramda";
 
@@ -13,11 +18,13 @@ import {
   IPhotoDataDb,
   IPhotoImageDb,
   IPhotoStoredData,
+  IPhotoUseCaseTestUtils,
   ISearchPhotoParams,
   ISearchPhotoUseCase,
   Photo,
-  photoStoredDataToPhotoData,
+  fromPhotoStoredDataToPhotoData,
 } from "../../../core/";
+import { PhotoUseCaseTestUtils } from "../test-utils";
 import { SearchPhotoUseCase } from "./search-photo";
 
 describe(`${SearchPhotoUseCase.name}`, () => {
@@ -26,7 +33,9 @@ describe(`${SearchPhotoUseCase.name}`, () => {
 
   let testedUseCase: ISearchPhotoUseCase;
 
-  let testUtils: PhotoTestUtils<IPhoto[]>;
+  let dbTestUtils: IPhotoDbTestUtils;
+  let expectsTestUtils: IPhotoExpectsTestUtils;
+  let useCaseTestUtils: IPhotoUseCaseTestUtils<IPhoto[]>;
 
   beforeEach(async () => {
     photoDataDb = new FakePhotoDataDb();
@@ -34,7 +43,12 @@ describe(`${SearchPhotoUseCase.name}`, () => {
 
     testedUseCase = new SearchPhotoUseCase(photoDataDb, photoImageDb);
 
-    testUtils = new PhotoTestUtils(photoDataDb, photoImageDb, testedUseCase);
+    dbTestUtils = new PhotoDbTestUtils(photoDataDb, photoImageDb);
+    expectsTestUtils = new PhotoExpectsTestUtils(dbTestUtils);
+    useCaseTestUtils = new PhotoUseCaseTestUtils(
+      testedUseCase,
+      expectsTestUtils,
+    );
   });
 
   describe(`${SearchPhotoUseCase.prototype.execute.name}`, () => {
@@ -43,22 +57,22 @@ describe(`${SearchPhotoUseCase.name}`, () => {
 
     beforeEach(async () => {
       storedPhotos = await dumbPhotoGenerator.generatePhotos(nbStoredPhotos);
-      await testUtils.addPhotos(storedPhotos);
+      await dbTestUtils.addPhotos(storedPhotos);
     });
 
     afterEach(async () => {
       const storedPhotoIds = storedPhotos.map((p) => p._id);
-      await testUtils.deletePhotos(storedPhotoIds);
+      await dbTestUtils.deletePhotos(storedPhotoIds);
     });
 
     describe("when no filter is required", () => {
       let useCaseParams: ISearchPhotoParams;
 
       it("should return the photos stored in the database", async () => {
-        const searchResult = await testUtils.executeTestedUseCase();
+        const searchResult = await useCaseTestUtils.executeTestedUseCase();
 
-        testUtils.expectEqualPhotoArrays(searchResult, storedPhotos);
-        testUtils.checkAssertions();
+        expectsTestUtils.expectEqualPhotoArrays(searchResult, storedPhotos);
+        expectsTestUtils.checkAssertions();
       });
 
       describe("when using the `tagId` filter", () => {
@@ -69,26 +83,29 @@ describe(`${SearchPhotoUseCase.name}`, () => {
           storedPhotosWithTag = dumbPhotoGenerator.generatePhotosStoredData(3, {
             tags: [tag],
           });
-          await testUtils.addStoredPhotosData(storedPhotosWithTag);
+          await dbTestUtils.addStoredPhotosData(storedPhotosWithTag);
 
           useCaseParams = { filter: { tagId: tag._id } };
         });
 
         afterEach(async () => {
           const ids = storedPhotosWithTag.map((p) => p._id);
-          await testUtils.deletePhotos(ids);
+          await dbTestUtils.deletePhotos(ids);
         });
 
         it("should return the photos whose tags include the required tag", async () => {
           const expectedPhotos: IPhoto[] = storedPhotosWithTag.map(
             (p) =>
-              new Photo(p._id, { photoData: photoStoredDataToPhotoData(p) }),
+              new Photo(p._id, {
+                photoData: fromPhotoStoredDataToPhotoData(p),
+              }),
           );
 
-          const result = await testUtils.executeTestedUseCase(useCaseParams);
+          const result =
+            await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
-          testUtils.expectEqualPhotoArrays(expectedPhotos, result);
-          testUtils.checkAssertions();
+          expectsTestUtils.expectEqualPhotoArrays(expectedPhotos, result);
+          expectsTestUtils.checkAssertions();
         });
       });
 
@@ -103,10 +120,11 @@ describe(`${SearchPhotoUseCase.name}`, () => {
             useCaseParams = { options: { rendering } };
             const expectedOrder = rendering.dateOrder;
 
-            const result = await testUtils.executeTestedUseCase(useCaseParams);
+            const result =
+              await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
-            testUtils.expectPhotosOrderToBe(result, expectedOrder);
-            testUtils.checkAssertions();
+            expectsTestUtils.expectPhotosOrderToBe(result, expectedOrder);
+            expectsTestUtils.checkAssertions();
           },
         );
       });
@@ -123,10 +141,11 @@ describe(`${SearchPhotoUseCase.name}`, () => {
           async ({ rendering, expectedSize }) => {
             useCaseParams = { options: { rendering } };
 
-            const result = await testUtils.executeTestedUseCase(useCaseParams);
+            const result =
+              await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
-            testUtils.expectArraySizeToBeAtMost(result, expectedSize);
-            testUtils.checkAssertions();
+            expectsTestUtils.expectArraySizeToBeAtMost(result, expectedSize);
+            expectsTestUtils.checkAssertions();
           },
         );
       });
@@ -142,14 +161,15 @@ describe(`${SearchPhotoUseCase.name}`, () => {
           async ({ rendering, expectedStartIndex }) => {
             useCaseParams = { options: { rendering } };
 
-            const result = await testUtils.executeTestedUseCase(useCaseParams);
+            const result =
+              await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
-            testUtils.expectSubArrayToStartFromIndex(
+            expectsTestUtils.expectSubArrayToStartFromIndex(
               storedPhotos,
               result,
               expectedStartIndex,
             );
-            testUtils.checkAssertions();
+            expectsTestUtils.checkAssertions();
           },
         );
       });
@@ -167,10 +187,11 @@ describe(`${SearchPhotoUseCase.name}`, () => {
               excludeImages ? getPhotoWithoutImage(p) : p,
             );
 
-            const result = await testUtils.executeTestedUseCase(useCaseParams);
+            const result =
+              await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
-            testUtils.expectEqualPhotoArrays(result, expectedPhotos);
-            testUtils.checkAssertions();
+            expectsTestUtils.expectEqualPhotoArrays(result, expectedPhotos);
+            expectsTestUtils.checkAssertions();
           },
         );
       });

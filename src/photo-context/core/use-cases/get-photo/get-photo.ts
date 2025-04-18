@@ -1,6 +1,7 @@
 import { ErrorWithStatus, HttpErrorCode } from "#shared/models";
 import { isNil } from "ramda";
 
+import { fromPhotoStoredDataToPhotoData } from "../../";
 import { IPhotoDataDb, IPhotoImageDb } from "../../gateways";
 import {
   GetPhotoField,
@@ -10,7 +11,6 @@ import {
   IPhotoData,
   Photo,
 } from "../../models";
-import { photoStoredDataToPhotoData } from "../../photo-stored-data-to-photo-data";
 
 export class GetPhotoUseCase implements IGetPhotoUseCase {
   private readonly photoDoesNotExistError = new ErrorWithStatus(
@@ -49,7 +49,7 @@ export class GetPhotoUseCase implements IGetPhotoUseCase {
     if (!storedPhotoData) {
       return;
     }
-    const photoData = photoStoredDataToPhotoData(storedPhotoData);
+    const photoData = fromPhotoStoredDataToPhotoData(storedPhotoData);
     return photoData;
   }
 

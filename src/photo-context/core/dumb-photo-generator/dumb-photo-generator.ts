@@ -101,15 +101,6 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     return photos;
   }
 
-  async generatePhotoFromPath(
-    imagePath: string,
-    _id?: IPhoto["_id"],
-  ): Promise<Photo> {
-    const imageBuffer = await readFile(imagePath);
-    const photo = this.generatePhoto({ _id, imageBuffer });
-    return photo;
-  }
-
   generatePhotosStoredData(
     nb: number,
     options?: IGeneratePhotoStoredDataOptions,

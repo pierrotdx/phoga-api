@@ -84,24 +84,4 @@ describe("dumbPhotoGenerator", () => {
       },
     );
   });
-
-  describe("generatePhotoFromAssets", () => {
-    it.each`
-      path
-      ${"assets/test-img-1_536x354.jpg"}
-      ${"assets/test-img-2_536x354.jpg"}
-    `(
-      "should generate a photo where the image buffer matches the image from path",
-      async ({ path }: { path: string }) => {
-        const result = await dumbPhotoGenerator.generatePhotoFromPath(path);
-        testUtils.expectAnInstanceOfPhoto(result, assertionsCounter);
-        await testUtils.expectPhotoBufferToMatchImageFromPath(
-          result,
-          path,
-          assertionsCounter,
-        );
-        assertionsCounter.checkAssertions();
-      },
-    );
-  });
 });

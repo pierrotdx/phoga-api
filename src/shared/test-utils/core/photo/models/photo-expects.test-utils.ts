@@ -1,7 +1,7 @@
 import { IPhoto, IPhotoStoredData } from "#photo-context";
 import { SortDirection } from "#shared/models";
 
-export interface IPhotoExpects {
+export interface IPhotoExpectsTestUtils {
   expectEqualPhotos(photo1: IPhoto, photo2: IPhoto): void;
   expectEqualPhotoArrays(photos1: IPhoto[], photos2: IPhoto[]): void;
   expectPhotoStoredDataToBe(
@@ -19,5 +19,6 @@ export interface IPhotoExpects {
   ): void;
   expectPhotosOrderToBe(photos: IPhoto[], dateOrdering: SortDirection): void;
   expectArraySizeToBeAtMost(photos: IPhoto[], size: number): void;
+  increaseAssertionsCounter(value?: number): void;
   checkAssertions(): void;
 }
