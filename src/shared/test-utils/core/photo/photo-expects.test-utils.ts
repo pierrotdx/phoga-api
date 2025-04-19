@@ -7,7 +7,7 @@ import { compareDates } from "#shared/compare-dates";
 import { SortDirection } from "#shared/models";
 import { equals, omit } from "ramda";
 
-import { IPhotoDbTestUtils, IPhotoExpectsTestUtils } from "./models";
+import { IPhotoDbTestUtils, IPhotoExpectsTestUtils } from "../models";
 
 export class PhotoExpectsTestUtils implements IPhotoExpectsTestUtils {
   protected readonly assertionsCounter: IAssertionsCounter =

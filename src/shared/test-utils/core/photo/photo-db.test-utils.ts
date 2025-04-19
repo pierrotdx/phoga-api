@@ -6,7 +6,7 @@ import {
 } from "#photo-context";
 import { omit } from "ramda";
 
-import { IPhotoDbTestUtils } from "./models";
+import { IPhotoDbTestUtils } from "../models";
 
 export class PhotoDbTestUtils implements IPhotoDbTestUtils {
   constructor(
