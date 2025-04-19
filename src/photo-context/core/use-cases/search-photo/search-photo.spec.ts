@@ -54,11 +54,12 @@ describe(`${SearchPhotoUseCase.name}`, () => {
   describe(`${SearchPhotoUseCase.prototype.execute.name}`, () => {
     const nbStoredPhotos = 3;
     let storedPhotos: IPhoto[];
+    const timeout = 10000;
 
     beforeEach(async () => {
       storedPhotos = await dumbPhotoGenerator.generatePhotos(nbStoredPhotos);
       await dbTestUtils.addPhotos(storedPhotos);
-    });
+    }, timeout);
 
     afterEach(async () => {
       const storedPhotoIds = storedPhotos.map((p) => p._id);
