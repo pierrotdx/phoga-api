@@ -181,28 +181,25 @@ describe("PhotoImageDbGcs", () => {
       expectsTestUtils.expectPhotoImageToBe(photoToReplace._id, expectedImage);
       expectsTestUtils.checkAssertions();
     });
+  });
 
-    describe("delete", () => {
-      let photoToDelete: IPhoto;
+  describe("delete", () => {
+    let photoToDelete: IPhoto;
 
-      beforeEach(async () => {
-        photoToDelete = await dumbPhotoGenerator.generatePhoto();
-        await dbTestUtils.addPhoto(photoToDelete);
-      });
+    beforeEach(async () => {
+      photoToDelete = await dumbPhotoGenerator.generatePhoto();
+      await dbTestUtils.addPhoto(photoToDelete);
+    });
 
-      afterEach(async () => {
-        await dbTestUtils.deletePhoto(photoToDelete._id);
-      });
+    afterEach(async () => {
+      await dbTestUtils.deletePhoto(photoToDelete._id);
+    });
 
-      it("should delete the required photo", async () => {
-        await photoImageDbGcs.delete(photoToDelete._id);
+    it("should delete the required photo", async () => {
+      await photoImageDbGcs.delete(photoToDelete._id);
 
-        await expectsTestUtils.expectPhotoImageToBe(
-          photoToDelete._id,
-          undefined,
-        );
-        expectsTestUtils.checkAssertions();
-      });
+      await expectsTestUtils.expectPhotoImageToBe(photoToDelete._id, undefined);
+      expectsTestUtils.checkAssertions();
     });
   });
 });

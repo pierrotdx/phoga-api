@@ -15,13 +15,13 @@ import { HttpErrorCode, IRendering, SortDirection } from "#shared/models";
 import {
   IPhotoDbTestUtils,
   IPhotoExpectsTestUtils,
-  PhotoDbTestUtils,
+  PhotoDbE2ETestUtils,
   PhotoExpectsTestUtils,
   TagTestUtils,
 } from "#shared/test-utils";
 import { ISearchTagFilter, ITag, ITagDb, TagEntryPointId } from "#tag-context";
 import { type Express } from "express";
-import { add, clone, omit, pick } from "ramda";
+import { clone, omit, pick } from "ramda";
 import request from "supertest";
 
 import { ExpressAppServer } from "../app-server";
@@ -344,7 +344,11 @@ describe("ExpressAppServer", () => {
       const photoImageDb = appTestUtils.getPhotoImageDb();
       tagDb = appTestUtils.getTagDb();
 
-      photoDbTestUtils = new PhotoDbTestUtils(photoDataDb, photoImageDb);
+      photoDbTestUtils = new PhotoDbE2ETestUtils(
+        photoDataDb,
+        photoImageDb,
+        tagDb,
+      );
       photoExpectsTestUtils = new PhotoExpectsTestUtils(photoDbTestUtils);
       tagTestUtils = new TagTestUtils(tagDb);
     });
@@ -588,16 +592,16 @@ describe("ExpressAppServer", () => {
 
           storedPhotosWithTag = await dumbPhotoGenerator.generatePhotos(3);
 
-          await Promise.all(
-            storedPhotosWithTag.map(async (photo) => {
+          const addStoredPhotosWithTag$ = storedPhotosWithTag.map(
+            async (photo) => {
               const addPhotoParams: IAddPhotoParams = {
                 ...photo,
                 tagIds: [tag._id],
               };
               await appTestUtils.addPhoto(addPhotoParams);
-            }),
+            },
           );
-
+          await Promise.all(addStoredPhotosWithTag$);
           searchPhotoParams = { filter: { tagId: tag._id } };
         });
 
@@ -965,11 +969,6 @@ describe("ExpressAppServer", () => {
           deletePhotoParams = photoToDelete._id;
         });
 
-        afterEach(async () => {
-          // in case a test fails
-          await photoDbTestUtils.deletePhoto(photoToDelete._id);
-        });
-
         it("should delete photo\'s data (other than image) from the photo-data db", async () => {
           const expectedStoreData = undefined;
 
@@ -1010,6 +1009,10 @@ describe("ExpressAppServer", () => {
               );
           });
 
+          afterEach(async () => {
+            await photoDbTestUtils.deletePhoto(photoToDelete._id);
+          });
+
           it(`should respond with status code ${HttpErrorCode.InternalServerError} (internal server error)`, async () => {
             const expectedStatusCode = HttpErrorCode.InternalServerError;
 
@@ -1046,6 +1049,10 @@ describe("ExpressAppServer", () => {
               .mockImplementationOnce(() =>
                 Promise.reject("image-deletion failed"),
               );
+          });
+
+          afterEach(async () => {
+            await photoDbTestUtils.deletePhoto(photoToDelete._id);
           });
 
           it(`should respond with status code ${HttpErrorCode.InternalServerError} (internal server error)`, async () => {
