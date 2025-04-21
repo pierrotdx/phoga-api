@@ -50,7 +50,8 @@ describe("PhotoImageDbGcs", () => {
 
       await photoImageDbGcs.insert(photoToInsert);
 
-      expectsTestUtils.expectPhotoImageToBe(photoToInsert._id, expectedImage);
+      await expectsTestUtils.expectPhotoImageToBe(photoToInsert._id, expectedImage);
+      expectsTestUtils.checkAssertions();
     });
   });
 
@@ -178,7 +179,10 @@ describe("PhotoImageDbGcs", () => {
 
       await photoImageDbGcs.replace(newPhoto);
 
-      expectsTestUtils.expectPhotoImageToBe(photoToReplace._id, expectedImage);
+      await expectsTestUtils.expectPhotoImageToBe(
+        photoToReplace._id,
+        expectedImage,
+      );
       expectsTestUtils.checkAssertions();
     });
   });
