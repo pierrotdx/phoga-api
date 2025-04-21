@@ -2,15 +2,13 @@ import { IParser, IParserAsync } from "#shared/models";
 import { ITag } from "#tag-context";
 
 import { IPhoto } from "./photo";
-import { IPhotoData } from "./photo-data";
 import { ISearchPhotoFilter } from "./search-photo-filter";
 import { ISearchPhotoOptions } from "./search-photo-options";
 
 // Parsed-data interfaces
 export type IGetPhotoParams = IPhoto["_id"];
 export type IDeletePhotoParams = IGetPhotoParams;
-export interface IAddPhotoParams extends IPhotoData {
-  imageBuffer?: IPhoto["imageBuffer"];
+export interface IAddPhotoParams extends IPhoto {
   tagIds?: ITag["_id"][];
 }
 export interface IReplacePhotoParams extends IAddPhotoParams {}

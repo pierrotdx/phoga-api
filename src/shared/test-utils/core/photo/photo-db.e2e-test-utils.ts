@@ -1,6 +1,7 @@
 import {
   AddPhotoUseCase,
   DeletePhotoUseCase,
+  IAddPhotoParams,
   IAddPhotoUseCase,
   IDeletePhotoUseCase,
   IPhoto,
@@ -41,13 +42,13 @@ export class PhotoDbE2ETestUtils implements IPhotoDbTestUtils {
     return await this.photoImageDb.getById(id);
   }
 
-  async addPhotos(photos: IPhoto[]): Promise<void> {
-    const insertPromises = photos.map(this.addPhoto.bind(this));
+  async addPhotos(addPhotoParams: IAddPhotoParams[]): Promise<void> {
+    const insertPromises = addPhotoParams.map(this.addPhoto.bind(this));
     await Promise.all(insertPromises);
   }
 
-  async addPhoto(photo: IPhoto): Promise<void> {
-    await this.addPhotoUseCase.execute(photo);
+  async addPhoto(addPhotoParams: IAddPhotoParams): Promise<void> {
+    await this.addPhotoUseCase.execute(addPhotoParams);
   }
 
   async deletePhotos(photoIds: IPhoto["_id"][]): Promise<void> {

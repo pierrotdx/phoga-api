@@ -1,4 +1,5 @@
 import {
+  IAddPhotoParams,
   IPhoto,
   IPhotoDataDb,
   IPhotoImageDb,
@@ -31,15 +32,18 @@ export class PhotoDbTestUtils implements IPhotoDbTestUtils {
     return await this.photoImageDb?.getById(id);
   }
 
-  async addPhotos(photos: IPhoto[]): Promise<void> {
-    const insertPromises = photos.map(this.addPhoto.bind(this));
+  async addPhotos(addPhotosParams: IAddPhotoParams[]): Promise<void> {
+    const insertPromises = addPhotosParams.map(this.addPhoto.bind(this));
     await Promise.all(insertPromises);
   }
 
-  async addPhoto(photo: IPhoto): Promise<void> {
-    const storedPhotoData: IPhotoStoredData = omit(["imageBuffer"], photo);
+  async addPhoto(addPhotoParams: IAddPhotoParams): Promise<void> {
+    const storedPhotoData: IPhotoStoredData = omit(
+      ["imageBuffer"],
+      addPhotoParams,
+    );
     await this.insertStoredPhotoDataInDb(storedPhotoData);
-    await this.insertPhotoImageInDb(photo);
+    await this.insertPhotoImageInDb(addPhotoParams);
   }
 
   private async insertStoredPhotoDataInDb(
