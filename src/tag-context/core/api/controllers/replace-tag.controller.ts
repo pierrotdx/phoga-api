@@ -1,3 +1,4 @@
+import { IPhotoDataDb } from "#photo-context";
 import { ExpressController, IExpressController } from "#shared/express";
 import { AjvValidator, IValidator } from "#shared/validators";
 import { Request, Response } from "express";
@@ -19,9 +20,9 @@ export class ReplaceTagController
   private readonly parser: IReplaceTagParser = new ReplaceTagParser();
   private readonly useCase: IReplaceTagUseCase;
 
-  constructor(tagDb: ITagDb) {
+  constructor(tagDb: ITagDb, photoDataDb: IPhotoDataDb) {
     super();
-    this.useCase = new ReplaceTagUseCase(tagDb);
+    this.useCase = new ReplaceTagUseCase(tagDb, photoDataDb);
   }
 
   protected getParamsFromRequest(req: Request): unknown | Promise<unknown> {

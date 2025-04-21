@@ -1,3 +1,4 @@
+import { IPhotoDataDb } from "#photo-context";
 import { TagTestUtils } from "#shared/test-utils";
 
 import { ITagDb } from "../../gateways";
@@ -8,9 +9,9 @@ export class ReplaceTagTestUtils {
   private readonly useCase: IReplaceTagUseCase;
   private readonly tagsTestUtils: TagTestUtils;
 
-  constructor(private readonly tagDb: ITagDb) {
-    this.useCase = new ReplaceTagUseCase(this.tagDb);
-    this.tagsTestUtils = new TagTestUtils(this.tagDb);
+  constructor(tagDb: ITagDb, photoDataDb: IPhotoDataDb) {
+    this.useCase = new ReplaceTagUseCase(tagDb, photoDataDb);
+    this.tagsTestUtils = new TagTestUtils(tagDb);
   }
 
   async insertTagInDb(tag: ITag): Promise<void> {

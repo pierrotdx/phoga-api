@@ -45,6 +45,7 @@ export class AdminRouter implements IExpressRouter {
     const adminTagRouter = new AdminTagRouter(
       this.authHandler,
       this.tagDb,
+      this.photoDataDb,
     ).get();
     this.router.use(path, adminTagRouter);
   }

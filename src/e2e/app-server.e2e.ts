@@ -3,6 +3,8 @@ import {
   IDeletePhotoParams,
   IGetPhotoParams,
   IPhoto,
+  IPhotoDataDb,
+  IPhotoImageDb,
   IPhotoStoredData,
   IReplacePhotoParams,
   ISearchPhotoParams,
@@ -47,10 +49,18 @@ describe("ExpressAppServer", () => {
   let expressHttpServer: ExpressAppServer;
   let app: Express;
 
+  let tagDb: ITagDb;
+  let photoDataDb: IPhotoDataDb;
+  let photoImageDb: IPhotoImageDb;
+
   beforeEach(async () => {
     await appTestUtils.globalBeforeEach();
     expressHttpServer = appTestUtils.getServer();
     app = expressHttpServer.app;
+
+    photoDataDb = appTestUtils.getPhotoDataDb();
+    photoImageDb = appTestUtils.getPhotoImageDb();
+    tagDb = appTestUtils.getTagDb();
   });
 
   afterEach(async () => {
@@ -65,7 +75,6 @@ describe("ExpressAppServer", () => {
     let tagTestUtils: TagTestUtils;
 
     beforeEach(() => {
-      const tagDb = appTestUtils.getTagDb();
       tagTestUtils = new TagTestUtils(tagDb);
     });
 
@@ -181,14 +190,14 @@ describe("ExpressAppServer", () => {
         });
 
         describe("when the requested tag already exists in db", () => {
-          let tagAlreadyInDb: ITag;
+          let tagToReplace: ITag;
 
           beforeEach(async () => {
-            tagAlreadyInDb = { _id: newTag._id, name: "tag in db" };
-            await tagTestUtils.insertTagInDb(tagAlreadyInDb);
+            tagToReplace = { _id: newTag._id, name: "tag in db" };
+            await tagTestUtils.insertTagInDb(tagToReplace);
           });
 
-          it(`should replace the existing tag with the requested one`, async () => {
+          it(`should replace the existing tag with the requested one in tags db`, async () => {
             const response = await request(app)
               .put(replaceTagPath)
               .send(newTag)
@@ -197,6 +206,52 @@ describe("ExpressAppServer", () => {
             expect(response.statusCode).toBe(200);
             await tagTestUtils.expectTagToBeInDb(newTag);
             expect.assertions(2);
+          });
+
+          describe("when the tag was stored in photos", () => {
+            let photoWithTagToReplace: IPhoto;
+            let photoDbTestUtils: IPhotoDbTestUtils;
+
+            beforeEach(async () => {
+              photoDbTestUtils = new PhotoDbE2ETestUtils(
+                photoDataDb,
+                photoImageDb,
+                tagDb,
+              );
+
+              photoWithTagToReplace = await dumbPhotoGenerator.generatePhoto();
+              const addPhotoParams: IAddPhotoParams = {
+                ...photoWithTagToReplace,
+                tagIds: [tagToReplace._id],
+              };
+              await photoDbTestUtils.addPhoto(addPhotoParams);
+            });
+
+            afterEach(async () => {
+              await photoDbTestUtils.deletePhoto(photoWithTagToReplace._id);
+            });
+
+            it("should replace the tag in the photos db", async () => {
+              const expectedPhotoStoredData: IPhotoStoredData = {
+                ...omit(["imageBuffer"], photoWithTagToReplace),
+                tags: [newTag],
+              };
+
+              const response = await request(app)
+                .put(replaceTagPath)
+                .send(newTag)
+                .auth(token, { type: "bearer" });
+              const photoStoredDataAfterTagReplace =
+                await photoDbTestUtils.getPhotoStoredData(
+                  photoWithTagToReplace._id,
+                );
+
+              expect(response.statusCode).toBe(200);
+              expect(photoStoredDataAfterTagReplace).toEqual(
+                expectedPhotoStoredData,
+              );
+              expect.assertions(2);
+            });
           });
         });
       });
@@ -337,13 +392,8 @@ describe("ExpressAppServer", () => {
     let photoExpectsTestUtils: IPhotoExpectsTestUtils;
     let photoDbTestUtils: IPhotoDbTestUtils;
     let tagTestUtils: TagTestUtils;
-    let tagDb: ITagDb;
 
     beforeEach(() => {
-      const photoDataDb = appTestUtils.getPhotoDataDb();
-      const photoImageDb = appTestUtils.getPhotoImageDb();
-      tagDb = appTestUtils.getTagDb();
-
       photoDbTestUtils = new PhotoDbE2ETestUtils(
         photoDataDb,
         photoImageDb,

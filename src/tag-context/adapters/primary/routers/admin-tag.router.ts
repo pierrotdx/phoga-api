@@ -1,4 +1,5 @@
 import { IAuthHandler } from "#auth-context";
+import { IPhotoDataDb } from "#photo-context";
 import { IEntryPoints } from "#shared/entry-points";
 import { Handler, Router } from "express";
 
@@ -20,6 +21,7 @@ export class AdminTagRouter implements IAdminTagRouter {
   constructor(
     private readonly authHandler: IAuthHandler,
     private readonly tagDb: ITagDb,
+    private readonly photoDataDb: IPhotoDataDb,
   ) {
     this.setAddTagRoute();
     this.setReplaceTagRoute();
@@ -34,7 +36,7 @@ export class AdminTagRouter implements IAdminTagRouter {
   }
 
   private setReplaceTagRoute(): void {
-    const controller = new ReplaceTagController(this.tagDb);
+    const controller = new ReplaceTagController(this.tagDb, this.photoDataDb);
     const path = this.getPath(TagEntryPointId.ReplaceTag);
     const permissionHandler = this.getPermissionHandler(
       TagEntryPointId.ReplaceTag,

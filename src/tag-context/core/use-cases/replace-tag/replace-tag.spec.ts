@@ -1,3 +1,12 @@
+import {
+  FakePhotoDataDb,
+  IPhoto,
+  IPhotoDataDb,
+  IPhotoStoredData,
+  dumbPhotoGenerator,
+} from "#photo-context";
+import { IPhotoDbTestUtils, PhotoDbTestUtils } from "#shared/test-utils";
+
 import { TagDbFake } from "../../../adapters";
 import { ITagDb } from "../../gateways";
 import { ITag } from "../../models";
@@ -5,13 +14,19 @@ import { ReplaceTagTestUtils } from "./replace-tag.test-utils";
 
 describe("ReplaceTag", () => {
   let tagDb: ITagDb;
+  let photoDataDb: IPhotoDataDb;
+
   let testUtils: ReplaceTagTestUtils;
+  let photoDbTestUtils: IPhotoDbTestUtils;
 
   const newTag: ITag = { _id: "dumb-id", name: "new tag" };
 
   beforeEach(() => {
     tagDb = new TagDbFake();
-    testUtils = new ReplaceTagTestUtils(tagDb);
+    photoDataDb = new FakePhotoDataDb();
+
+    photoDbTestUtils = new PhotoDbTestUtils(photoDataDb);
+    testUtils = new ReplaceTagTestUtils(tagDb, photoDataDb);
   });
 
   afterEach(async () => {
@@ -30,10 +45,39 @@ describe("ReplaceTag", () => {
       await testUtils.removeTagFromDb(tagToReplace._id);
     });
 
-    it("should replace the tag", async () => {
+    it("should replace the tag in tags db", async () => {
       await testUtils.executeUseCase(newTag);
 
       await testUtils.expectTagToBeInDb(newTag);
+    });
+
+    describe("when the tag was stored in photos", () => {
+      let photoStoredData: IPhoto;
+
+      beforeEach(async () => {
+        photoStoredData = dumbPhotoGenerator.generatePhotoStoredData({
+          tags: [tagToReplace],
+        });
+        await photoDbTestUtils.addStoredPhotosData([photoStoredData]);
+      });
+
+      afterEach(async () => {
+        await photoDbTestUtils.deletePhoto(photoStoredData._id);
+      });
+
+      it("should replace the tag in the photos db", async () => {
+        const expectedPhotoStoredData: IPhotoStoredData = {
+          ...photoStoredData,
+          tags: [newTag],
+        };
+
+        await testUtils.executeUseCase(newTag);
+        const photoStoredDataAfterTagReplace =
+          await photoDbTestUtils.getPhotoStoredData(photoStoredData._id);
+
+        expect(photoStoredDataAfterTagReplace).toEqual(expectedPhotoStoredData);
+        expect.assertions(1);
+      });
     });
   });
 
