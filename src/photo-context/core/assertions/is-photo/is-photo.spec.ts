@@ -14,7 +14,7 @@ describe("isPhoto", () => {
   beforeEach(() => {
     candidate = new Photo("18b4eacc-2e2d-469e-bff0-f97d50794eb1", {
       imageBuffer,
-      metadata,
+      photoData: { metadata },
     });
   });
 

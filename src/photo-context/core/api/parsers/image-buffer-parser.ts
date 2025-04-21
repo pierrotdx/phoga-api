@@ -16,7 +16,7 @@ export class ImageBufferParser {
   async getImageBuffer(
     files: formidable.Files<string>,
   ): Promise<Buffer | undefined> {
-    const file = files.image[0];
+    const file = files.image?.[0];
     if (file) {
       const imageBuffer = await readFile(file.filepath);
       await rm(this.localImgDir, { recursive: true });

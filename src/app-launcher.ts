@@ -1,8 +1,8 @@
 import { ILogger } from "#logger-context";
 import {
-  IPhotoBaseDb,
+  IPhotoDataDb,
   IPhotoImageDb,
-  PhotoBaseDbMongo,
+  PhotoDataDbMongo,
   PhotoImageDbGcs,
 } from "#photo-context";
 import { MongoManager } from "#shared/mongo";
@@ -19,7 +19,7 @@ dotenv.config();
 export class AppLauncher {
   constructor(private readonly logger: ILogger) {}
 
-  private photoBaseDb: IPhotoBaseDb;
+  private photoDataDb: IPhotoDataDb;
   private photoImageDb: IPhotoImageDb;
   private tagDb: ITagDb;
   private httpServer: IAppServer;
@@ -32,7 +32,7 @@ export class AppLauncher {
     await this.setupDbs();
     this.httpServer = new AppServerFactory({
       logger: this.logger,
-      photoBaseDb: this.photoBaseDb,
+      photoDataDb: this.photoDataDb,
       photoImageDb: this.photoImageDb,
       tagDb: this.tagDb,
     }).create();
@@ -52,7 +52,7 @@ export class AppLauncher {
       process.env.MONGO_URL,
       process.env.MONGO_DB,
       {
-        PhotoBase: process.env.MONGO_PHOTO_BASE_COLLECTION,
+        PhotoData: process.env.MONGO_PHOTO_BASE_COLLECTION,
         Tags: process.env.MONGO_TAG_COLLECTION,
       },
     );
@@ -60,7 +60,7 @@ export class AppLauncher {
   }
 
   private onMongoConnection(): void {
-    this.photoBaseDb = new PhotoBaseDbMongo(this.mongoManager);
+    this.photoDataDb = new PhotoDataDbMongo(this.mongoManager);
     this.tagDb = new TagDbMongo(this.mongoManager);
   }
 

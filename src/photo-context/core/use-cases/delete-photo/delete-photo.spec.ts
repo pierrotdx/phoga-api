@@ -1,60 +1,163 @@
+import { HttpErrorCode } from "#shared/models";
 import {
-  FakePhotoBaseDb,
+  IPhotoDbTestUtils,
+  IPhotoExpectsTestUtils,
+  PhotoDbTestUtils,
+  PhotoExpectsTestUtils,
+} from "#shared/test-utils";
+
+import {
+  FakePhotoDataDb,
   FakePhotoImageDb,
   dumbPhotoGenerator,
 } from "../../../adapters/";
-import { IPhotoBaseDb, IPhotoImageDb } from "../../../core/gateways";
-import { PhotoTestUtils } from "../../../core/test-utils";
-import { IDeletePhotoUseCase, IPhoto } from "../../models";
+import { IPhotoDataDb, IPhotoImageDb } from "../../../core/gateways";
+import {
+  IDeletePhotoParams,
+  IPhoto,
+  IPhotoStoredData,
+  IPhotoUseCaseTestUtils,
+} from "../../models";
+import { PhotoUseCaseTestUtils } from "../test-utils";
 import { DeletePhotoUseCase } from "./delete-photo";
 
 describe(`${DeletePhotoUseCase.name}`, () => {
-  let photoBaseDb: IPhotoBaseDb;
+  let photoDataDb: IPhotoDataDb;
   let photoImageDb: IPhotoImageDb;
 
-  let testedUseCase: IDeletePhotoUseCase;
-
-  let testUtils: PhotoTestUtils;
+  let dbTestUtils: IPhotoDbTestUtils;
+  let expectsTestUtils: IPhotoExpectsTestUtils;
+  let useCaseTestUtils: IPhotoUseCaseTestUtils<void>;
 
   beforeEach(async () => {
-    photoBaseDb = new FakePhotoBaseDb();
+    photoDataDb = new FakePhotoDataDb();
     photoImageDb = new FakePhotoImageDb();
 
-    testedUseCase = new DeletePhotoUseCase(photoBaseDb, photoImageDb);
+    const testedUseCase = new DeletePhotoUseCase(photoDataDb, photoImageDb);
 
-    testUtils = new PhotoTestUtils(
-      photoBaseDb,
-      photoImageDb,
+    dbTestUtils = new PhotoDbTestUtils(photoDataDb, photoImageDb);
+    expectsTestUtils = new PhotoExpectsTestUtils(dbTestUtils);
+    useCaseTestUtils = new PhotoUseCaseTestUtils(
       testedUseCase,
+      expectsTestUtils,
     );
   });
 
   describe(`${DeletePhotoUseCase.prototype.execute.name}`, () => {
-    let photo: IPhoto;
+    let photoToDelete: IPhoto;
+    let useCaseParams: IDeletePhotoParams;
 
     beforeEach(async () => {
-      photo = await dumbPhotoGenerator.generatePhoto();
-      await testUtils.insertPhotoInDb(photo);
+      photoToDelete = await dumbPhotoGenerator.generatePhoto();
+      await dbTestUtils.addPhoto(photoToDelete);
+
+      useCaseParams = photoToDelete._id;
     });
 
     afterEach(async () => {
-      await testUtils.deletePhotoFromDb(photo._id);
+      await dbTestUtils.deletePhoto(photoToDelete._id);
     });
 
-    it("should delete photo's base data and image from their respective DBs", async () => {
-      await testUtils.executeTestedUseCase(photo._id);
+    it("should delete photo\'s data (other than image) from the photo-data db", async () => {
+      const expectedStoreData = undefined;
 
-      await testUtils.expectPhotoToBeDeletedFromDbs(photo._id);
-      testUtils.checkAssertions();
+      await useCaseTestUtils.executeTestedUseCase(useCaseParams);
+
+      await expectsTestUtils.expectPhotoStoredDataToBe(
+        useCaseParams,
+        expectedStoreData,
+      );
+      expectsTestUtils.checkAssertions();
     });
 
-    it("should not delete photo's base data if image deletion failed", async () => {
-      photoImageDb.delete = jest
-        .fn()
-        .mockImplementationOnce(() => Promise.reject("image-deletion failed"));
+    it("should delete photo's image the photo-image db", async () => {
+      const expectedStoredImage = undefined;
 
-      await testUtils.executeUseCaseAndExpectToThrow(photo._id);
-      testUtils.checkAssertions();
+      await useCaseTestUtils.executeTestedUseCase(useCaseParams);
+
+      await expectsTestUtils.expectPhotoImageToBe(
+        useCaseParams,
+        expectedStoredImage,
+      );
+      expectsTestUtils.checkAssertions();
+    });
+
+    describe("when the deletion of photo data (other than image) fails", () => {
+      beforeEach(() => {
+        photoDataDb.delete = jest
+          .fn()
+          .mockImplementationOnce(() => Promise.reject("data-deletion failed"));
+      });
+
+      it(`should throw an error with status code ${HttpErrorCode.InternalServerError} (internal server error)`, async () => {
+        const expectedStatus = HttpErrorCode.InternalServerError;
+
+        await useCaseTestUtils.executeUseCaseAndExpectToThrow({
+          useCaseParams: [useCaseParams],
+          expectedStatus,
+        });
+
+        expectsTestUtils.checkAssertions();
+      });
+
+      it("should not delete the photo's image", async () => {
+        const expectedStoredImage = photoToDelete.imageBuffer;
+
+        try {
+          await useCaseTestUtils.executeTestedUseCase(useCaseParams);
+        } catch (err) {
+        } finally {
+          await expectsTestUtils.expectPhotoImageToBe(
+            useCaseParams,
+            expectedStoredImage,
+          );
+          expectsTestUtils.checkAssertions();
+        }
+      });
+    });
+
+    describe("when the deletion of photo image fails", () => {
+      beforeEach(() => {
+        photoImageDb.delete = jest
+          .fn()
+          .mockImplementationOnce(() =>
+            Promise.reject("image-deletion failed"),
+          );
+      });
+
+      it(`should throw an error with status code ${HttpErrorCode.InternalServerError} (internal server error)`, async () => {
+        const expectedStatus = HttpErrorCode.InternalServerError;
+
+        await useCaseTestUtils.executeUseCaseAndExpectToThrow({
+          useCaseParams: [useCaseParams],
+          expectedStatus,
+        });
+
+        expectsTestUtils.checkAssertions();
+      });
+
+      it("should not delete photo's data in photo-data db", async () => {
+        const expectedPhotoStoredData: IPhotoStoredData =
+          getExpectedPhotoDataStored(photoToDelete);
+        try {
+          await useCaseTestUtils.executeTestedUseCase(useCaseParams);
+        } catch (err) {
+        } finally {
+          await expectsTestUtils.expectPhotoStoredDataToBe(
+            useCaseParams,
+            expectedPhotoStoredData,
+          );
+          expectsTestUtils.checkAssertions();
+        }
+      });
     });
   });
 });
+
+function getExpectedPhotoDataStored(photo: IPhoto): IPhotoStoredData {
+  const photoStoredData: IPhotoStoredData = {
+    _id: photo._id,
+    metadata: photo.metadata,
+  };
+  return photoStoredData;
+}

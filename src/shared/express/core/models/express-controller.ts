@@ -1,3 +1,4 @@
+import { ErrorWithStatus, HttpErrorCode } from "#shared/models";
 import { Handler, type Request, type Response } from "express";
 
 import { wrapWithErrorCatcher } from "../error-catcher.service";
@@ -8,7 +9,7 @@ export interface IExpressController {
 
 export abstract class ExpressController implements IExpressController {
   private readonly internalHandler = async (req: Request, res: Response) => {
-    const params = await this.getParamsFromRequest(req);
+    const params = await this.getParams(req);
     const result = await this.executeUseCase(params);
     this.sendResponse(res, result);
   };
@@ -22,4 +23,16 @@ export abstract class ExpressController implements IExpressController {
   protected abstract executeUseCase(...args: unknown[]): Promise<unknown>;
 
   protected abstract sendResponse(res: Response, ...args: unknown[]): void;
+
+  private async getParams(req: Request): Promise<unknown> {
+    try {
+      const params = await this.getParamsFromRequest(req);
+      return params;
+    } catch (err) {
+      const error = err.status
+        ? err
+        : new ErrorWithStatus(err, HttpErrorCode.BadRequest);
+      throw error;
+    }
+  }
 }

@@ -1,15 +1,16 @@
 import { ExpressController, IExpressController } from "#shared/express";
 import { AjvValidator, IValidator } from "#shared/validators";
+import { ITagDb } from "#tag-context";
 import { type Request, type Response } from "express";
 
-import { IPhotoImageDb, IPhotoBaseDb } from "../../gateways";
+import { IPhotoDataDb, IPhotoImageDb } from "../../gateways";
 import {
   IPhoto,
   IReplacePhotoParser,
   IReplacePhotoUseCase,
 } from "../../models";
 import { ReplacePhotoUseCase } from "../../use-cases";
-import { AddPhotoParser } from "../parsers";
+import { ReplacePhotoParser } from "../parsers";
 import { AddPhotoSchema } from "../schemas";
 
 export class ReplacePhotoController
@@ -21,13 +22,18 @@ export class ReplacePhotoController
   private readonly parser: IReplacePhotoParser;
 
   constructor(
-    private readonly photoBaseDb: IPhotoBaseDb,
+    private readonly photoDataDb: IPhotoDataDb,
     private readonly imageDb: IPhotoImageDb,
+    private readonly tagDb: ITagDb,
   ) {
     super();
-    this.useCase = new ReplacePhotoUseCase(this.photoBaseDb, this.imageDb);
+    this.useCase = new ReplacePhotoUseCase(
+      this.photoDataDb,
+      this.imageDb,
+      this.tagDb,
+    );
     this.validator = new AjvValidator(AddPhotoSchema);
-    this.parser = new AddPhotoParser();
+    this.parser = new ReplacePhotoParser();
   }
 
   protected async getParamsFromRequest(req: Request): Promise<IPhoto> {

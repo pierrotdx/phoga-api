@@ -1,40 +1,22 @@
-import {
-  AssertionsCounter,
-  IAssertionsCounter,
-} from "#shared/assertions-counter";
-
-import { SearchPhotoParser } from "./search-photo.parser";
 import { SearchPhotoParserTestUtils } from "./search-photo.parser.test-utils";
 
 describe("SearchPhotoParser", () => {
-  const testUtils = new SearchPhotoParserTestUtils();
-  let searchPhotoParser: SearchPhotoParser;
-  let assertionsCounter: IAssertionsCounter;
+  let testUtils: SearchPhotoParserTestUtils;
 
   beforeEach(() => {
-    searchPhotoParser = new SearchPhotoParser();
-    assertionsCounter = new AssertionsCounter();
+    testUtils = new SearchPhotoParserTestUtils();
   });
 
   describe("parse", () => {
-    it.each`
-      inputData
-      ${testUtils.generateInputData()}
-      ${testUtils.generateInputData()}
-      ${testUtils.generateInputData()}
-    `(
-      "should parse the generated input data into search options",
-      ({ inputData }) => {
-        const parsedData = searchPhotoParser.parse(inputData);
+    it("should correctly parse the request parameters", async () => {
+      const queryParams = testUtils.generateQueryParams();
+      const expectedData = testUtils.getExpectedData(queryParams);
 
-        testUtils.expectValidType(parsedData, assertionsCounter);
-        testUtils.expectParsedDataMatchingInputData(
-          parsedData,
-          inputData,
-          assertionsCounter,
-        );
-        assertionsCounter.checkAssertions();
-      },
-    );
+      await testUtils.sendRequest(queryParams);
+
+      testUtils.expectResponseStatusCode(200);
+      testUtils.expectParsedDataToBe(expectedData);
+      testUtils.checkAssertions();
+    });
   });
 });

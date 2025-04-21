@@ -1,5 +1,6 @@
 import { TSchema } from "#shared/models";
 import { RenderingSchema } from "#shared/schemas";
+import { UuidSchema } from "#shared/uuid";
 
 export const SearchPhotoSchema: TSchema = {
   type: "object",
@@ -8,5 +9,6 @@ export const SearchPhotoSchema: TSchema = {
     excludeImages: {
       type: "string",
     },
+    tagId: UuidSchema,
   },
 };

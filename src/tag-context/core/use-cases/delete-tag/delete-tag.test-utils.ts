@@ -1,15 +1,17 @@
+import { IPhotoDataDb } from "#photo-context";
+import { TagTestUtils } from "#shared/test-utils";
+
 import { ITagDb } from "../../gateways";
 import { IDeleteTagUseCase, ITag } from "../../models";
-import { TagTestUtils } from "../../test-utils";
 import { DeleteTagUseCase } from "./delete-tag";
 
 export class DeleteTagTestUtils {
   private readonly useCase: IDeleteTagUseCase;
   private readonly tagsTestUtils: TagTestUtils;
 
-  constructor(private readonly tagDb: ITagDb) {
-    this.useCase = new DeleteTagUseCase(this.tagDb);
-    this.tagsTestUtils = new TagTestUtils(this.tagDb);
+  constructor(tagDb: ITagDb, photoDataDb: IPhotoDataDb) {
+    this.useCase = new DeleteTagUseCase(tagDb, photoDataDb);
+    this.tagsTestUtils = new TagTestUtils(tagDb);
   }
 
   async insertTagInDb(tag: ITag): Promise<void> {

@@ -1,6 +1,7 @@
+import { TagTestUtils } from "#shared/test-utils";
+
 import { ITagDb } from "../../gateways";
 import { IGetTagUseCase, ITag } from "../../models";
-import { TagTestUtils } from "../../test-utils";
 import { GetTagUseCase } from "./get-tag";
 
 export class GetTagTestUtils {

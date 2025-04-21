@@ -4,10 +4,11 @@ import { type Request, type Response } from "express";
 
 import {
   IPhoto,
-  IPhotoBase,
-  IPhotoBaseDb,
+  IPhotoData,
+  IPhotoDataDb,
   IPhotoImageDb,
   ISearchPhotoOptions,
+  ISearchPhotoParams,
   ISearchPhotoParser,
   ISearchPhotoUseCase,
   SearchPhotoUseCase,
@@ -24,19 +25,19 @@ export class SearchPhotoController
   private readonly parser: ISearchPhotoParser;
 
   constructor(
-    private readonly photoBaseDb: IPhotoBaseDb,
+    private readonly photoDataDb: IPhotoDataDb,
     private readonly imageDb: IPhotoImageDb,
   ) {
     super();
-    this.useCase = new SearchPhotoUseCase(this.photoBaseDb, this.imageDb);
+    this.useCase = new SearchPhotoUseCase(this.photoDataDb, this.imageDb);
     this.validator = new AjvValidator(SearchPhotoSchema);
     this.parser = new SearchPhotoParser();
   }
 
-  protected getParamsFromRequest(req: Request): ISearchPhotoOptions {
+  protected getParamsFromRequest(req: Request): ISearchPhotoParams {
     this.validator.validate(req.query);
-    const searchOptions = this.parser.parse(req.query);
-    return searchOptions;
+    const searchPhotoParams = this.parser.parse(req);
+    return searchPhotoParams;
   }
 
   protected async executeUseCase(

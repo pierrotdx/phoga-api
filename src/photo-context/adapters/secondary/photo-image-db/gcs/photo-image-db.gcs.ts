@@ -1,3 +1,4 @@
+import { ErrorWithStatus, HttpErrorCode } from "#shared/models";
 import { buffer } from "node:stream/consumers";
 
 import { Bucket, Storage } from "@google-cloud/storage";
@@ -44,8 +45,19 @@ export class PhotoImageDbGcs implements IPhotoImageDb {
   }
 
   async delete(id: IPhoto["_id"]): Promise<void> {
-    const file = this.bucket.file(id);
-    await file.delete();
+    try {
+      const file = this.bucket.file(id);
+      await file.delete();
+    } catch (err) {
+      if (err.code === 404) {
+        const error = new ErrorWithStatus(
+          `failed to delete image of photo '${id}': not found`,
+          HttpErrorCode.NotFound,
+        );
+        throw error;
+      }
+      throw err;
+    }
   }
 
   async getByIds(ids: IPhoto["_id"][]): Promise<Record<IPhoto["_id"], Buffer>> {
