@@ -15,7 +15,7 @@ export class PhotoDbTestUtils implements IPhotoDbTestUtils {
   ) {}
 
   async getPhotoStoredData(id: IPhoto["_id"]): Promise<IPhotoStoredData> {
-    return (await this.photoDataDb?.getById(id)) || undefined;
+    return await this.photoDataDb?.getById(id);
   }
 
   async addStoredPhotosData(
