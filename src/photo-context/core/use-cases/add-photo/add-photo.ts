@@ -1,23 +1,50 @@
+import { ErrorWithStatus, HttpErrorCode } from "#shared/models";
+import { ITag, ITagDb } from "#tag-context";
 import { isEmpty, isNil } from "ramda";
 
-import { IPhotoBaseDb, IPhotoImageDb } from "../../gateways";
-import { IAddPhotoUseCase, IPhoto, Photo } from "../../models";
+import { IPhotoDataDb, IPhotoImageDb } from "../../gateways";
+import {
+  IAddPhotoParams,
+  IAddPhotoUseCase,
+  IPhotoStoredData,
+} from "../../models";
 
 export class AddPhotoUseCase implements IAddPhotoUseCase {
   constructor(
-    private readonly photoBaseDb: IPhotoBaseDb,
+    private readonly photoDataDb: IPhotoDataDb,
     private readonly photoImageDb: IPhotoImageDb,
+    private readonly tagDb: ITagDb,
   ) {}
 
-  async execute(photo: IPhoto): Promise<void> {
-    await this.uploadImage(photo);
-    await this.photoBaseDb.insert(photo);
+  async execute(data: IAddPhotoParams): Promise<void> {
+    await this.uploadImage(data);
+    await this.uploadPhotoStoredData(data);
   }
 
-  private async uploadImage(photo: Photo) {
-    if (isNil(photo.imageBuffer) || isEmpty(photo.imageBuffer)) {
-      throw new Error(`no image to upload for photo: ${photo._id}`);
+  private async uploadImage(data: IAddPhotoParams) {
+    if (isNil(data.imageBuffer) || isEmpty(data.imageBuffer)) {
+      throw new ErrorWithStatus(
+        `no image to upload for photo: ${data._id}`,
+        HttpErrorCode.BadRequest,
+      );
     }
-    await this.photoImageDb.insert(photo);
+    await this.photoImageDb.insert(data);
+  }
+
+  private async uploadPhotoStoredData(data: IAddPhotoParams): Promise<void> {
+    const storedPhotoData: IPhotoStoredData = {
+      _id: data._id,
+      metadata: data.metadata,
+    };
+    if (data.tagIds) {
+      storedPhotoData.tags = await this.getTags(data.tagIds);
+    }
+    await this.photoDataDb.insert(storedPhotoData);
+  }
+
+  private async getTags(tagIds: ITag["_id"][]): Promise<ITag[]> {
+    const tags$ = tagIds.map(async (id) => await this.tagDb.getById(id));
+    const tags = await Promise.all(tags$);
+    return tags;
   }
 }

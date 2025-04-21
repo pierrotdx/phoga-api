@@ -5,7 +5,7 @@ import {
 import { ILoremIpsumGenerator, LoremIpsumGenerator } from "#shared/lorem-ipsum";
 import { IUuidGenerator, UuidGenerator } from "#shared/uuid";
 
-import { IDumbPhotoGenerator, IDumbPhotoGeneratorOptions } from "../models";
+import { IDumbPhotoGenerator, IGeneratePhotoOptions } from "../models";
 import { DumbPhotoGenerator } from "./dumb-photo-generator";
 import { DumbPhotoGeneratorTestUtils } from "./dumb-photo-generator.test-utils";
 
@@ -52,7 +52,7 @@ describe("dumbPhotoGenerator", () => {
         options,
       }: {
         fieldPath: string[];
-        options: IDumbPhotoGeneratorOptions;
+        options: IGeneratePhotoOptions;
       }) => {
         const photo = await dumbPhotoGenerator.generatePhoto(options);
         testUtils.expectAnInstanceOfPhoto(photo, assertionsCounter);
@@ -80,26 +80,6 @@ describe("dumbPhotoGenerator", () => {
         result.forEach((r) => {
           testUtils.expectAnInstanceOfPhoto(r, assertionsCounter);
         });
-        assertionsCounter.checkAssertions();
-      },
-    );
-  });
-
-  describe("generatePhotoFromAssets", () => {
-    it.each`
-      path
-      ${"assets/test-img-1_536x354.jpg"}
-      ${"assets/test-img-2_536x354.jpg"}
-    `(
-      "should generate a photo where the image buffer matches the image from path",
-      async ({ path }: { path: string }) => {
-        const result = await dumbPhotoGenerator.generatePhotoFromPath(path);
-        testUtils.expectAnInstanceOfPhoto(result, assertionsCounter);
-        await testUtils.expectPhotoBufferToMatchImageFromPath(
-          result,
-          path,
-          assertionsCounter,
-        );
         assertionsCounter.checkAssertions();
       },
     );

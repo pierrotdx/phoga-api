@@ -1,8 +1,9 @@
 import { TSchema } from "#shared/models";
+import { IValidator } from "#shared/validators/core";
 import Ajv, { ValidateFunction } from "ajv";
 import addFormat from "ajv-formats";
 
-export class AjvValidator {
+export class AjvValidator implements IValidator {
   private readonly ajv = new Ajv();
   private ajvValidate: ValidateFunction;
 

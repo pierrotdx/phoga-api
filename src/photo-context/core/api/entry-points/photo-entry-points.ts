@@ -15,40 +15,40 @@ export class PhotoEntryPoints
 {
   private readonly baseEntryPoints = new BaseEntryPoints();
 
-  private readonly photoBase = this.baseEntryPoints.get(
-    BaseEntryPointsId.PhotoBase,
+  private readonly photoData = this.baseEntryPoints.get(
+    BaseEntryPointsId.PhotoData,
   );
 
-  private readonly adminPhotoBase = this.baseEntryPoints.get(
-    BaseEntryPointsId.AdminPhotoBase,
+  private readonly adminPhotoData = this.baseEntryPoints.get(
+    BaseEntryPointsId.AdminPhotoData,
   );
 
   private readonly getPhotoImage = new EntryPoint("/:id/image", {
-    parent: this.photoBase,
+    parent: this.photoData,
     permissions: [Permission.PhotosRead],
   });
 
-  private readonly getPhotoBase = new EntryPoint("/:id/base", {
-    parent: this.photoBase,
+  private readonly getPhotoData = new EntryPoint("/:id/base", {
+    parent: this.photoData,
     permissions: [Permission.PhotosRead],
   });
 
   private readonly searchPhoto = new EntryPoint("/", {
-    parent: this.photoBase,
+    parent: this.photoData,
   });
 
   private readonly replacePhoto = new EntryPoint("/", {
-    parent: this.adminPhotoBase,
+    parent: this.adminPhotoData,
     permissions: [Permission.PhotosWrite],
   });
 
   private readonly addPhoto = new EntryPoint("/", {
-    parent: this.adminPhotoBase,
+    parent: this.adminPhotoData,
     permissions: [Permission.PhotosWrite],
   });
 
   private readonly deletePhoto = new EntryPoint("/:id", {
-    parent: this.adminPhotoBase,
+    parent: this.adminPhotoData,
     permissions: [Permission.PhotosWrite],
   });
 
@@ -56,7 +56,7 @@ export class PhotoEntryPoints
     [PhotoEntryPointId.AddPhoto]: this.addPhoto,
     [PhotoEntryPointId.DeletePhoto]: this.deletePhoto,
     [PhotoEntryPointId.GetPhotoImage]: this.getPhotoImage,
-    [PhotoEntryPointId.GetPhotoBase]: this.getPhotoBase,
+    [PhotoEntryPointId.GetPhotoData]: this.getPhotoData,
     [PhotoEntryPointId.ReplacePhoto]: this.replacePhoto,
     [PhotoEntryPointId.SearchPhoto]: this.searchPhoto,
   };

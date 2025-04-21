@@ -1,10 +1,10 @@
 import request, { Test } from "supertest";
 
 import { IAddTagParser, ITag } from "../../../../core";
-import { TagParserTestUtils } from "../tag.parser.test-utils";
 import { AddTagParser } from "./add-tag.parser";
+import { ParserTestUtils } from "#shared/test-utils";
 
-export class AddTagParserTestUtils extends TagParserTestUtils<IAddTagParser> {
+export class AddTagParserTestUtils extends ParserTestUtils<IAddTagParser> {
   protected readonly testedParser: IAddTagParser = new AddTagParser();
 
   private readonly url = "/";

@@ -1,40 +1,46 @@
+import { Request } from "express";
 import formidable, { Fields } from "formidable";
 import { isEmpty } from "ramda";
 
-import { assertPhoto } from "../../../assertions";
 import {
+  IAddPhotoParams,
   IAddPhotoParser,
-  IPhoto,
   IPhotoMetadata,
   Photo,
 } from "../../../models";
 import { ImageBufferParser } from "../image-buffer-parser";
 
 export class AddPhotoParser implements IAddPhotoParser {
-  private photo: IPhoto;
+  private addPhotoParams: IAddPhotoParams;
   private imageBufferParser = new ImageBufferParser();
 
-  async parse(data: any): Promise<IPhoto> {
+  async parse(req: Request): Promise<IAddPhotoParams> {
     this.reset();
     const form = formidable(this.imageBufferParser.formOptions);
-    const [fields, files] = await form.parse(data);
+    const [fields, files] = await form.parse(req);
     const _id = fields._id[0];
-    this.photo = new Photo(_id);
+    this.addPhotoParams = new Photo(_id);
     this.addMetadata(fields);
+    this.addTagIds(fields);
     await this.addImageBuffer(files);
-    assertPhoto(this.photo);
-    return this.photo;
+    return this.addPhotoParams;
+  }
+  addTagIds(data: Fields) {
+    const tagIds = data?.tagIds;
+    if (tagIds) {
+      this.addPhotoParams.tagIds = tagIds;
+    }
   }
 
   private async addImageBuffer(files: formidable.Files<string>): Promise<void> {
     const imageBuffer = await this.imageBufferParser.getImageBuffer(files);
     if (imageBuffer) {
-      this.photo.imageBuffer = imageBuffer;
+      this.addPhotoParams.imageBuffer = imageBuffer;
     }
   }
 
   private reset() {
-    delete this.photo;
+    delete this.addPhotoParams;
   }
 
   private addMetadata(data: Fields) {
@@ -44,7 +50,7 @@ export class AddPhotoParser implements IAddPhotoParser {
     const metadata: IPhotoMetadata = {};
     const stringDate = data.date?.[0];
     if (stringDate) {
-      metadata.date = new Date(stringDate);
+      metadata.date = this.getDate(stringDate);
     }
     const description = data.description?.[0];
     if (description) {
@@ -59,7 +65,16 @@ export class AddPhotoParser implements IAddPhotoParser {
       metadata.titles = titles;
     }
     if (!isEmpty(metadata)) {
-      this.photo.metadata = metadata;
+      this.addPhotoParams.metadata = metadata;
     }
+  }
+
+  private getDate(stringDate: string): Date {
+    const date = new Date(stringDate);
+    const isValidDate = date.toISOString() === stringDate;
+    if (!isValidDate) {
+      throw new Error(`invalid date '${stringDate}'`);
+    }
+    return date;
   }
 }

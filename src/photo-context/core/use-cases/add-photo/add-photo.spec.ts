@@ -1,58 +1,130 @@
-import { omit } from "ramda";
+import { HttpErrorCode } from "#shared/models";
+import {
+  DbTagTestUtils,
+  IPhotoDbTestUtils,
+  IPhotoExpectsTestUtils,
+  PhotoDbTestUtils,
+  PhotoExpectsTestUtils,
+} from "#shared/test-utils";
+import { ITag, ITagDb, TagDbFake } from "#tag-context";
 
 import {
-  FakePhotoBaseDb,
+  FakePhotoDataDb,
   FakePhotoImageDb,
   dumbPhotoGenerator,
 } from "../../../adapters/";
-import { IPhotoBaseDb, IPhotoImageDb, PhotoTestUtils } from "../../../core";
-import { IAddPhotoUseCase, IPhoto } from "../../models";
+import { IPhotoDataDb, IPhotoImageDb } from "../../../core";
+import {
+  IAddPhotoParams,
+  IPhotoStoredData,
+  IPhotoUseCaseTestUtils,
+} from "../../models";
+import { PhotoUseCaseTestUtils } from "../test-utils";
 import { AddPhotoUseCase } from "./add-photo";
 
 describe(`${AddPhotoUseCase.name}`, () => {
-  let photoBaseDb: IPhotoBaseDb;
+  let photoDataDb: IPhotoDataDb;
   let photoImageDb: IPhotoImageDb;
+  let tagDb: ITagDb;
 
-  let testedUseCase: IAddPhotoUseCase;
-
-  let testUtils: PhotoTestUtils<void>;
+  let useCaseTestUtils: IPhotoUseCaseTestUtils<void>;
+  let dbTestUtils: IPhotoDbTestUtils;
+  let expectTestUtils: IPhotoExpectsTestUtils;
+  let tagTestUtils: DbTagTestUtils;
 
   beforeEach(async () => {
-    photoBaseDb = new FakePhotoBaseDb();
+    photoDataDb = new FakePhotoDataDb();
     photoImageDb = new FakePhotoImageDb();
+    tagDb = new TagDbFake();
 
-    testedUseCase = new AddPhotoUseCase(photoBaseDb, photoImageDb);
+    const testedUseCase = new AddPhotoUseCase(photoDataDb, photoImageDb, tagDb);
 
-    testUtils = new PhotoTestUtils(photoBaseDb, photoImageDb, testedUseCase);
+    dbTestUtils = new PhotoDbTestUtils(photoDataDb, photoImageDb);
+    expectTestUtils = new PhotoExpectsTestUtils(dbTestUtils);
+    useCaseTestUtils = new PhotoUseCaseTestUtils(
+      testedUseCase,
+      expectTestUtils,
+    );
+    tagTestUtils = new DbTagTestUtils(tagDb);
   });
 
   describe(`${AddPhotoUseCase.prototype.execute.name}`, () => {
-    it("should upload photo image and data to their respective DBs", async () => {
-      const photo = await dumbPhotoGenerator.generatePhoto();
+    let useCaseParams: IAddPhotoParams;
 
-      await testUtils.executeTestedUseCase(photo);
+    describe("when there is no image to upload", () => {
+      beforeEach(async () => {
+        const photoWithoutImage = await dumbPhotoGenerator.generatePhoto();
+        delete photoWithoutImage.imageBuffer;
+        useCaseParams = photoWithoutImage;
+      });
 
-      await testUtils.expectPhotoToBeUploaded(photo);
+      it(`should throw an error with status code ${HttpErrorCode.BadRequest} (bad request)`, async () => {
+        const expectedStatus = HttpErrorCode.BadRequest;
+        await useCaseTestUtils.executeUseCaseAndExpectToThrow({
+          useCaseParams: [useCaseParams],
+          expectedStatus,
+        });
+        expectTestUtils.checkAssertions();
+      });
 
-      testUtils.checkAssertions();
+      it(`should not upload anything to the photo-data db`, async () => {
+        try {
+          await useCaseTestUtils.executeTestedUseCase(useCaseParams);
+        } catch (err) {
+        } finally {
+          await expectTestUtils.expectPhotoStoredDataToBe(
+            useCaseParams._id,
+            undefined,
+          );
+          expectTestUtils.checkAssertions();
+        }
+      });
     });
 
-    it.each`
-      case           | imageBuffer
-      ${"undefined"} | ${undefined}
-      ${"null"}      | ${null}
-      ${"empty"}     | ${{}}
-    `(
-      "should throw if image buffer is `$case` and not upload photo data",
-      async ({ imageBuffer }) => {
+    describe("when there is an image to upload", () => {
+      const tags: ITag[] = [
+        { _id: "tag1", name: "tag1" },
+        { _id: "tag2", name: "tag2" },
+      ];
+      const tagIds = tags.map((t) => t._id);
+
+      beforeEach(async () => {
         const photo = await dumbPhotoGenerator.generatePhoto();
-        const photoWithInvalidImage = omit(["imageBuffer"], photo) as IPhoto;
-        photoWithInvalidImage.imageBuffer = imageBuffer;
 
-        await testUtils.executeUseCaseAndExpectToThrow(photoWithInvalidImage);
+        await tagTestUtils.insertTagsInDb(tags);
 
-        testUtils.checkAssertions();
-      },
-    );
+        useCaseParams = { ...photo, tagIds };
+      });
+
+      afterEach(async () => {
+        await tagTestUtils.deleteTagsFromDb(tags);
+      });
+
+      it("should upload the image to the photo-image db", async () => {
+        await useCaseTestUtils.executeTestedUseCase(useCaseParams);
+
+        await expectTestUtils.expectPhotoImageToBe(
+          useCaseParams._id,
+          useCaseParams.imageBuffer,
+        );
+        expectTestUtils.checkAssertions();
+      });
+
+      it("should upload the data (other than image) to the photo-data db", async () => {
+        const expectedStoredData: IPhotoStoredData = {
+          _id: useCaseParams._id,
+          metadata: useCaseParams.metadata,
+          tags,
+        };
+
+        await useCaseTestUtils.executeTestedUseCase(useCaseParams);
+
+        await expectTestUtils.expectPhotoStoredDataToBe(
+          useCaseParams._id,
+          expectedStoredData,
+        );
+        expectTestUtils.checkAssertions();
+      });
+    });
   });
 });

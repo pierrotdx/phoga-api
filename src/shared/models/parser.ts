@@ -1,7 +1,9 @@
+import { Request } from "express";
+
 export interface IParser<T> {
-  parse(data: any): T;
+  parse(req: Request): T;
 }
 
 export interface IParserAsync<T> {
-  parse(data: any): Promise<T>;
+  parse(req: Request): Promise<T>;
 }

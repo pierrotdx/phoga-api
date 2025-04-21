@@ -1,10 +1,10 @@
 import request, { Test } from "supertest";
 
 import { ISearchTagParser } from "../../../../core/models";
-import { TagParserTestUtils } from "../tag.parser.test-utils";
 import { SearchTagParser } from "./search-tag.parser";
+import { ParserTestUtils } from "#shared/test-utils";
 
-export class SearchTagParserTestUtils extends TagParserTestUtils<ISearchTagParser> {
+export class SearchTagParserTestUtils extends ParserTestUtils<ISearchTagParser> {
   protected testedParser: ISearchTagParser;
   private readonly url = "/";
 

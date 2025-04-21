@@ -1,5 +1,5 @@
 export enum GetPhotoField {
-  Base = "base",
+  PhotoData = "photoData",
   ImageBuffer = "imageBuffer",
 }
 
