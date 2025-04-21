@@ -1,3 +1,4 @@
+import { IPhotoDataDb } from "#photo-context";
 import { ExpressController, IExpressController } from "#shared/express";
 import { AjvValidator, IValidator } from "#shared/validators";
 import { Request, Response } from "express";
@@ -19,9 +20,9 @@ export class DeleteTagController
   private readonly parser: IDeleteTagParser = new DeleteTagParser();
   private readonly useCase: IDeleteTagUseCase;
 
-  constructor(tagDb: ITagDb) {
+  constructor(tagDb: ITagDb, photoDataDb: IPhotoDataDb) {
     super();
-    this.useCase = new DeleteTagUseCase(tagDb);
+    this.useCase = new DeleteTagUseCase(tagDb, photoDataDb);
   }
 
   protected getParamsFromRequest(req: Request): unknown | Promise<unknown> {

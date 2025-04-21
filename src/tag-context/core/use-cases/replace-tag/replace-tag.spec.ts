@@ -52,7 +52,7 @@ describe("ReplaceTag", () => {
     });
 
     describe("when the tag was stored in photos", () => {
-      let photoStoredData: IPhoto;
+      let photoStoredData: IPhotoStoredData;
 
       beforeEach(async () => {
         photoStoredData = dumbPhotoGenerator.generatePhotoStoredData({

@@ -45,6 +45,7 @@ import { AppServerTestUtils } from "./test-utils/app-server.e2e-test-utils";
 
 describe("ExpressAppServer", () => {
   const appTestUtils = new AppServerTestUtils(global);
+  let photoDbTestUtils: IPhotoDbTestUtils;
 
   let expressHttpServer: ExpressAppServer;
   let app: Express;
@@ -76,6 +77,11 @@ describe("ExpressAppServer", () => {
 
     beforeEach(() => {
       tagTestUtils = new TagTestUtils(tagDb);
+      photoDbTestUtils = new PhotoDbE2ETestUtils(
+        photoDataDb,
+        photoImageDb,
+        tagDb,
+      );
     });
 
     afterAll(async () => {
@@ -210,15 +216,8 @@ describe("ExpressAppServer", () => {
 
           describe("when the tag was stored in photos", () => {
             let photoWithTagToReplace: IPhoto;
-            let photoDbTestUtils: IPhotoDbTestUtils;
 
             beforeEach(async () => {
-              photoDbTestUtils = new PhotoDbE2ETestUtils(
-                photoDataDb,
-                photoImageDb,
-                tagDb,
-              );
-
               photoWithTagToReplace = await dumbPhotoGenerator.generatePhoto();
               const addPhotoParams: IAddPhotoParams = {
                 ...photoWithTagToReplace,
@@ -384,13 +383,51 @@ describe("ExpressAppServer", () => {
           await tagTestUtils.expectTagToBeDeleted(tagToDelete._id);
           expect.assertions(2);
         });
+
+        describe("when the tag was stored in photos", () => {
+          let photoWithTagToDelete: IPhoto;
+          const dumbTag: ITag = { _id: "dumb tag id" };
+
+          beforeEach(async () => {
+            await tagDb.insert(dumbTag);
+
+            photoWithTagToDelete = await dumbPhotoGenerator.generatePhoto();
+            const addPhotoParams: IAddPhotoParams = {
+              ...photoWithTagToDelete,
+              tagIds: [tagToDelete._id, dumbTag._id],
+            };
+            await photoDbTestUtils.addPhoto(addPhotoParams);
+          });
+
+          afterEach(async () => {
+            await photoDbTestUtils.deletePhoto(photoWithTagToDelete._id);
+          });
+
+          it("should delete the tag in the photos db", async () => {
+            const expectedPhotoStoredData: IPhotoStoredData = {
+              ...omit(["imageBuffer"], photoWithTagToDelete),
+              tags: [dumbTag],
+            };
+
+            const response = await request(app)
+              .delete(url)
+              .auth(token, { type: "bearer" });
+            const photoAfterTagDelete =
+              await photoDbTestUtils.getPhotoStoredData(
+                photoWithTagToDelete._id,
+              );
+
+            expect(response.statusCode).toBe(200);
+            expect(photoAfterTagDelete).toEqual(expectedPhotoStoredData);
+            expect.assertions(2);
+          });
+        });
       });
     });
   });
 
   describe("photo requests", () => {
     let photoExpectsTestUtils: IPhotoExpectsTestUtils;
-    let photoDbTestUtils: IPhotoDbTestUtils;
     let tagTestUtils: TagTestUtils;
 
     beforeEach(() => {

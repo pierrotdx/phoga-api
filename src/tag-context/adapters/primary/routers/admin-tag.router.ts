@@ -45,7 +45,7 @@ export class AdminTagRouter implements IAdminTagRouter {
   }
 
   private setDeleteTagRoute(): void {
-    const controller = new DeleteTagController(this.tagDb);
+    const controller = new DeleteTagController(this.tagDb, this.photoDataDb);
     const path = this.getPath(TagEntryPointId.DeleteTag);
     const permissionHandler = this.getPermissionHandler(
       TagEntryPointId.DeleteTag,
