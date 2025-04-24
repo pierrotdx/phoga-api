@@ -53,7 +53,7 @@ describe("PhotoDataDbMongo", () => {
     it("should insert a document with the photo-store data", async () => {
       const expectedStoredData = dataToInsert;
 
-      await dbTestUtils.addPhoto(dataToInsert);
+      await photoDataDbMongo.insert(dataToInsert);
       const storedData = await dbTestUtils.getPhotoStoredData(dataToInsert._id);
 
       expectsTestUtils.expectEqualPhotos(storedData, expectedStoredData);
@@ -66,7 +66,7 @@ describe("PhotoDataDbMongo", () => {
 
     beforeEach(async () => {
       dataToGet = dumbPhotoGenerator.generatePhotoStoredData();
-      await dbTestUtils.addPhoto(dataToGet);
+      await dbTestUtils.addStoredPhotosData([dataToGet]);
     });
 
     afterEach(async () => {
@@ -145,7 +145,7 @@ describe("PhotoDataDbMongo", () => {
 
     beforeEach(async () => {
       storedPhotos = dumbPhotoGenerator.generatePhotosStoredData(3);
-      await dbTestUtils.addPhotos(storedPhotos);
+      await dbTestUtils.addStoredPhotosData(storedPhotos);
     });
 
     afterEach(async () => {

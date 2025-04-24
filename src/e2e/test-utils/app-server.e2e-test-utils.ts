@@ -86,6 +86,7 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
       const photoData: IPhotoData = {
         _id: photo._id,
         metadata: photo.metadata,
+        tags: photo.tags,
       };
       const imageBuffer = photo.imageBuffer
         ? Buffer.from(photo.imageBuffer)

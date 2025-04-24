@@ -1,3 +1,5 @@
+import { ITag } from "#tag-context";
+
 import { IPhotoData } from "./photo-data";
 import { IPhotoMetadata } from "./photo-metadata";
 
@@ -8,6 +10,7 @@ export interface IPhoto extends IPhotoData {
 export class Photo implements IPhoto {
   metadata?: IPhotoMetadata;
   imageBuffer?: Buffer;
+  tags?: ITag[];
 
   constructor(
     public readonly _id: string,
@@ -18,6 +21,9 @@ export class Photo implements IPhoto {
   ) {
     if (data?.photoData?.metadata) {
       this.metadata = data?.photoData?.metadata;
+    }
+    if (data?.photoData?.tags) {
+      this.tags = data.photoData.tags;
     }
     if (data?.imageBuffer) {
       this.imageBuffer = data.imageBuffer;

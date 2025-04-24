@@ -4,8 +4,9 @@ import {
   IPhotoDataDb,
   IPhotoImageDb,
   IPhotoStoredData,
+  fromAddPhotoParamsToPhotoStoredData,
 } from "#photo-context";
-import { omit } from "ramda";
+import { ITagDb } from "#tag-context";
 
 import { IPhotoDbTestUtils } from "../models";
 
@@ -13,6 +14,7 @@ export class PhotoDbTestUtils implements IPhotoDbTestUtils {
   constructor(
     private readonly photoDataDb?: IPhotoDataDb,
     private readonly photoImageDb?: IPhotoImageDb,
+    private readonly tagDb?: ITagDb,
   ) {}
 
   async getPhotoStoredData(id: IPhoto["_id"]): Promise<IPhotoStoredData> {
@@ -38,10 +40,8 @@ export class PhotoDbTestUtils implements IPhotoDbTestUtils {
   }
 
   async addPhoto(addPhotoParams: IAddPhotoParams): Promise<void> {
-    const storedPhotoData: IPhotoStoredData = omit(
-      ["imageBuffer"],
-      addPhotoParams,
-    );
+    const storedPhotoData: IPhotoStoredData =
+      await fromAddPhotoParamsToPhotoStoredData(addPhotoParams, this.tagDb);
     await this.insertStoredPhotoDataInDb(storedPhotoData);
     await this.insertPhotoImageInDb(addPhotoParams);
   }
