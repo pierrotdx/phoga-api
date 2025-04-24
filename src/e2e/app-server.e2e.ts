@@ -576,15 +576,30 @@ describe("ExpressAppServer", () => {
       describe("when the required photo exists in photo-data db", () => {
         let photoToGet: IPhoto;
 
+        let tags: ITag[];
+
         beforeEach(async () => {
+          tags = [
+            { _id: appTestUtils.generateId(), name: "tag1" },
+            { _id: appTestUtils.generateId(), name: "tag2" },
+          ];
+          await tagTestUtils.insertTagsInDb(tags);
+
           photoToGet = await dumbPhotoGenerator.generatePhoto();
-          await photoDbTestUtils.addPhoto(photoToGet);
+          photoToGet.tags = tags;
+
+          const photoToGetAddPhotoParams: IAddPhotoParams = {
+            ...omit(["tags"], photoToGet),
+            tagIds: photoToGet.tags.map((t) => t._id),
+          };
+          await photoDbTestUtils.addPhoto(photoToGetAddPhotoParams);
 
           getPhotoParams = photoToGet._id;
         });
 
         afterEach(async () => {
           await photoDbTestUtils.deletePhoto(photoToGet._id);
+          await tagTestUtils.deleteTagsFromDb(tags);
         });
 
         it(`should return the required photo data`, async () => {
@@ -678,6 +693,7 @@ describe("ExpressAppServer", () => {
           await tagTestUtils.insertTagInDb(tag);
 
           storedPhotosWithTag = await dumbPhotoGenerator.generatePhotos(3);
+          storedPhotosWithTag.forEach((p) => (p.tags = [tag]));
 
           const addStoredPhotosWithTag$ = storedPhotosWithTag.map(
             async (photo) => {

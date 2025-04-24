@@ -6,6 +6,7 @@ export function fromPhotoStoredDataToPhotoData(
   const photoData: IPhotoData = {
     _id: storedPhotoData._id,
     metadata: storedPhotoData.metadata,
+    tags: storedPhotoData.tags,
   };
   return photoData;
 }

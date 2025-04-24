@@ -19,6 +19,7 @@ import {
   fromAddPhotoParamsToPhotoStoredData,
 } from "../../../core";
 import {
+  IAddPhotoParams,
   IPhoto,
   IPhotoStoredData,
   IPhotoUseCaseTestUtils,
@@ -48,7 +49,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
       tagDb,
     );
 
-    dbTestUtils = new PhotoDbTestUtils(photoDataDb, photoImageDb);
+    dbTestUtils = new PhotoDbTestUtils(photoDataDb, photoImageDb, tagDb);
     expectsTestUtils = new PhotoExpectsTestUtils(dbTestUtils);
     useCaseTestUtils = new PhotoUseCaseTestUtils(
       testedUseCase,
@@ -83,21 +84,31 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
     });
 
     describe("when there is a photo to replace", () => {
-      let photoToReplace: IPhoto;
+      const tags: ITag[] = [
+        { _id: "tag1", name: "tag1" },
+        { _id: "tag2", name: "tag2" },
+      ];
+      const tagIds = tags.map((t) => t._id);
+
+      let photoToReplaceAddPhotoParams: IAddPhotoParams;
 
       beforeEach(async () => {
-        photoToReplace = await dumbPhotoGenerator.generatePhoto();
-        await dbTestUtils.addPhoto(photoToReplace);
+        await tagTestUtils.insertTagsInDb(tags);
+
+        photoToReplaceAddPhotoParams =
+          await dumbPhotoGenerator.generateAddPhotoParams({ tagIds });
+        await dbTestUtils.addPhoto(photoToReplaceAddPhotoParams);
       });
 
       afterEach(async () => {
-        await dbTestUtils.deletePhoto(photoToReplace._id);
+        await dbTestUtils.deletePhoto(photoToReplaceAddPhotoParams._id);
+        await tagTestUtils.deleteTagsFromDb(tags);
       });
 
       describe("when there is no image in the new photo", () => {
         beforeEach(async () => {
           const newPhotoWithoutImage = await dumbPhotoGenerator.generatePhoto({
-            _id: photoToReplace._id,
+            _id: photoToReplaceAddPhotoParams._id,
           });
           delete newPhotoWithoutImage.imageBuffer;
 
@@ -117,14 +128,17 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
 
         it("should not update the data (other than image) in the photo-data db", async () => {
           const expectedStoreData: IPhotoStoredData =
-            await fromAddPhotoParamsToPhotoStoredData(photoToReplace, tagDb);
+            await fromAddPhotoParamsToPhotoStoredData(
+              photoToReplaceAddPhotoParams,
+              tagDb,
+            );
 
           try {
             await useCaseTestUtils.executeTestedUseCase(useCaseParams);
           } catch (err) {
           } finally {
             await expectsTestUtils.expectPhotoStoredDataToBe(
-              photoToReplace._id,
+              photoToReplaceAddPhotoParams._id,
               expectedStoreData,
             );
             expectsTestUtils.checkAssertions();
@@ -133,24 +147,12 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
       });
 
       describe("when there is an image in the new photo", () => {
-        const tags: ITag[] = [
-          { _id: "tag1", name: "tag1" },
-          { _id: "tag2", name: "tag2" },
-        ];
-        const tagIds = tags.map((t) => t._id);
-
         beforeEach(async () => {
           const newPhoto = await dumbPhotoGenerator.generatePhoto({
-            _id: photoToReplace._id,
+            _id: photoToReplaceAddPhotoParams._id,
           });
 
-          await tagTestUtils.insertTagsInDb(tags);
-
           useCaseParams = { ...newPhoto, tagIds };
-        });
-
-        afterEach(async () => {
-          await tagTestUtils.deleteTagsFromDb(tags);
         });
 
         it("should replace the photo image in the photo-image db", async () => {

@@ -5,7 +5,7 @@ import {
   PhotoDbTestUtils,
   PhotoExpectsTestUtils,
 } from "#shared/test-utils";
-import { ITag } from "#tag-context";
+import { ITag, ITagDb, TagDbFake } from "#tag-context";
 import { clone } from "ramda";
 
 import {
@@ -30,6 +30,7 @@ import { SearchPhotoUseCase } from "./search-photo";
 describe(`${SearchPhotoUseCase.name}`, () => {
   let photoDataDb: IPhotoDataDb;
   let photoImageDb: IPhotoImageDb;
+  let tagDb: ITagDb;
 
   let testedUseCase: ISearchPhotoUseCase;
 
@@ -40,10 +41,11 @@ describe(`${SearchPhotoUseCase.name}`, () => {
   beforeEach(async () => {
     photoDataDb = new FakePhotoDataDb();
     photoImageDb = new FakePhotoImageDb();
+    tagDb = new TagDbFake();
 
     testedUseCase = new SearchPhotoUseCase(photoDataDb, photoImageDb);
 
-    dbTestUtils = new PhotoDbTestUtils(photoDataDb, photoImageDb);
+    dbTestUtils = new PhotoDbTestUtils(photoDataDb, photoImageDb, tagDb);
     expectsTestUtils = new PhotoExpectsTestUtils(dbTestUtils);
     useCaseTestUtils = new PhotoUseCaseTestUtils(
       testedUseCase,
