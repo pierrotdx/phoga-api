@@ -28,7 +28,7 @@ export class AddPhotoParser implements IAddPhotoParser {
   addTagIds(data: Fields) {
     const tagIds = data?.tagIds;
     if (tagIds) {
-      this.addPhotoParams.tagIds = tagIds;
+      this.addPhotoParams.tagIds = tagIds[0].split(",");
     }
   }
 
@@ -62,7 +62,7 @@ export class AddPhotoParser implements IAddPhotoParser {
     }
     const titles = data.titles;
     if (titles?.length) {
-      metadata.titles = titles;
+      metadata.titles = titles[0].split(",");
     }
     if (!isEmpty(metadata)) {
       this.addPhotoParams.metadata = metadata;
