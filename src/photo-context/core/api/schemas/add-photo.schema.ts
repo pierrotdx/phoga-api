@@ -1,6 +1,5 @@
 import { TSchema } from "#shared/models";
 import { UuidSchema } from "#shared/uuid";
-import { UUID } from "mongodb";
 
 export const AddPhotoSchema: TSchema = {
   type: "object",
