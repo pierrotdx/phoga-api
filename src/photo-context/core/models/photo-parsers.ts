@@ -8,7 +8,7 @@ import { ISearchPhotoOptions } from "./search-photo-options";
 // Parsed-data interfaces
 export type IGetPhotoParams = IPhoto["_id"];
 export type IDeletePhotoParams = IGetPhotoParams;
-export interface IAddPhotoParams extends IPhoto {
+export interface IAddPhotoParams extends Omit<IPhoto, "tags"> {
   tagIds?: ITag["_id"][];
 }
 export interface IReplacePhotoParams extends IAddPhotoParams {}

@@ -22,11 +22,11 @@ export class ExpressPhotoTestUtils {
   }
 
   private getPhotoFromGetMetadataResponse(res: Response): IPhoto {
-    const { _id, metadata } = res.body;
+    const { _id, metadata, tags } = res.body;
     if (metadata?.date) {
       metadata.date = new Date(metadata.date);
     }
-    return new Photo(_id, { photoData: { metadata } });
+    return new Photo(_id, { photoData: { metadata, tags } });
   }
 
   private getPhotoFromGetImageResponse(res: Response): IPhoto {

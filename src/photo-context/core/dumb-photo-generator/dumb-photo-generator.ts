@@ -1,7 +1,6 @@
 import { ILoremIpsumGenerator } from "#shared/lorem-ipsum";
 import { IUuidGenerator } from "#shared/uuid";
 import { ITag } from "#tag-context";
-import { readFile } from "fs/promises";
 import fetch from "node-fetch";
 import { clone } from "ramda";
 

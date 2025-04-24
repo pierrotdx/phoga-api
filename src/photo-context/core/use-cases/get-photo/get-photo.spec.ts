@@ -96,7 +96,10 @@ describe(`${GetPhotoUseCase.name}`, () => {
 
           it("should return the photo with only the photo data", async () => {
             const expectedPhoto = new Photo(photoToGet._id, {
-              photoData: { metadata: photoToGet.metadata },
+              photoData: {
+                metadata: photoToGet.metadata,
+                tags: photoToGet.tags,
+              },
             });
 
             const result = await useCaseTestUtils.executeTestedUseCase(

@@ -16,10 +16,13 @@ export async function fromAddPhotoParamsToPhotoStoredData(
 }
 
 async function getTags(tagDb: ITagDb, tagIds: ITag["_id"][]): Promise<ITag[]> {
+  if (!tagDb) {
+    throw new Error("no tag db provided");
+  }
   const tags$ = tagIds.map(async (id) => await tagDb.getById(id));
   const tags = await Promise.all(tags$);
-  const hasInvalidTag = tags.some((t) => !t);
-  if (hasInvalidTag) {
+  const hasTagNotFound = tags.some((t) => !t);
+  if (hasTagNotFound) {
     throw new Error("failed retrieving tags");
   }
   return tags;
