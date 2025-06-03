@@ -1,4 +1,4 @@
-import { IRendering, SortDirection } from "#shared/models";
+import { IRendering, ISearchResult, SortDirection } from "#shared/models";
 import {
   IPhotoDbTestUtils,
   IPhotoExpectsTestUtils,
@@ -36,7 +36,7 @@ describe(`${SearchPhotoUseCase.name}`, () => {
 
   let dbTestUtils: IPhotoDbTestUtils;
   let expectsTestUtils: IPhotoExpectsTestUtils;
-  let useCaseTestUtils: IPhotoUseCaseTestUtils<IPhoto[]>;
+  let useCaseTestUtils: IPhotoUseCaseTestUtils<ISearchResult<IPhoto>>;
 
   beforeEach(async () => {
     photoDataDb = new FakePhotoDataDb();
@@ -72,9 +72,17 @@ describe(`${SearchPhotoUseCase.name}`, () => {
       let useCaseParams: ISearchPhotoParams;
 
       it("should return the photos stored in the database", async () => {
+        const expectedSearchResult: ISearchResult<IPhoto> = {
+          hits: storedPhotos,
+          totalCount: storedPhotos.length,
+        };
+
         const searchResult = await useCaseTestUtils.executeTestedUseCase();
 
-        expectsTestUtils.expectEqualPhotoArrays(searchResult, storedPhotos);
+        expectsTestUtils.expectEqualSearchResults(
+          searchResult,
+          expectedSearchResult,
+        );
         expectsTestUtils.checkAssertions();
       });
 
@@ -103,11 +111,18 @@ describe(`${SearchPhotoUseCase.name}`, () => {
                 photoData: fromPhotoStoredDataToPhotoData(p),
               }),
           );
+          const expectedSearchResult: ISearchResult<IPhoto> = {
+            hits: expectedPhotos,
+            totalCount: storedPhotos.length,
+          };
 
-          const result =
+          const searchResult =
             await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
-          expectsTestUtils.expectEqualPhotoArrays(expectedPhotos, result);
+          expectsTestUtils.expectEqualSearchResults(
+            searchResult,
+            expectedSearchResult,
+          );
           expectsTestUtils.checkAssertions();
         });
       });
@@ -126,7 +141,7 @@ describe(`${SearchPhotoUseCase.name}`, () => {
             const result =
               await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
-            expectsTestUtils.expectPhotosOrderToBe(result, expectedOrder);
+            expectsTestUtils.expectPhotosOrderToBe(result.hits, expectedOrder);
             expectsTestUtils.checkAssertions();
           },
         );
@@ -147,7 +162,10 @@ describe(`${SearchPhotoUseCase.name}`, () => {
             const result =
               await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
-            expectsTestUtils.expectArraySizeToBeAtMost(result, expectedSize);
+            expectsTestUtils.expectArraySizeToBeAtMost(
+              result.hits,
+              expectedSize,
+            );
             expectsTestUtils.checkAssertions();
           },
         );
@@ -169,7 +187,7 @@ describe(`${SearchPhotoUseCase.name}`, () => {
 
             expectsTestUtils.expectSubArrayToStartFromIndex(
               storedPhotos,
-              result,
+              result.hits,
               expectedStartIndex,
             );
             expectsTestUtils.checkAssertions();
@@ -189,11 +207,18 @@ describe(`${SearchPhotoUseCase.name}`, () => {
             const expectedPhotos = clone(storedPhotos).map((p) =>
               excludeImages ? getPhotoWithoutImage(p) : p,
             );
+            const expectedSearchResult: ISearchResult<IPhoto> = {
+              hits: expectedPhotos,
+              totalCount: storedPhotos.length,
+            };
 
             const result =
               await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
-            expectsTestUtils.expectEqualPhotoArrays(result, expectedPhotos);
+            expectsTestUtils.expectEqualSearchResults(
+              result,
+              expectedSearchResult,
+            );
             expectsTestUtils.checkAssertions();
           },
         );

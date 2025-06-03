@@ -784,13 +784,20 @@ describe("ExpressAppServer", () => {
         });
 
         it("should return the photos whose tags include the required tag", async () => {
-          const expectedPhotos: IPhoto[] = storedPhotosWithTag;
+          const expectedSearchResult: ISearchResult<IPhoto> = {
+            hits: storedPhotosWithTag,
+            totalCount: storedPhotosWithTag.length,
+          };
 
           const response =
             await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
-          const result = appTestUtils.getPhotosFromSearchResponse(response);
+          const searchResult =
+            appTestUtils.getPhotosFromSearchResponse(response);
 
-          photoExpectsTestUtils.expectEqualPhotoArrays(expectedPhotos, result);
+          photoExpectsTestUtils.expectEqualSearchResults(
+            expectedSearchResult,
+            searchResult,
+          );
           photoExpectsTestUtils.checkAssertions();
         });
       });
@@ -808,9 +815,13 @@ describe("ExpressAppServer", () => {
 
             const response =
               await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
-            const result = appTestUtils.getPhotosFromSearchResponse(response);
+            const searchResult =
+              appTestUtils.getPhotosFromSearchResponse(response);
 
-            photoExpectsTestUtils.expectPhotosOrderToBe(result, expectedOrder);
+            photoExpectsTestUtils.expectPhotosOrderToBe(
+              searchResult.hits,
+              expectedOrder,
+            );
             photoExpectsTestUtils.checkAssertions();
           },
         );
@@ -830,10 +841,11 @@ describe("ExpressAppServer", () => {
 
             const response =
               await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
-            const result = appTestUtils.getPhotosFromSearchResponse(response);
+            const searchResult =
+              appTestUtils.getPhotosFromSearchResponse(response);
 
             photoExpectsTestUtils.expectArraySizeToBeAtMost(
-              result,
+              searchResult.hits,
               expectedSize,
             );
             photoExpectsTestUtils.checkAssertions();
@@ -867,11 +879,12 @@ describe("ExpressAppServer", () => {
 
             const response =
               await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
-            const result = appTestUtils.getPhotosFromSearchResponse(response);
+            const searchResult =
+              appTestUtils.getPhotosFromSearchResponse(response);
 
             photoExpectsTestUtils.expectSubArrayToStartFromIndex(
               orderedStoredPhotos,
-              result,
+              searchResult.hits,
               expectedStartIndex,
             );
             photoExpectsTestUtils.checkAssertions();
@@ -892,14 +905,19 @@ describe("ExpressAppServer", () => {
             const expectedPhotos = clone(storedPhotos).map((p) =>
               excludeImages ? omit(["imageBuffer"], p) : p,
             );
+            const expectedSearchResult: ISearchResult<IPhoto> = {
+              hits: expectedPhotos,
+              totalCount: expectedPhotos.length,
+            };
 
             const response =
               await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
-            const result = appTestUtils.getPhotosFromSearchResponse(response);
+            const searchResult =
+              appTestUtils.getPhotosFromSearchResponse(response);
 
-            photoExpectsTestUtils.expectEqualPhotoArrays(
-              result,
-              expectedPhotos,
+            photoExpectsTestUtils.expectEqualSearchResults(
+              searchResult,
+              expectedSearchResult,
             );
             photoExpectsTestUtils.checkAssertions();
           },

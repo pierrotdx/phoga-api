@@ -15,7 +15,8 @@ export class DeleteTagUseCase implements IDeleteTagUseCase {
   }
 
   private async deleteTagInPhotos(id: ITag["_id"]): Promise<void> {
-    const photos = await this.photoDataDb.find({ filter: { tagId: id } });
+    const searchResult = await this.photoDataDb.find({ filter: { tagId: id } });
+    const photos = searchResult.hits;
     photos.forEach((p) => this.removeTagFromPhoto(p, id));
     await this.insertPhotos(photos);
   }

@@ -1,4 +1,4 @@
-import { IRendering } from "#shared/models";
+import { IRendering, ISearchResult } from "#shared/models";
 
 import { IPhoto, IPhotoStoredData, ISearchPhotoFilter } from "../..";
 
@@ -13,5 +13,5 @@ export interface IPhotoDataDb {
   }: {
     filter?: ISearchPhotoFilter;
     rendering?: IRendering;
-  }) => Promise<IPhotoStoredData[]>;
+  }) => Promise<ISearchResult<IPhotoStoredData>>;
 }

@@ -1,10 +1,10 @@
 import { ExpressController, IExpressController } from "#shared/express";
+import { ISearchResult } from "#shared/models";
 import { AjvValidator, IValidator } from "#shared/validators";
 import { type Request, type Response } from "express";
 
 import {
   IPhoto,
-  IPhotoData,
   IPhotoDataDb,
   IPhotoImageDb,
   ISearchPhotoOptions,
@@ -42,7 +42,7 @@ export class SearchPhotoController
 
   protected async executeUseCase(
     searchOptions: ISearchPhotoOptions,
-  ): Promise<IPhoto[]> {
+  ): Promise<ISearchResult<IPhoto>> {
     return await this.useCase.execute(searchOptions);
   }
 
