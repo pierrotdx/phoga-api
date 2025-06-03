@@ -4,6 +4,7 @@ import { Request, Response } from "express";
 
 import {
   ISearchTagFilter,
+  ISearchTagOptions,
   ISearchTagParser,
   ISearchTagUseCase,
   ITag,
@@ -31,8 +32,8 @@ export class SearchTagController
     return this.parser.parse(req);
   }
 
-  protected async executeUseCase(filter?: ISearchTagFilter): Promise<unknown> {
-    return await this.useCase.execute(filter);
+  protected async executeUseCase(filter?: ISearchTagFilter, options?: ISearchTagOptions): Promise<unknown> {
+    return await this.useCase.execute(filter, options);
   }
 
   protected sendResponse(res: Response, tags: ITag[]): void {

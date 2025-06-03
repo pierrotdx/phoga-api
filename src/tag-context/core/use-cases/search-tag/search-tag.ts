@@ -1,5 +1,7 @@
+import { ISearchResult } from "#shared/models";
+
 import {
-  ISearchTagFilter,
+  ISearchTagParams,
   ISearchTagUseCase,
   ITag,
   ITagDb,
@@ -8,7 +10,7 @@ import {
 export class SearchTagUseCase implements ISearchTagUseCase {
   constructor(private readonly tagDb: ITagDb) {}
 
-  async execute(filter?: ISearchTagFilter): Promise<ITag[]> {
-    return await this.tagDb.find(filter);
+  async execute(params?: ISearchTagParams): Promise<ISearchResult<ITag>> {
+    return await this.tagDb.find(params?.filter, params?.options);
   }
 }
