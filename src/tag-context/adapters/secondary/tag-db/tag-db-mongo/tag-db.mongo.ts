@@ -80,7 +80,12 @@ export class TagDbMongo implements ITagDb {
     options?: ISearchTagOptions,
   ): void {
     const size = options?.size || this.defaultSize;
-    const skip = typeof options?.from === "number" ? options?.from - 1 : 0;
+
+    let skip = (options?.from || 0) - 1;
+    if (skip < 0) {
+      skip = 0;
+    }
+
     // https://codebeyondlimits.com/articles/pagination-in-mongodb-the-only-right-way-to-implement-it-and-avoid-common-mistakes
     const query: Document = {
       $facet: {

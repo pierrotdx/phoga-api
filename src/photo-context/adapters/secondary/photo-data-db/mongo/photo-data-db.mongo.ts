@@ -103,7 +103,12 @@ export class PhotoDataDbMongo implements IPhotoDataDb {
     rendering: IRendering,
   ) {
     const size = rendering?.size || this.defaultSize;
-    const skip = typeof rendering?.from === "number" ? rendering?.from - 1 : 0;
+
+    let skip = (rendering?.from || 0) - 1;
+    if (skip < 0) {
+      skip = 0;
+    }
+
     // https://codebeyondlimits.com/articles/pagination-in-mongodb-the-only-right-way-to-implement-it-and-avoid-common-mistakes
     const query: Document = {
       $facet: {
