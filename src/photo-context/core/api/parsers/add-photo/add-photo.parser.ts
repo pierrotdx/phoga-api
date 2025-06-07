@@ -25,10 +25,11 @@ export class AddPhotoParser implements IAddPhotoParser {
     await this.addImageBuffer(files);
     return this.addPhotoParams;
   }
+
   addTagIds(data: Fields) {
     const tagIds = data?.tagIds;
     if (tagIds) {
-      this.addPhotoParams.tagIds = tagIds[0].split(",");
+      this.addPhotoParams.tagIds = tagIds;
     }
   }
 
@@ -62,7 +63,7 @@ export class AddPhotoParser implements IAddPhotoParser {
     }
     const titles = data.titles;
     if (titles?.length) {
-      metadata.titles = titles[0].split(",");
+      metadata.titles = titles;
     }
     if (!isEmpty(metadata)) {
       this.addPhotoParams.metadata = metadata;
