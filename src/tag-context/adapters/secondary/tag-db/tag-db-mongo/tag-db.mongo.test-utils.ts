@@ -2,10 +2,11 @@ import {
   AssertionsCounter,
   IAssertionsCounter,
 } from "#shared/assertions-counter";
+import { ISearchResult } from "#shared/models";
 import { MongoDoc } from "#shared/mongo";
-import { equals } from "ramda";
+import { TagTestUtils } from "#shared/test-utils";
 
-import { ISearchTagFilter, ITag } from "../../../../core";
+import { ISearchTagFilter, ISearchTagOptions, ITag } from "../../../../core";
 import { MongoTestUtils } from "./mongo.test-utils";
 import { TagDbMongo } from "./tag-db.mongo";
 
@@ -14,9 +15,11 @@ export class TagDbMongoTestUtils {
 
   private testedClass: TagDbMongo;
   private readonly assertionsCounter: IAssertionsCounter;
+  private readonly tagTestUtils: TagTestUtils;
 
   constructor(testGlobalData: any) {
     this.mongoTestUtils = new MongoTestUtils(testGlobalData);
+    this.tagTestUtils = new TagTestUtils(this.testedClass);
     this.assertionsCounter = new AssertionsCounter();
   }
 
@@ -71,8 +74,8 @@ export class TagDbMongoTestUtils {
     await this.testedClass.delete(id);
   }
 
-  async find(filter?: ISearchTagFilter): Promise<ITag[]> {
-    return await this.testedClass.find(filter);
+  async find(filter?: ISearchTagFilter, options?: ISearchTagOptions): Promise<ISearchResult<ITag>> {
+    return await this.testedClass.find(filter, options);
   }
 
   async expectTagToBeInDb(expectedTag: ITag): Promise<void> {
@@ -121,16 +124,14 @@ export class TagDbMongoTestUtils {
     this.assertionsCounter.checkAssertions();
   }
 
-  expectEqualTagArrays(tags1: ITag[], tags2: ITag[]): void {
-    expect(tags1.length).toBe(tags2.length);
-    this.assertionsCounter.increase();
-
-    tags1.forEach((tag1) => {
-      const isInTags2 = tags2.some((tag2) => equals(tag1, tag2));
-      expect(isInTags2).toBe(true);
-      this.assertionsCounter.increase();
-    });
-
-    this.assertionsCounter.checkAssertions();
+  expectSearchResultToBe(
+    expectedSearchResult: ISearchResult<ITag>,
+    searchResult: ISearchResult<ITag>,
+  ): void {
+    this.tagTestUtils.expectSearchResultToBe(
+      expectedSearchResult,
+      searchResult,
+    );
+    this.tagTestUtils.checkAssertions();
   }
 }

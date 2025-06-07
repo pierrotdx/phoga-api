@@ -11,6 +11,7 @@ import {
   Photo,
   PhotoEntryPointId,
 } from "#photo-context";
+import { ISearchResult } from "#shared/models";
 import { ExpressPhotoTestUtils } from "#shared/test-utils";
 import { IUuidGenerator, UuidGenerator } from "#shared/uuid";
 import request, { Response, Test } from "supertest";
@@ -77,8 +78,9 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
     return this.expressSharedTestUtils.getPhotoFromResponse(res);
   }
 
-  getPhotosFromSearchResponse(res: Response): IPhoto[] {
-    const photosWithStringDates = res.body as IPhoto[];
+  getPhotosFromSearchResponse(res: Response): ISearchResult<IPhoto> {
+    const searchResult = res.body as ISearchResult<IPhoto>;
+    const photosWithStringDates = searchResult.hits as IPhoto[];
     const photos = photosWithStringDates.map((photo) => {
       if (photo.metadata?.date) {
         photo.metadata.date = new Date(photo.metadata.date);
@@ -93,7 +95,7 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
         : undefined;
       return new Photo(photo._id, { imageBuffer, photoData });
     });
-    return photos;
+    return { ...searchResult, hits: photos };
   }
 
   generateId(): string {

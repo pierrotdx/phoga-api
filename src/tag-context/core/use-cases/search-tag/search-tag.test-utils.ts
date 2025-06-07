@@ -1,7 +1,8 @@
+import { ISearchResult } from "#shared/models";
 import { TagTestUtils } from "#shared/test-utils";
 
 import {
-  ISearchTagFilter,
+  ISearchTagParams,
   ISearchTagUseCase,
   ITag,
   ITagDb,
@@ -18,8 +19,10 @@ export class SearchTagTestUtils {
     this.tagTestUtils = new TagTestUtils(tagDb);
   }
 
-  async executeTestedUseCase(filter?: ISearchTagFilter): Promise<ITag[]> {
-    return this.testedUseCase.execute(filter);
+  async executeTestedUseCase(
+    params?: ISearchTagParams,
+  ): Promise<ISearchResult<ITag>> {
+    return this.testedUseCase.execute(params);
   }
 
   async insertTagsInDb(tags: ITag[]): Promise<void> {
@@ -33,8 +36,14 @@ export class SearchTagTestUtils {
     await this.tagTestUtils.deleteTagsFromDb(tags);
   }
 
-  expectEqualTagArrays(tags1: ITag[], tags2: ITag[]): void {
-    this.tagTestUtils.expectEqualTagArrays(tags1, tags2);
+  expectSearchResultToBe(
+    expectedSearchResult: ISearchResult<ITag>,
+    searchResult: ISearchResult<ITag>,
+  ): void {
+    this.tagTestUtils.expectSearchResultToBe(
+      expectedSearchResult,
+      searchResult,
+    );
     this.tagTestUtils.checkAssertions();
   }
 }

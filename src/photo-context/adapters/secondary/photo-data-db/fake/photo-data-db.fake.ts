@@ -1,4 +1,4 @@
-import { IRendering, SortDirection } from "#shared/models";
+import { IRendering, ISearchResult, SortDirection } from "#shared/models";
 import { clone, omit } from "ramda";
 
 import {
@@ -35,7 +35,7 @@ export class FakePhotoDataDb implements IPhotoDataDb {
   }: {
     filter?: ISearchPhotoFilter;
     rendering?: IRendering;
-  }): Promise<IPhotoStoredData[]> {
+  }): Promise<ISearchResult<IPhotoStoredData>> {
     let photos = this.getPhotosFromDocs();
 
     if (filter?.tagId) {
@@ -55,7 +55,7 @@ export class FakePhotoDataDb implements IPhotoDataDb {
     if (typeof rendering?.from === "number") {
       photos = photos.slice(rendering.from - 1);
     }
-    return photos;
+    return { hits: photos, totalCount: photos.length };
   }
 
   private getPhotosFromDocs(): IPhotoStoredData[] {

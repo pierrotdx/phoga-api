@@ -1,4 +1,4 @@
-import { IRendering, SortDirection } from "#shared/models";
+import { IRendering, ISearchResult, SortDirection } from "#shared/models";
 import {
   IPhotoDbTestUtils,
   IPhotoExpectsTestUtils,
@@ -7,7 +7,7 @@ import {
 } from "#shared/test-utils";
 import { ITag } from "#tag-context";
 
-import { IPhotoStoredData, ISearchPhotoFilter } from "../../../../core";
+import { IPhoto, IPhotoStoredData, ISearchPhotoFilter } from "../../../../core";
 import { dumbPhotoGenerator } from "../../../primary";
 import { PhotoDataDbMongo } from "./photo-data-db.mongo";
 import { PhotoDataDbMongoTestUtils } from "./photo-data-db.mongo.test-utils";
@@ -155,11 +155,17 @@ describe("PhotoDataDbMongo", () => {
 
     describe("when no filter is required", () => {
       it("should return all the documents", async () => {
-        const expectedResult = storedPhotos;
+        const expectedSearchResult: ISearchResult<IPhoto> = {
+          hits: storedPhotos,
+          totalCount: storedPhotos.length,
+        };
 
-        const result = await photoDataDbMongo.find();
+        const searchResult = await photoDataDbMongo.find();
 
-        expectsTestUtils.expectEqualPhotoArrays(result, expectedResult);
+        expectsTestUtils.expectEqualSearchResults(
+          expectedSearchResult,
+          searchResult,
+        );
         expectsTestUtils.checkAssertions();
       });
 
@@ -171,14 +177,21 @@ describe("PhotoDataDbMongo", () => {
         `(
           "should sort the returned documents by date in $case order when required",
           async ({ rendering }: { rendering: IRendering }) => {
-            const expectedResult = setupTestUtils.getPhotosSortedByDate(
+            const expectedPhotos = setupTestUtils.getPhotosSortedByDate(
               storedPhotos,
               rendering.dateOrder,
             );
+            const expectedSearchResult: ISearchResult<IPhoto> = {
+              hits: expectedPhotos,
+              totalCount: expectedPhotos.length,
+            };
 
-            const result = await photoDataDbMongo.find({ rendering });
+            const searchResult = await photoDataDbMongo.find({ rendering });
 
-            expectsTestUtils.expectEqualPhotoArrays(expectedResult, result);
+            expectsTestUtils.expectEqualSearchResults(
+              expectedSearchResult,
+              searchResult,
+            );
             expectsTestUtils.checkAssertions();
           },
         );
@@ -193,9 +206,12 @@ describe("PhotoDataDbMongo", () => {
         `(
           "should return at most $rendering.size results when required",
           async ({ rendering }: { rendering: IRendering }) => {
-            const result = await photoDataDbMongo.find({ rendering });
+            const searchResult = await photoDataDbMongo.find({ rendering });
 
-            expectsTestUtils.expectArraySizeToBeAtMost(result, rendering.size);
+            expectsTestUtils.expectArraySizeToBeAtMost(
+              searchResult.hits,
+              rendering.size,
+            );
             expectsTestUtils.checkAssertions();
           },
         );
@@ -223,8 +239,8 @@ describe("PhotoDataDbMongo", () => {
             );
             const expectedResult = ascendingPhotos[docIndex];
 
-            const result = await photoDataDbMongo.find({ rendering });
-            const firstResultItem = result[0];
+            const searchResult = await photoDataDbMongo.find({ rendering });
+            const firstResultItem = searchResult.hits[0];
 
             expect(firstResultItem).toEqual(expectedResult);
             expect.assertions(1);
@@ -253,11 +269,17 @@ describe("PhotoDataDbMongo", () => {
       });
 
       it("should return the photos whose tags include the required tag", async () => {
-        const expectedPhotos = storedPhotosWithTag;
+        const expectedSearchResult: ISearchResult<IPhoto> = {
+          hits: storedPhotosWithTag,
+          totalCount: storedPhotosWithTag.length,
+        };
 
-        const result = await photoDataDbMongo.find({ filter });
+        const searchResult = await photoDataDbMongo.find({ filter });
 
-        expectsTestUtils.expectEqualPhotoArrays(expectedPhotos, result);
+        expectsTestUtils.expectEqualSearchResults(
+          expectedSearchResult,
+          searchResult,
+        );
         expectsTestUtils.checkAssertions();
       });
     });

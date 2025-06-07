@@ -23,9 +23,10 @@ export class ReplaceTagUseCase implements IReplaceTagUseCase {
   private async getPhotosToUpdate(
     tagId: ITag["_id"],
   ): Promise<IPhotoStoredData[]> {
-    return await this.photoDataDb.find({
+    const searchResult = await this.photoDataDb.find({
       filter: { tagId },
     });
+    return searchResult.hits;
   }
 
   private updateTagInPhoto(photo: IPhotoStoredData, tag: ITag): void {

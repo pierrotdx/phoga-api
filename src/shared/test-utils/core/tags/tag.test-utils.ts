@@ -2,7 +2,7 @@ import {
   AssertionsCounter,
   IAssertionsCounter,
 } from "#shared/assertions-counter";
-import { IUseCase } from "#shared/models";
+import { ISearchResult, IUseCase } from "#shared/models";
 import { ITag, ITagDb } from "#tag-context";
 import { equals } from "ramda";
 
@@ -52,8 +52,8 @@ export class TagTestUtils extends DbTagTestUtils {
     this.assertionsCounter.checkAssertions();
   }
 
-  expectEqualTagArrays(tags1: ITag[], tags2: ITag[]): void {
-    expect(tags1.length).toBe(tags2.length);
+  private expectEqualTagArrays(tags1: ITag[], tags2: ITag[]): void {
+    expect(tags2.length).toBe(tags1.length);
     this.assertionsCounter.increase();
 
     tags1.forEach((tag1) => {
@@ -61,5 +61,14 @@ export class TagTestUtils extends DbTagTestUtils {
       expect(isInTags2).toBe(true);
       this.assertionsCounter.increase();
     });
+  }
+
+  expectSearchResultToBe(
+    expectedSearchResult: ISearchResult<ITag>,
+    searchResult: ISearchResult<ITag>,
+  ): void {
+    this.expectEqualTagArrays(expectedSearchResult.hits, searchResult.hits);
+    expect(searchResult.totalCount).toBe(expectedSearchResult.totalCount);
+    this.assertionsCounter.increase();
   }
 }

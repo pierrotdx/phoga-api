@@ -1,68 +1,70 @@
-import { clone } from "ramda";
+import { ISearchResult } from "#shared/models";
 
 import { fromPhotoStoredDataToPhotoData } from "../../";
 import { IPhotoDataDb, IPhotoImageDb } from "../../gateways";
 import {
   IPhoto,
+  IPhotoStoredData,
   ISearchPhotoParams,
   ISearchPhotoUseCase,
   Photo,
 } from "../../models";
 
 export class SearchPhotoUseCase implements ISearchPhotoUseCase {
-  private photos: IPhoto[] = [];
-
   constructor(
     private readonly photoDataDb: IPhotoDataDb,
     private readonly photoImageDb: IPhotoImageDb,
   ) {}
 
-  async execute(searchPhotoParams: ISearchPhotoParams) {
+  async execute(
+    searchPhotoParams: ISearchPhotoParams,
+  ): Promise<ISearchResult<IPhoto>> {
     try {
-      await this.setPhotosWithoutImages(searchPhotoParams);
+      const searchResult =
+        await this.searchPhotosWithoutImages(searchPhotoParams);
       if (!searchPhotoParams?.options?.excludeImages) {
-        await this.fetchImages();
+        await this.fetchImages(searchResult);
       }
-      const photos = clone(this.photos);
-      return photos;
+      return searchResult;
     } catch (err) {
       throw err;
-    } finally {
-      this.resetPhotos();
     }
   }
 
-  private async setPhotosWithoutImages(
+  private async searchPhotosWithoutImages(
     searchPhotoParams: ISearchPhotoParams,
-  ): Promise<void> {
+  ): Promise<ISearchResult<IPhoto>> {
     const { filter, options } = { ...searchPhotoParams };
-    const photosStoredData = await this.photoDataDb.find({
+    const rawSearchResult = await this.photoDataDb.find({
       filter,
       rendering: options?.rendering,
     });
-    this.photos = photosStoredData.map((p) => {
-      const photoData = fromPhotoStoredDataToPhotoData(p);
-      return new Photo(photoData._id, { photoData });
-    });
+    const formattedSearchResult = {
+      ...rawSearchResult,
+      hits: rawSearchResult.hits.map(
+        this.fromPhotoStoredDataToPhotoWithoutImage,
+      ),
+    };
+    return formattedSearchResult;
   }
 
-  private async fetchImages(): Promise<void> {
-    const photoIds = this.photos.map((photo) => photo._id);
-    const dbImages = await this.photoImageDb.getByIds(photoIds);
-    this.populatePhotosWithImage(dbImages);
-  }
+  private fromPhotoStoredDataToPhotoWithoutImage = (
+    photosStoredData: IPhotoStoredData,
+  ): IPhoto => {
+    const photoData = fromPhotoStoredDataToPhotoData(photosStoredData);
+    return new Photo(photoData._id, { photoData });
+  };
 
-  private populatePhotosWithImage(images: Record<IPhoto["_id"], Buffer>): void {
-    const photoIds = Object.keys(images);
-    photoIds.forEach((id) => {
-      const photo = this.photos.find((p) => p._id === id);
-      if (photo) {
-        photo.imageBuffer = images[id];
+  private async fetchImages(
+    searchResult: ISearchResult<IPhoto>,
+  ): Promise<void> {
+    const photoIds = searchResult.hits.map((photo) => photo._id);
+    const imageBuffersById = await this.photoImageDb.getByIds(photoIds);
+    searchResult.hits.forEach((p) => {
+      const imageBuffer = imageBuffersById[p._id];
+      if (imageBuffer) {
+        p.imageBuffer = imageBuffer;
       }
     });
-  }
-
-  private resetPhotos() {
-    this.photos = [];
   }
 }

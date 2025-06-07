@@ -1,6 +1,6 @@
-import { IRendering } from "#shared/models";
+import { IRendering, ISearchResult, SortDirection } from "#shared/models";
 import { MongoManager } from "#shared/mongo";
-import { Collection, Filter, FindCursor, Sort } from "mongodb";
+import { AggregationCursor, Collection, Document, Sort } from "mongodb";
 import { isEmpty } from "ramda";
 
 import {
@@ -14,6 +14,7 @@ import {
 export class PhotoDataDbMongo implements IPhotoDataDb {
   private readonly collection: Collection<IPhotoStoredData>;
   private readonly defaultSize = 20;
+  private readonly defaultSort: Sort = { _id: 1 };
 
   constructor(private readonly mongoManager: MongoManager) {
     const photoDataCollection = this.mongoManager.collections.PhotoData;
@@ -50,56 +51,83 @@ export class PhotoDataDbMongo implements IPhotoDataDb {
   async find(params?: {
     filter?: ISearchPhotoFilter;
     rendering?: IRendering;
-  }): Promise<IPhotoStoredData[]> {
+  }): Promise<ISearchResult<IPhotoStoredData>> {
     const { filter, rendering } = { ...params };
 
     if (rendering?.size == 0) {
-      return [];
+      return { hits: [], totalCount: 0 };
     }
 
-    const cursor = this.collection.find();
-    this.setCurserFilter(cursor, filter);
-    this.setCursorRendering(cursor, rendering);
-    const photos = await cursor.toArray();
-    return photos as IPhotoStoredData[];
+    const cursor = this.collection.aggregate();
+    this.match(cursor, filter);
+    this.sort(cursor, rendering);
+    this.selectBatch(cursor, rendering);
+    this.format(cursor);
+    const searchResult = (await cursor.toArray())[0];
+    return searchResult as ISearchResult<IPhotoStoredData>;
   }
 
-  private setCursorRendering(cursor: FindCursor, rendering: IRendering): void {
-    cursor.limit(rendering?.size || this.defaultSize);
-
-    const sort: Sort = {};
-    if (rendering?.dateOrder) {
-      sort["metadata.date"] = rendering.dateOrder;
-    }
-    if (!isEmpty(sort)) {
-      cursor.sort(sort);
-    }
-
-    const skipValue =
-      typeof rendering?.from === "number" ? rendering.from - 1 : 0;
-    if (skipValue >= 1) {
-      cursor.skip(skipValue);
-    }
-  }
-
-  private setCurserFilter(
-    cursor: FindCursor,
+  private match(
+    cursor: AggregationCursor<Document>,
     filter: ISearchPhotoFilter,
   ): void {
-    if (!filter) {
-      return;
+    const query: Document = {};
+
+    if (filter?.tagId) {
+      query["tags._id"] = filter.tagId;
     }
 
-    const mongoFilter: Filter<IPhotoStoredData> = {};
+    cursor.match(query);
+  }
 
-    if (filter.tagId) {
-      mongoFilter["tags._id"] = filter.tagId;
+  private sort(
+    cursor: AggregationCursor<Document>,
+    rendering: IRendering,
+  ): void {
+    const sort: Sort = {};
+
+    if (rendering?.dateOrder) {
+      sort["metadata.date"] =
+        rendering?.dateOrder === SortDirection.Ascending ? 1 : -1;
     }
 
-    if (isEmpty(mongoFilter)) {
-      return;
+    if (!isEmpty(sort)) {
+      cursor.sort(sort);
+    } else {
+      cursor.sort(this.defaultSort);
+    }
+  }
+
+  private selectBatch(
+    cursor: AggregationCursor<Document>,
+    rendering: IRendering,
+  ) {
+    const size = rendering?.size || this.defaultSize;
+
+    let skip = (rendering?.from || 0) - 1;
+    if (skip < 0) {
+      skip = 0;
     }
 
-    cursor.filter(mongoFilter);
+    // https://codebeyondlimits.com/articles/pagination-in-mongodb-the-only-right-way-to-implement-it-and-avoid-common-mistakes
+    const query: Document = {
+      $facet: {
+        data: [{ $skip: skip }, { $limit: size }],
+        metadata: [{ $count: "totalCount" }],
+      },
+    };
+    cursor.addStage(query);
+  }
+
+  private format(cursor: AggregationCursor<Document>) {
+    const query: Document = {
+      $project: {
+        hits: "$data",
+        totalCount: {
+          $ifNull: [{ $arrayElemAt: ["$metadata.totalCount", 0] }, 0],
+        },
+      },
+    };
+    cursor.addStage(query);
   }
 }

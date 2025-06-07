@@ -4,7 +4,7 @@ import {
   IAssertionsCounter,
 } from "#shared/assertions-counter";
 import { compareDates } from "#shared/compare-dates";
-import { SortDirection } from "#shared/models";
+import { ISearchResult, SortDirection } from "#shared/models";
 import { equals, omit } from "ramda";
 
 import { IPhotoDbTestUtils, IPhotoExpectsTestUtils } from "../models";
@@ -72,7 +72,7 @@ export class PhotoExpectsTestUtils implements IPhotoExpectsTestUtils {
     this.assertionsCounter.increase();
   };
 
-  expectEqualPhotoArrays(photos1: IPhoto[], photos2: IPhoto[]): void {
+  private expectEqualPhotoArrays(photos1: IPhoto[], photos2: IPhoto[]): void {
     expect(photos1.length).toEqual(photos2.length);
     this.assertionsCounter.increase();
 
@@ -81,6 +81,16 @@ export class PhotoExpectsTestUtils implements IPhotoExpectsTestUtils {
       expect(isInPhotos2).toBe(true);
       this.assertionsCounter.increase();
     });
+  }
+
+  expectEqualSearchResults(
+    expectedSearchResult: ISearchResult<IPhoto>,
+    searchResult: ISearchResult<IPhoto>,
+  ): void {
+    expect(searchResult.totalCount).toBe(expectedSearchResult.totalCount);
+    this.assertionsCounter.increase();
+
+    this.expectEqualPhotoArrays(expectedSearchResult.hits, searchResult.hits);
   }
 
   expectSubArrayToStartFromIndex(

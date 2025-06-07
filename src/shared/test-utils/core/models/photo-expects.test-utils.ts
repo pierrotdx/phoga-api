@@ -1,9 +1,9 @@
 import { IPhoto, IPhotoStoredData } from "#photo-context";
-import { SortDirection } from "#shared/models";
+import { ISearchResult, SortDirection } from "#shared/models";
 
 export interface IPhotoExpectsTestUtils {
   expectEqualPhotos(photo1: IPhoto, photo2: IPhoto): void;
-  expectEqualPhotoArrays(photos1: IPhoto[], photos2: IPhoto[]): void;
+  expectEqualSearchResults(expectedSearchResult: ISearchResult<IPhoto>, searchResult: ISearchResult<IPhoto>): void;
   expectPhotoStoredDataToBe(
     id: IPhoto["_id"],
     expectedValue: IPhotoStoredData,

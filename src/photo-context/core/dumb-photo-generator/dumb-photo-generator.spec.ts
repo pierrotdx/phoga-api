@@ -82,6 +82,7 @@ describe("dumbPhotoGenerator", () => {
         });
         assertionsCounter.checkAssertions();
       },
+      5000,
     );
   });
 });

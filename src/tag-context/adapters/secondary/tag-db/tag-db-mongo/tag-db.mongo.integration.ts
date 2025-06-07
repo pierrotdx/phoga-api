@@ -1,4 +1,6 @@
-import { ISearchTagFilter, ITag } from "../../../../core";
+import { ISearchResult } from "#shared/models";
+
+import { ISearchTagFilter, ISearchTagOptions, ITag } from "../../../../core";
 import { TagDbMongoTestUtils } from "./tag-db.mongo.test-utils";
 
 describe("TagDbMongo", () => {
@@ -138,10 +140,13 @@ describe("TagDbMongo", () => {
 
     describe("when there is no filter", () => {
       it("should return the all the tags in the db", async () => {
-        const result = await testUtils.find();
+        const searchResult = await testUtils.find();
 
-        const expectedResult = dbTags;
-        testUtils.expectEqualTagArrays(expectedResult, result);
+        const expectedSearchResult: ISearchResult<ITag> = {
+          hits: dbTags,
+          totalCount: dbTags.length,
+        };
+        testUtils.expectSearchResultToBe(expectedSearchResult, searchResult);
       });
     });
 
@@ -154,25 +159,75 @@ describe("TagDbMongo", () => {
         });
 
         it("should return an empty array", async () => {
-          const result = await testUtils.find(filter);
+          const searchResult = await testUtils.find(filter);
 
-          const expectedResult = [];
-          testUtils.expectEqualTagArrays(expectedResult, result);
+          const expectedSearchResult: ISearchResult<ITag> = {
+            hits: [],
+            totalCount: 0,
+          };
+          testUtils.expectSearchResultToBe(expectedSearchResult, searchResult);
         });
       });
 
       describe("- `filter.name`", () => {
-        let expectedResult: ITag[];
+        let expectedResult: ISearchResult<ITag>;
 
         beforeEach(() => {
           filter = { name: "aa" };
-          expectedResult = [dbTags[0], dbTags[1]];
+          const matchingTags = [dbTags[0], dbTags[1]];
+          expectedResult = {
+            hits: matchingTags,
+            totalCount: matchingTags.length,
+          };
         });
 
         it("should return tags whose name starts with the requested name filter", async () => {
-          const result = await testUtils.find(filter);
+          const searchResult = await testUtils.find(filter);
 
-          testUtils.expectEqualTagArrays(result, expectedResult);
+          testUtils.expectSearchResultToBe(expectedResult, searchResult);
+        });
+      });
+    });
+
+    describe("when options are requested", () => {
+      const filter = undefined;
+      let options: ISearchTagOptions;
+
+      beforeEach(() => {
+        options = {};
+      });
+
+      describe('when the "size" option is requested', () => {
+        const expectedSize: ISearchTagOptions["size"] = 2;
+
+        beforeEach(() => {
+          options.size = expectedSize;
+        });
+
+        it("should return a number of tags with at most the requested size", async () => {
+          const searchResult = await testUtils.find(filter, options);
+
+          expect(searchResult.hits.length).toBeLessThanOrEqual(expectedSize);
+          expect.assertions(1);
+        });
+      });
+
+      describe('when the "from" option is requested', () => {
+        const from: ISearchTagOptions["from"] = 2;
+        let expectedFirstResult: ITag;
+
+        beforeEach(() => {
+          options.from = from;
+
+          expectedFirstResult = dbTags[from - 1];
+        });
+
+        it('should return results starting from the requested "from"', async () => {
+          const searchResult = await testUtils.find(filter, options);
+
+          const firstResult = searchResult.hits[0];
+          expect(firstResult).toEqual(expectedFirstResult);
+          expect.assertions(1);
         });
       });
     });
