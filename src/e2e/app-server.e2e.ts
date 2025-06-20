@@ -245,6 +245,9 @@ describe("ExpressAppServer", () => {
               const expectedPhotoStoredData: IPhotoStoredData = {
                 ...omit(["imageBuffer"], photoWithTagToReplace),
                 tags: [newTag],
+                imageUrl: appTestUtils.getExpectedImageUrl(
+                  photoWithTagToReplace._id,
+                ),
               };
 
               const response = await request(app)
@@ -476,6 +479,9 @@ describe("ExpressAppServer", () => {
             const expectedPhotoStoredData: IPhotoStoredData = {
               ...omit(["imageBuffer"], photoWithTagToDelete),
               tags: [dumbTag],
+              imageUrl: appTestUtils.getExpectedImageUrl(
+                photoWithTagToDelete._id,
+              ),
             };
 
             const response = await request(app)
@@ -763,7 +769,10 @@ describe("ExpressAppServer", () => {
           await tagTestUtils.insertTagInDb(tag);
 
           storedPhotosWithTag = await dumbPhotoGenerator.generatePhotos(3);
-          storedPhotosWithTag.forEach((p) => (p.tags = [tag]));
+          storedPhotosWithTag.forEach((p) => {
+            p.tags = [tag];
+            p.imageUrl = appTestUtils.getExpectedImageUrl(p._id);
+          });
 
           const addStoredPhotosWithTag$ = storedPhotosWithTag.map(
             async (photo) => {
@@ -903,9 +912,10 @@ describe("ExpressAppServer", () => {
           async ({ excludeImages }: { excludeImages: boolean }) => {
             searchPhotoParams = { options: { excludeImages } };
 
-            const expectedPhotos = clone(storedPhotos).map((p) =>
-              excludeImages ? omit(["imageBuffer"], p) : p,
-            );
+            const expectedPhotos = clone(storedPhotos).map((p) => {
+              p.imageUrl = appTestUtils.getExpectedImageUrl(p._id);
+              return excludeImages ? omit(["imageBuffer"], p) : p;
+            });
             const expectedSearchResult: ISearchResult<IPhoto> = {
               hits: expectedPhotos,
               totalCount: expectedPhotos.length,
@@ -1270,6 +1280,9 @@ describe("ExpressAppServer", () => {
           it("should not delete photo's data in photo-data db", async () => {
             const expectedPhotoStoredData: IPhotoStoredData =
               await fromAddPhotoParamsToPhotoStoredData(photoToDelete, tagDb);
+            expectedPhotoStoredData.imageUrl = appTestUtils.getExpectedImageUrl(
+              photoToDelete._id,
+            );
 
             await appTestUtils.sendDeletePhotoReq({
               deletePhotoParams,

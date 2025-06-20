@@ -91,6 +91,7 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
         _id: photo._id,
         metadata: photo.metadata,
         tags: photo.tags,
+        imageUrl: this.getExpectedImageUrl(photo._id),
       };
       const imageBuffer = photo.imageBuffer
         ? Buffer.from(photo.imageBuffer)
