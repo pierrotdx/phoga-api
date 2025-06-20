@@ -33,7 +33,7 @@ import {
   ITagDb,
   TagEntryPointId,
 } from "#tag-context";
-import { type Express } from "express";
+import e, { type Express } from "express";
 import { clone, omit, pick } from "ramda";
 import request from "supertest";
 
@@ -1004,9 +1004,12 @@ describe("ExpressAppServer", () => {
               expect.assertions(1);
             });
 
-            it("should not update the data (other than image) in the photo-data db", async () => {
+            it("should not update the data in the photo-data db", async () => {
               const expectedStoreData =
                 fromPhotoStoredDataToPhotoData(storedPhoto);
+              expectedStoreData.imageUrl = appTestUtils.getExpectedImageUrl(
+                storedPhoto._id,
+              );
 
               await appTestUtils.sendReplacePhotoReq({
                 replacePhotoParams,
@@ -1068,6 +1071,9 @@ describe("ExpressAppServer", () => {
                     replacePhotoParams,
                     tagDb,
                   );
+                expectedStoredData.imageUrl = appTestUtils.getExpectedImageUrl(
+                  storedPhoto._id,
+                );
 
                 await appTestUtils.sendReplacePhotoReq({
                   replacePhotoParams,
@@ -1113,6 +1119,9 @@ describe("ExpressAppServer", () => {
                     replacePhotoParams,
                     tagDb,
                   );
+                expectedStoredData.imageUrl = appTestUtils.getExpectedImageUrl(
+                  replacePhotoParams._id,
+                );
 
                 await appTestUtils.sendReplacePhotoReq({
                   replacePhotoParams,

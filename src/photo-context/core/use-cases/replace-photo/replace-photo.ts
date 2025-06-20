@@ -18,6 +18,8 @@ export class ReplacePhotoUseCase implements IReplacePhotoUseCase {
 
   async execute(data: IReplacePhotoParams): Promise<void> {
     await this.replaceImage(data);
+    const imageUrl = await this.photoImageDb.getUrl(data._id);
+    data.imageUrl = imageUrl;
     await this.replacePhotoData(data);
   }
 
@@ -52,6 +54,7 @@ export class ReplacePhotoUseCase implements IReplacePhotoUseCase {
     const photoStoredData: IPhotoStoredData = {
       _id: data._id,
       metadata: data.metadata,
+      imageUrl: data.imageUrl,
     };
     if (data.tagIds) {
       photoStoredData.tags = await this.getTags(data.tagIds);

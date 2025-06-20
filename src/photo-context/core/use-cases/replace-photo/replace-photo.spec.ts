@@ -12,6 +12,7 @@ import {
   FakePhotoDataDb,
   FakePhotoImageDb,
   dumbPhotoGenerator,
+  getFakePhotoImageUrl,
 } from "../../../adapters/";
 import {
   IPhotoDataDb,
@@ -171,6 +172,9 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
           it("should replace the data with the new one in the photo-data db", async () => {
             const expectedStoredData =
               await fromAddPhotoParamsToPhotoStoredData(useCaseParams, tagDb);
+            expectedStoredData.imageUrl = getFakePhotoImageUrl(
+              useCaseParams._id,
+            );
 
             await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
@@ -205,6 +209,9 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
           it("should add the new data in the photo-data db", async () => {
             const expectedStoredData =
               await fromAddPhotoParamsToPhotoStoredData(useCaseParams, tagDb);
+            expectedStoredData.imageUrl = getFakePhotoImageUrl(
+              useCaseParams._id,
+            );
 
             await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
