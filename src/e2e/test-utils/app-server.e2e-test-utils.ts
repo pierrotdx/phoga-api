@@ -28,8 +28,10 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
   private readonly uuidGenerator: IUuidGenerator = new UuidGenerator();
   private addPhotoUseCase: IAddPhotoUseCase;
 
+  private readonly photoImagesBucket: string;
   constructor(testEnv: any) {
     super(testEnv);
+    this.photoImagesBucket = testEnv.__GC_PHOTO_IMAGES_BUCKET__;
   }
 
   async globalBeforeEach(): Promise<void> {
@@ -192,5 +194,9 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
 
   async addPhoto(params: IAddPhotoParams): Promise<void> {
     await this.addPhotoUseCase.execute(params);
+  }
+
+  getExpectedImageUrl(id: IPhoto["_id"]): string {
+    return `https://storage.googleapis.com/${this.photoImagesBucket}/${id}`;
   }
 }

@@ -605,6 +605,7 @@ describe("ExpressAppServer", () => {
               _id: addPhotoParams._id,
               metadata: addPhotoParams.metadata,
               tags,
+              imageUrl: appTestUtils.getExpectedImageUrl(addPhotoParams._id),
             };
 
             await appTestUtils.sendAddPhotoReq({

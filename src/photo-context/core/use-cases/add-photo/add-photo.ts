@@ -18,6 +18,8 @@ export class AddPhotoUseCase implements IAddPhotoUseCase {
 
   async execute(data: IAddPhotoParams): Promise<void> {
     await this.uploadImage(data);
+    const url = await this.photoImageDb.getUrl(data._id);
+    data.imageUrl = url;
     await this.uploadPhotoStoredData(data);
   }
 
@@ -35,6 +37,7 @@ export class AddPhotoUseCase implements IAddPhotoUseCase {
     const storedPhotoData: IPhotoStoredData = {
       _id: data._id,
       metadata: data.metadata,
+      imageUrl: data.imageUrl,
     };
     if (data.tagIds) {
       storedPhotoData.tags = await this.getTags(data.tagIds);

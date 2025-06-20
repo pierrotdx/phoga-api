@@ -1,6 +1,7 @@
 import { clone, pick } from "ramda";
 
 import { IPhoto, IPhotoImageDb } from "../../../../core";
+import { getFakePhotoImageUrl } from "./fake-photo-url";
 
 export class FakePhotoImageDb implements IPhotoImageDb {
   public readonly photoImages: Record<IPhoto["_id"], IPhoto["imageBuffer"]> =
@@ -32,6 +33,6 @@ export class FakePhotoImageDb implements IPhotoImageDb {
   }
 
   async getUrl(id: IPhoto["_id"]): Promise<string> {
-    return "https://no-url.com";
+    return getFakePhotoImageUrl(id);
   }
 }
