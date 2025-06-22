@@ -102,7 +102,8 @@ export class PhotoDataDbMongo implements IPhotoDataDb {
     cursor: AggregationCursor<Document>,
     rendering: IRendering,
   ) {
-    const size = rendering?.size || this.defaultSize;
+    const size =
+      typeof rendering?.size !== "number" ? this.defaultSize : rendering.size;
 
     let skip = (rendering?.from || 0) - 1;
     if (skip < 0) {

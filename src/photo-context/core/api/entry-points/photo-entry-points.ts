@@ -55,7 +55,6 @@ export class PhotoEntryPoints
   protected readonly entryPoints: Record<PhotoEntryPointId, EntryPoint> = {
     [PhotoEntryPointId.AddPhoto]: this.addPhoto,
     [PhotoEntryPointId.DeletePhoto]: this.deletePhoto,
-    [PhotoEntryPointId.GetPhotoImage]: this.getPhotoImage,
     [PhotoEntryPointId.GetPhotoData]: this.getPhotoData,
     [PhotoEntryPointId.ReplacePhoto]: this.replacePhoto,
     [PhotoEntryPointId.SearchPhoto]: this.searchPhoto,

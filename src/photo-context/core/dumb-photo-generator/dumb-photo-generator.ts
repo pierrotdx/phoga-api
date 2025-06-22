@@ -24,11 +24,13 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
 
   async generatePhoto(options?: IGeneratePhotoOptions): Promise<IPhoto> {
     const id = this.generateId(options);
-    const imageBuffer =
-      clone(options?.imageBuffer) || (await this.generateImageBuffer());
     const metadata = this.generateMetadata(options);
-    const photo = new Photo(id, { imageBuffer, photoData: { metadata } });
-    assertPhoto(photo);
+    const photo = new Photo(id, { photoData: { metadata } });
+    if (!options?.noImageBuffer) {
+      const imageBuffer =
+        clone(options?.imageBuffer) || (await this.generateImageBuffer());
+      photo.imageBuffer = imageBuffer;
+    }
     return photo;
   }
 
@@ -91,10 +93,13 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     return description;
   }
 
-  async generatePhotos(nbPhotos: number): Promise<IPhoto[]> {
+  async generatePhotos(
+    nbPhotos: number,
+    options?: IGeneratePhotoOptions,
+  ): Promise<IPhoto[]> {
     const photos: IPhoto[] = [];
     while (photos.length < nbPhotos) {
-      const photo = await this.generatePhoto();
+      const photo = await this.generatePhoto(options);
       photos.push(photo);
     }
     return photos;

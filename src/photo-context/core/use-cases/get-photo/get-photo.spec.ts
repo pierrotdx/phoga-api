@@ -5,6 +5,7 @@ import {
   PhotoDbTestUtils,
   PhotoExpectsTestUtils,
 } from "#shared/test-utils";
+import { omit } from "ramda";
 
 import {
   FakePhotoDataDb,
@@ -13,12 +14,10 @@ import {
 } from "../../../adapters/";
 import { IPhotoDataDb, IPhotoImageDb } from "../../gateways";
 import {
-  GetPhotoField,
-  IGetPhotoOptions,
   IGetPhotoParams,
   IPhoto,
+  IPhotoData,
   IPhotoUseCaseTestUtils,
-  Photo,
 } from "../../models";
 import { PhotoUseCaseTestUtils } from "../test-utils";
 import { GetPhotoUseCase } from "./get-photo";
@@ -35,7 +34,7 @@ describe(`${GetPhotoUseCase.name}`, () => {
     photoDataDb = new FakePhotoDataDb();
     photoImageDb = new FakePhotoImageDb();
 
-    const testedUseCase = new GetPhotoUseCase(photoDataDb, photoImageDb);
+    const testedUseCase = new GetPhotoUseCase(photoDataDb);
 
     dbTestUtils = new PhotoDbTestUtils(photoDataDb, photoImageDb);
     expectsTestUtils = new PhotoExpectsTestUtils(dbTestUtils);
@@ -69,8 +68,11 @@ describe(`${GetPhotoUseCase.name}`, () => {
     });
 
     describe("when the required photo has a stored image", () => {
+      let imageUrl: string;
+
       beforeEach(async () => {
         await dbTestUtils.addPhoto(photoToGet);
+        imageUrl = await photoImageDb.getUrl(photoToGet._id);
       });
 
       afterEach(async () => {
@@ -78,57 +80,17 @@ describe(`${GetPhotoUseCase.name}`, () => {
       });
 
       it("should return the required photo", async () => {
+        const expectedResult: IPhotoData = {
+          ...omit(["imageBuffer"], photoToGet),
+          imageUrl,
+        };
+
         const result = await useCaseTestUtils.executeTestedUseCase(
           photoToGet._id,
         );
 
-        expectsTestUtils.expectEqualPhotos(photoToGet, result);
+        expectsTestUtils.expectEqualPhotos(expectedResult, result);
         expectsTestUtils.checkAssertions();
-      });
-
-      describe("when using the `fields` option", () => {
-        let options: IGetPhotoOptions = {};
-
-        describe(`with value 'fields=[${GetPhotoField.PhotoData}]'`, () => {
-          beforeEach(() => {
-            options.fields = [GetPhotoField.PhotoData];
-          });
-
-          it("should return the photo with only the photo data", async () => {
-            const expectedPhoto = new Photo(photoToGet._id, {
-              photoData: {
-                metadata: photoToGet.metadata,
-                tags: photoToGet.tags,
-              },
-            });
-
-            const result = await useCaseTestUtils.executeTestedUseCase(
-              useCaseParams,
-              options,
-            );
-
-            expectsTestUtils.expectEqualPhotos(expectedPhoto, result);
-            expectsTestUtils.checkAssertions();
-          });
-        });
-
-        describe(`with value 'fields=[${GetPhotoField.ImageBuffer}]'`, () => {
-          beforeEach(() => {
-            options.fields = [GetPhotoField.ImageBuffer];
-          });
-
-          it("should return the photo with only the image", async () => {
-            const expectedPhoto = new Photo(photoToGet._id);
-
-            const result = await useCaseTestUtils.executeTestedUseCase(
-              useCaseParams,
-              options,
-            );
-
-            expectsTestUtils.expectEqualPhotos(expectedPhoto, result);
-            expectsTestUtils.checkAssertions();
-          });
-        });
       });
     });
   });

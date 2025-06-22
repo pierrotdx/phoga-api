@@ -12,7 +12,6 @@ import {
   FakePhotoDataDb,
   FakePhotoImageDb,
   dumbPhotoGenerator,
-  getFakePhotoImageUrl,
 } from "../../../adapters/";
 import {
   IPhotoDataDb,
@@ -133,6 +132,9 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
               photoToReplaceAddPhotoParams,
               tagDb,
             );
+          expectedStoreData.imageUrl = await photoImageDb.getUrl(
+            photoToReplaceAddPhotoParams._id,
+          );
 
           try {
             await useCaseTestUtils.executeTestedUseCase(useCaseParams);
@@ -172,7 +174,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
           it("should replace the data with the new one in the photo-data db", async () => {
             const expectedStoredData =
               await fromAddPhotoParamsToPhotoStoredData(useCaseParams, tagDb);
-            expectedStoredData.imageUrl = getFakePhotoImageUrl(
+            expectedStoredData.imageUrl = await photoImageDb.getUrl(
               useCaseParams._id,
             );
 
@@ -209,11 +211,12 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
           it("should add the new data in the photo-data db", async () => {
             const expectedStoredData =
               await fromAddPhotoParamsToPhotoStoredData(useCaseParams, tagDb);
-            expectedStoredData.imageUrl = getFakePhotoImageUrl(
-              useCaseParams._id,
-            );
 
             await useCaseTestUtils.executeTestedUseCase(useCaseParams);
+
+            expectedStoredData.imageUrl = await photoImageDb.getUrl(
+              useCaseParams._id,
+            );
 
             await expectsTestUtils.expectPhotoStoredDataToBe(
               useCaseParams._id,

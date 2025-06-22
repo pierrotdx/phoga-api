@@ -82,7 +82,7 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
 
   getPhotosFromSearchResponse(res: Response): ISearchResult<IPhoto> {
     const searchResult = res.body as ISearchResult<IPhoto>;
-    const photosWithStringDates = searchResult.hits as IPhoto[];
+    const photosWithStringDates = searchResult.hits || ([] as IPhoto[]);
     const photos = photosWithStringDates.map((photo) => {
       if (photo.metadata?.date) {
         photo.metadata.date = new Date(photo.metadata.date);
@@ -91,7 +91,7 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
         _id: photo._id,
         metadata: photo.metadata,
         tags: photo.tags,
-        imageUrl: this.getExpectedImageUrl(photo._id),
+        imageUrl: photo.imageUrl,
       };
       const imageBuffer = photo.imageBuffer
         ? Buffer.from(photo.imageBuffer)
@@ -126,14 +126,6 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
     return request(this.appServer.app).get(url);
   }
 
-  async sendGetPhotoImageReq(getPhotoParams: IGetPhotoParams): Promise<Test> {
-    const url = photoEntryPoints.getFullPathWithParams(
-      PhotoEntryPointId.GetPhotoImage,
-      { id: getPhotoParams },
-    );
-    return request(this.appServer.app).get(url);
-  }
-
   async sendSearchPhotoReq(
     searchPhotoParams: ISearchPhotoParams,
   ): Promise<Test> {
@@ -141,11 +133,14 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
     if (searchPhotoParams?.filter?.tagId) {
       req.query({ tagId: searchPhotoParams?.filter?.tagId });
     }
-    if (searchPhotoParams?.options?.rendering) {
-      req.query(searchPhotoParams.options?.rendering);
+    if (searchPhotoParams?.options?.dateOrder) {
+      req.query({ dateOrder: searchPhotoParams.options.dateOrder });
     }
-    if (searchPhotoParams?.options?.excludeImages) {
-      req.query({ excludeImages: searchPhotoParams.options?.excludeImages });
+    if (typeof searchPhotoParams?.options?.size === "number") {
+      req.query({ size: searchPhotoParams.options.size });
+    }
+    if (searchPhotoParams?.options?.from) {
+      req.query({ from: searchPhotoParams.options.from });
     }
     return req;
   }

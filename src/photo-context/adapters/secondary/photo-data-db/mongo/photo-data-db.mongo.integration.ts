@@ -9,6 +9,7 @@ import { ITag } from "#tag-context";
 
 import { IPhoto, IPhotoStoredData, ISearchPhotoFilter } from "../../../../core";
 import { dumbPhotoGenerator } from "../../../primary";
+import { FakePhotoImageDb } from "../../photo-image-db";
 import { PhotoDataDbMongo } from "./photo-data-db.mongo";
 import { PhotoDataDbMongoTestUtils } from "./photo-data-db.mongo.test-utils";
 
@@ -31,7 +32,8 @@ describe("PhotoDataDbMongo", () => {
 
     photoDataDbMongo = setupTestUtils.getPhotoDataDb();
 
-    dbTestUtils = new PhotoDbTestUtils(photoDataDbMongo);
+    const photoImageDb = new FakePhotoImageDb();
+    dbTestUtils = new PhotoDbTestUtils(photoDataDbMongo, photoImageDb);
     expectsTestUtils = new PhotoExpectsTestUtils(dbTestUtils);
   }, timeout);
 

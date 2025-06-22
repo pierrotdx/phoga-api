@@ -12,7 +12,6 @@ import {
   FakePhotoDataDb,
   FakePhotoImageDb,
   dumbPhotoGenerator,
-  getFakePhotoImageUrl,
 } from "../../../adapters/";
 import { IPhotoDataDb, IPhotoImageDb } from "../../../core";
 import {
@@ -116,10 +115,12 @@ describe(`${AddPhotoUseCase.name}`, () => {
           _id: useCaseParams._id,
           metadata: useCaseParams.metadata,
           tags,
-          imageUrl: getFakePhotoImageUrl(useCaseParams._id),
         };
 
         await useCaseTestUtils.executeTestedUseCase(useCaseParams);
+
+        const imageUrl = await photoImageDb.getUrl(useCaseParams._id);
+        expectedStoredData.imageUrl = imageUrl;
 
         await expectTestUtils.expectPhotoStoredDataToBe(
           useCaseParams._id,

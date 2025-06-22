@@ -1,5 +1,4 @@
 import { assertRendering } from "#shared/assertions";
-import assert from "assert";
 import { isEmpty } from "ramda";
 
 import { ISearchPhotoOptions } from "../../models";
@@ -20,16 +19,6 @@ export function isSearchPhotoOptions(
 export function assertSearchPhotoOptions(
   searchPhotoOptionsCandidate: any,
 ): boolean {
-  assertExcludeImages(searchPhotoOptionsCandidate.excludeImages);
-  assertRendering(searchPhotoOptionsCandidate.rendering);
+  assertRendering(searchPhotoOptionsCandidate);
   return true;
-}
-
-function assertExcludeImages(excludeImagesCandidate: unknown) {
-  if (typeof excludeImagesCandidate !== "undefined") {
-    assert(
-      typeof excludeImagesCandidate === "boolean",
-      "'excludeImages' should be of type boolean",
-    );
-  }
 }

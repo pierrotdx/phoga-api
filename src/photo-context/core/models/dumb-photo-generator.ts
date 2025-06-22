@@ -26,6 +26,7 @@ export interface IGeneratePhotoOptions {
   location?: IPhoto["metadata"]["location"];
   titles?: IPhoto["metadata"]["titles"];
   description?: IPhoto["metadata"]["description"];
+  noImageBuffer?: boolean;
 }
 
 export interface IGeneratePhotoStoredDataOptions

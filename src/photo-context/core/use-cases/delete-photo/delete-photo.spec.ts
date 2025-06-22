@@ -139,6 +139,9 @@ describe(`${DeletePhotoUseCase.name}`, () => {
       it("should not delete photo's data in photo-data db", async () => {
         const expectedPhotoStoredData: IPhotoStoredData =
           getExpectedPhotoDataStored(photoToDelete);
+        expectedPhotoStoredData.imageUrl = await photoImageDb.getUrl(
+          photoToDelete._id,
+        );
         try {
           await useCaseTestUtils.executeTestedUseCase(useCaseParams);
         } catch (err) {

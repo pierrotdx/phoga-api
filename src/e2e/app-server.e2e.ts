@@ -7,18 +7,13 @@ import {
   IPhotoImageDb,
   IPhotoStoredData,
   IReplacePhotoParams,
+  ISearchPhotoOptions,
   ISearchPhotoParams,
   comparePhotoDates,
   dumbPhotoGenerator,
   fromAddPhotoParamsToPhotoStoredData,
-  fromPhotoStoredDataToPhotoData,
 } from "#photo-context";
-import {
-  HttpErrorCode,
-  IRendering,
-  ISearchResult,
-  SortDirection,
-} from "#shared/models";
+import { HttpErrorCode, ISearchResult, SortDirection } from "#shared/models";
 import {
   IPhotoDbTestUtils,
   IPhotoExpectsTestUtils,
@@ -43,7 +38,6 @@ import {
   addTagPath,
   deletePhotoPath,
   deleteTagPath,
-  getImagePath,
   getPhotoDataPath,
   getTagPath,
   replacePhotoPath,
@@ -691,55 +685,6 @@ describe("ExpressAppServer", () => {
       });
     });
 
-    describe(`GET ${getImagePath}`, () => {
-      let getPhotoParams: IGetPhotoParams;
-
-      describe("when the required photo does not have an image in db", () => {
-        beforeEach(async () => {
-          const idNotInDb = appTestUtils.generateId();
-          getPhotoParams = idNotInDb;
-        });
-
-        it(`should throw an error with status code ${HttpErrorCode.NotFound} (not found)`, async () => {
-          const expectedStatus = HttpErrorCode.NotFound;
-
-          const response =
-            await appTestUtils.sendGetPhotoImageReq(getPhotoParams);
-
-          expect(response.statusCode).toBe(expectedStatus);
-          expect.assertions(1);
-        });
-      });
-
-      describe("when the required photo has an image in db", () => {
-        let photoToGet: IPhoto;
-
-        beforeEach(async () => {
-          photoToGet = await dumbPhotoGenerator.generatePhoto();
-          await photoDbTestUtils.addPhoto(photoToGet);
-
-          getPhotoParams = photoToGet._id;
-        });
-
-        afterEach(async () => {
-          await photoDbTestUtils.deletePhoto(photoToGet._id);
-        });
-
-        it("should return the required photo image", async () => {
-          const expectedResult = pick(["_id", "imageBuffer"], photoToGet);
-
-          const response =
-            await appTestUtils.sendGetPhotoImageReq(getPhotoParams);
-
-          const responsePhoto = appTestUtils.getPhotoFromResponse(response);
-          photoExpectsTestUtils.expectEqualPhotos(
-            expectedResult,
-            responsePhoto,
-          );
-        });
-      });
-    });
-
     describe(`GET ${searchPhotoPath}`, () => {
       let storedPhotos: IPhoto[];
       let searchPhotoParams: ISearchPhotoParams;
@@ -795,7 +740,7 @@ describe("ExpressAppServer", () => {
 
         it("should return the photos whose tags include the required tag", async () => {
           const expectedSearchResult: ISearchResult<IPhoto> = {
-            hits: storedPhotosWithTag,
+            hits: storedPhotosWithTag.map((p) => omit(["imageBuffer"], p)),
             totalCount: storedPhotosWithTag.length,
           };
 
@@ -812,16 +757,16 @@ describe("ExpressAppServer", () => {
         });
       });
 
-      describe("when using the `rendering.date` option", () => {
+      describe("when using the `date` option", () => {
         it.each`
-          case            | rendering
+          case            | options
           ${"ascending"}  | ${{ dateOrder: SortDirection.Ascending }}
           ${"descending"} | ${{ dateOrder: SortDirection.Descending }}
         `(
           "should sort them by $case date when required",
-          async ({ rendering }: { rendering: IRendering }) => {
-            const expectedOrder = rendering.dateOrder;
-            searchPhotoParams = { options: { rendering } };
+          async ({ options }: { options: ISearchPhotoOptions }) => {
+            const expectedOrder = options.dateOrder;
+            searchPhotoParams = { options };
 
             const response =
               await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
@@ -837,17 +782,17 @@ describe("ExpressAppServer", () => {
         );
       });
 
-      describe("when using the `rendering.size` options", () => {
+      describe("when using the `size` options", () => {
         it.each`
-          rendering      | expectedSize
+          options        | expectedSize
           ${{ size: 0 }} | ${0}
           ${{ size: 1 }} | ${1}
           ${{ size: 2 }} | ${2}
           ${{ size: 3 }} | ${3}
         `(
           "should return at most $expectedSize results when required",
-          async ({ rendering, expectedSize }) => {
-            searchPhotoParams = { options: { rendering } };
+          async ({ options, expectedSize }) => {
+            searchPhotoParams = { options };
 
             const response =
               await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
@@ -863,7 +808,7 @@ describe("ExpressAppServer", () => {
         );
       });
 
-      describe("when using the `rendering.from` option", () => {
+      describe("when using the `from` option", () => {
         // using dateOrder to be sure the results are always ordered identically
         let orderedStoredPhotos: IPhoto[];
 
@@ -872,63 +817,33 @@ describe("ExpressAppServer", () => {
         });
 
         it.each`
-          rendering                                          | expectedStartIndex
+          options                                            | expectedStartIndex
           ${{ from: 1, dateOrder: SortDirection.Ascending }} | ${0}
           ${{ from: 2, dateOrder: SortDirection.Ascending }} | ${1}
           ${{ from: 3, dateOrder: SortDirection.Ascending }} | ${2}
         `(
           "should return results starting from the $expectedStartIndex-th stored photo",
           async ({
-            rendering,
+            options,
             expectedStartIndex,
           }: {
-            rendering: IRendering;
+            options: ISearchPhotoOptions;
             expectedStartIndex: number;
           }) => {
-            searchPhotoParams = { options: { rendering } };
+            searchPhotoParams = { options };
 
             const response =
               await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
             const searchResult =
               appTestUtils.getPhotosFromSearchResponse(response);
 
+            const expectedPhotos = orderedStoredPhotos.map((p) =>
+              omit(["imageBuffer"], p),
+            );
             photoExpectsTestUtils.expectSubArrayToStartFromIndex(
-              orderedStoredPhotos,
+              expectedPhotos,
               searchResult.hits,
               expectedStartIndex,
-            );
-            photoExpectsTestUtils.checkAssertions();
-          },
-        );
-      });
-
-      describe("when using the `excludeImages` option", () => {
-        it.each`
-          case                | excludeImages
-          ${"without images"} | ${true}
-          ${"with images"}    | ${false}
-        `(
-          "should return photos $case when excludeImages is `$excludeImages`",
-          async ({ excludeImages }: { excludeImages: boolean }) => {
-            searchPhotoParams = { options: { excludeImages } };
-
-            const expectedPhotos = clone(storedPhotos).map((p) => {
-              p.imageUrl = appTestUtils.getExpectedImageUrl(p._id);
-              return excludeImages ? omit(["imageBuffer"], p) : p;
-            });
-            const expectedSearchResult: ISearchResult<IPhoto> = {
-              hits: expectedPhotos,
-              totalCount: expectedPhotos.length,
-            };
-
-            const response =
-              await appTestUtils.sendSearchPhotoReq(searchPhotoParams);
-            const searchResult =
-              appTestUtils.getPhotosFromSearchResponse(response);
-
-            photoExpectsTestUtils.expectEqualSearchResults(
-              searchResult,
-              expectedSearchResult,
             );
             photoExpectsTestUtils.checkAssertions();
           },
@@ -1015,8 +930,7 @@ describe("ExpressAppServer", () => {
             });
 
             it("should not update the data in the photo-data db", async () => {
-              const expectedStoreData =
-                fromPhotoStoredDataToPhotoData(storedPhoto);
+              const expectedStoreData = omit(["imageBuffer"], storedPhoto);
               expectedStoreData.imageUrl = appTestUtils.getExpectedImageUrl(
                 storedPhoto._id,
               );
