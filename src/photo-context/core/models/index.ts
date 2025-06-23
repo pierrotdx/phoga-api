@@ -1,4 +1,3 @@
-export * from "./get-photo-params";
 export * from "./dumb-photo-generator";
 export * from "./photo-parsers";
 export * from "./photo";

@@ -36,7 +36,7 @@ export class AppRouter implements IExpressRouter {
 
   private addPhotoRouter() {
     const path = this.getPath(BaseEntryPointsId.PhotoData);
-    const photoRouter = new PhotoRouter(this.photoDataDb, this.imageDb).get();
+    const photoRouter = new PhotoRouter(this.photoDataDb).get();
     this.router.use(path, photoRouter);
   }
 

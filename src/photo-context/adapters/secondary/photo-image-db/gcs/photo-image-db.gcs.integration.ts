@@ -50,7 +50,10 @@ describe("PhotoImageDbGcs", () => {
 
       await photoImageDbGcs.insert(photoToInsert);
 
-      await expectsTestUtils.expectPhotoImageToBe(photoToInsert._id, expectedImage);
+      await expectsTestUtils.expectPhotoImageToBe(
+        photoToInsert._id,
+        expectedImage,
+      );
       expectsTestUtils.checkAssertions();
     });
   });
@@ -204,6 +207,27 @@ describe("PhotoImageDbGcs", () => {
 
       await expectsTestUtils.expectPhotoImageToBe(photoToDelete._id, undefined);
       expectsTestUtils.checkAssertions();
+    });
+  });
+
+  describe("getUrl", () => {
+    let storedPhoto: IPhoto;
+
+    beforeEach(async () => {
+      storedPhoto = await dumbPhotoGenerator.generatePhoto();
+      await photoImageDbGcs.insert(storedPhoto);
+    });
+
+    afterEach(async () => {
+      await photoImageDbGcs.delete(storedPhoto._id);
+    });
+
+    it("should return the image url", async () => {
+      const expectedUrl = `${global.__GCS_API_ENDPOINT__}/${global.__GC_PHOTO_IMAGES_BUCKET__}/${storedPhoto._id}`;
+
+      const url = await photoImageDbGcs.getUrl(storedPhoto._id);
+      expect(url).toBe(expectedUrl);
+      expect.assertions(1);
     });
   });
 });

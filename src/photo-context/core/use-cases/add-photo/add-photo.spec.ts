@@ -119,6 +119,9 @@ describe(`${AddPhotoUseCase.name}`, () => {
 
         await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
+        const imageUrl = await photoImageDb.getUrl(useCaseParams._id);
+        expectedStoredData.imageUrl = imageUrl;
+
         await expectTestUtils.expectPhotoStoredDataToBe(
           useCaseParams._id,
           expectedStoredData,

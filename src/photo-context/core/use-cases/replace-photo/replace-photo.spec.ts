@@ -132,6 +132,9 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
               photoToReplaceAddPhotoParams,
               tagDb,
             );
+          expectedStoreData.imageUrl = await photoImageDb.getUrl(
+            photoToReplaceAddPhotoParams._id,
+          );
 
           try {
             await useCaseTestUtils.executeTestedUseCase(useCaseParams);
@@ -171,6 +174,9 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
           it("should replace the data with the new one in the photo-data db", async () => {
             const expectedStoredData =
               await fromAddPhotoParamsToPhotoStoredData(useCaseParams, tagDb);
+            expectedStoredData.imageUrl = await photoImageDb.getUrl(
+              useCaseParams._id,
+            );
 
             await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
@@ -207,6 +213,10 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
               await fromAddPhotoParamsToPhotoStoredData(useCaseParams, tagDb);
 
             await useCaseTestUtils.executeTestedUseCase(useCaseParams);
+
+            expectedStoredData.imageUrl = await photoImageDb.getUrl(
+              useCaseParams._id,
+            );
 
             await expectsTestUtils.expectPhotoStoredDataToBe(
               useCaseParams._id,

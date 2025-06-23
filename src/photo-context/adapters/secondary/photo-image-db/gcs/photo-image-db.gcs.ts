@@ -63,4 +63,9 @@ export class PhotoImageDbGcs implements IPhotoImageDb {
   async getByIds(ids: IPhoto["_id"][]): Promise<Record<IPhoto["_id"], Buffer>> {
     return new GetByIds(this.bucket).execute(ids);
   }
+
+  async getUrl(id: IPhoto["_id"]): Promise<string> {
+    const file = this.bucket.file(id);
+    return file.publicUrl();
+  }
 }

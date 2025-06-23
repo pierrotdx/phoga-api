@@ -13,10 +13,6 @@ export const getPhotoDataPath = photoEntryPoints.getFullPathRaw(
   PhotoEntryPointId.GetPhotoData,
 );
 
-export const getImagePath = photoEntryPoints.getFullPathRaw(
-  PhotoEntryPointId.GetPhotoImage,
-);
-
 export const replacePhotoPath = photoEntryPoints.getFullPathRaw(
   PhotoEntryPointId.ReplacePhoto,
 );

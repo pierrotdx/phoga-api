@@ -47,14 +47,17 @@ export class FakePhotoDataDb implements IPhotoDataDb {
     if (rendering?.dateOrder) {
       this.sortByDate(photos, rendering.dateOrder);
     }
+
     if (typeof rendering?.size === "number") {
       const deleteCount =
         photos.length > rendering?.size ? photos.length - rendering?.size : 0;
       photos.splice(0, deleteCount);
     }
+
     if (typeof rendering?.from === "number") {
       photos = photos.slice(rendering.from - 1);
     }
+
     return { hits: photos, totalCount: photos.length };
   }
 

@@ -65,6 +65,16 @@ describe("dumbPhotoGenerator", () => {
         assertionsCounter.checkAssertions();
       },
     );
+
+    it("should not generate an image buffer if required", async () => {
+      const options: IGeneratePhotoOptions = { noImageBuffer: true };
+
+      const photo = await dumbPhotoGenerator.generatePhoto(options);
+
+      expect(photo.imageBuffer).toBeUndefined();
+      assertionsCounter.increase();
+      assertionsCounter.checkAssertions();
+    });
   });
 
   describe("generatePhotos", () => {

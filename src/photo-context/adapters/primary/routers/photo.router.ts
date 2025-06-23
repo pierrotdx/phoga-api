@@ -3,7 +3,6 @@ import { Router } from "express";
 
 import {
   GetPhotoDataController,
-  GetPhotoImageController,
   IPhotoDataDb,
   IPhotoImageDb,
   IPhotoRouter,
@@ -17,38 +16,19 @@ export class PhotoRouter implements IPhotoRouter {
   private readonly photoEntryPoints: IEntryPoints<PhotoEntryPointId> =
     new PhotoEntryPoints();
 
-  constructor(
-    private readonly photoDataDb: IPhotoDataDb,
-    private readonly imageDb: IPhotoImageDb,
-  ) {
-    this.setGetPhotoImageRoute();
+  constructor(private readonly photoDataDb: IPhotoDataDb) {
     this.setGetPhotoDataRoute();
     this.setSearchPhotoRoute();
   }
 
-  private setGetPhotoImageRoute(): void {
-    const controller = new GetPhotoImageController(
-      this.photoDataDb,
-      this.imageDb,
-    );
-    const path = this.getPath(PhotoEntryPointId.GetPhotoImage);
-    this.router.get(path, controller.handler);
-  }
-
   private setGetPhotoDataRoute(): void {
-    const controller = new GetPhotoDataController(
-      this.photoDataDb,
-      this.imageDb,
-    );
+    const controller = new GetPhotoDataController(this.photoDataDb);
     const path = this.getPath(PhotoEntryPointId.GetPhotoData);
     this.router.get(path, controller.handler);
   }
 
   private setSearchPhotoRoute(): void {
-    const controller = new SearchPhotoController(
-      this.photoDataDb,
-      this.imageDb,
-    );
+    const controller = new SearchPhotoController(this.photoDataDb);
     const path = this.getPath(PhotoEntryPointId.SearchPhoto);
     this.router.get(path, controller.handler);
   }

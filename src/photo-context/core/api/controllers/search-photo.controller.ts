@@ -6,7 +6,6 @@ import { type Request, type Response } from "express";
 import {
   IPhoto,
   IPhotoDataDb,
-  IPhotoImageDb,
   ISearchPhotoOptions,
   ISearchPhotoParams,
   ISearchPhotoParser,
@@ -24,12 +23,9 @@ export class SearchPhotoController
   private readonly validator: IValidator;
   private readonly parser: ISearchPhotoParser;
 
-  constructor(
-    private readonly photoDataDb: IPhotoDataDb,
-    private readonly imageDb: IPhotoImageDb,
-  ) {
+  constructor(private readonly photoDataDb: IPhotoDataDb) {
     super();
-    this.useCase = new SearchPhotoUseCase(this.photoDataDb, this.imageDb);
+    this.useCase = new SearchPhotoUseCase(this.photoDataDb);
     this.validator = new AjvValidator(SearchPhotoSchema);
     this.parser = new SearchPhotoParser();
   }
