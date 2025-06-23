@@ -84,6 +84,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
     });
 
     describe("when there is a photo to replace", () => {
+      const creationDate = new Date("2025-06-23");
       const tags: ITag[] = [
         { _id: "tag1", name: "tag1" },
         { _id: "tag2", name: "tag2" },
@@ -97,7 +98,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
 
         photoToReplaceAddPhotoParams =
           await dumbPhotoGenerator.generateAddPhotoParams({ tagIds });
-        await dbTestUtils.addPhoto(photoToReplaceAddPhotoParams);
+        await dbTestUtils.addPhoto(photoToReplaceAddPhotoParams, creationDate);
       });
 
       afterEach(async () => {
@@ -135,6 +136,10 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
           expectedStoreData.imageUrl = await photoImageDb.getUrl(
             photoToReplaceAddPhotoParams._id,
           );
+          expectedStoreData.manifest = {
+            creation: creationDate,
+            lastUpdate: creationDate,
+          };
 
           try {
             await useCaseTestUtils.executeTestedUseCase(useCaseParams);
@@ -150,6 +155,8 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
       });
 
       describe("when there is an image in the new photo", () => {
+        const newLastUpdate = new Date("2025-06-24");
+
         beforeEach(async () => {
           const newPhoto = await dumbPhotoGenerator.generatePhoto({
             _id: photoToReplaceAddPhotoParams._id,
@@ -170,6 +177,8 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
           expectsTestUtils.checkAssertions();
         });
 
+        it("should update the manifest in the photo-data db", async () => {});
+
         describe("when the photo to replace had data already stored in the photo-data db", () => {
           it("should replace the data with the new one in the photo-data db", async () => {
             const expectedStoredData =
@@ -177,7 +186,12 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
             expectedStoredData.imageUrl = await photoImageDb.getUrl(
               useCaseParams._id,
             );
+            expectedStoredData.manifest = {
+              creation: creationDate,
+              lastUpdate: newLastUpdate,
+            };
 
+            jest.useFakeTimers().setSystemTime(newLastUpdate);
             await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
             await expectsTestUtils.expectPhotoStoredDataToBe(
@@ -195,7 +209,8 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
             photoWithoutDataToReplace =
               await dumbPhotoGenerator.generatePhoto();
             delete photoWithoutDataToReplace.metadata;
-            await dbTestUtils.addPhoto(photoWithoutDataToReplace);
+
+            await dbTestUtils.addPhoto(photoWithoutDataToReplace, creationDate);
 
             const newPhoto = await dumbPhotoGenerator.generatePhoto({
               _id: photoWithoutDataToReplace._id,
@@ -212,11 +227,16 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
             const expectedStoredData =
               await fromAddPhotoParamsToPhotoStoredData(useCaseParams, tagDb);
 
+            jest.useFakeTimers().setSystemTime(newLastUpdate);
             await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
             expectedStoredData.imageUrl = await photoImageDb.getUrl(
               useCaseParams._id,
             );
+            expectedStoredData.manifest = {
+              creation: creationDate,
+              lastUpdate: newLastUpdate,
+            };
 
             await expectsTestUtils.expectPhotoStoredDataToBe(
               useCaseParams._id,

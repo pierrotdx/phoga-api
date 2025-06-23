@@ -2,6 +2,7 @@ import { ISearchResult } from "#shared/models";
 
 import { IPhotoDataDb } from "../../gateways";
 import { IPhoto, ISearchPhotoParams, ISearchPhotoUseCase } from "../../models";
+import { fromPhotoStoredDataToPhoto } from "../../utils";
 
 export class SearchPhotoUseCase implements ISearchPhotoUseCase {
   constructor(private readonly photoDataDb: IPhotoDataDb) {}
@@ -11,7 +12,11 @@ export class SearchPhotoUseCase implements ISearchPhotoUseCase {
   ): Promise<ISearchResult<IPhoto>> {
     try {
       const searchResult = await this.searchPhotos(searchPhotoParams);
-      return searchResult;
+      const formattedSearchResult: ISearchResult<IPhoto> = {
+        ...searchResult,
+        hits: searchResult.hits.map((p) => fromPhotoStoredDataToPhoto(p)),
+      };
+      return formattedSearchResult;
     } catch (err) {
       throw err;
     }

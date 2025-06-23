@@ -2,6 +2,7 @@ import { ErrorWithStatus, HttpErrorCode } from "#shared/models";
 
 import { IPhotoDataDb } from "../../gateways";
 import { IGetPhotoUseCase, IPhoto } from "../../models";
+import { fromPhotoStoredDataToPhoto } from "../../utils";
 
 export class GetPhotoUseCase implements IGetPhotoUseCase {
   private readonly photoDoesNotExistError = new ErrorWithStatus(
@@ -16,6 +17,7 @@ export class GetPhotoUseCase implements IGetPhotoUseCase {
     if (!result) {
       throw this.photoDoesNotExistError;
     }
-    return result;
+    const photo = fromPhotoStoredDataToPhoto(result);
+    return photo;
   }
 }

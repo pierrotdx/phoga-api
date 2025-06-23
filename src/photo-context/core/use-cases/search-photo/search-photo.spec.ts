@@ -6,7 +6,6 @@ import {
   PhotoExpectsTestUtils,
 } from "#shared/test-utils";
 import { ITag, ITagDb, TagDbFake } from "#tag-context";
-import { omit } from "ramda";
 
 import {
   FakePhotoDataDb,

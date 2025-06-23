@@ -28,8 +28,8 @@ import {
   ITagDb,
   TagEntryPointId,
 } from "#tag-context";
-import e, { type Express } from "express";
-import { clone, omit, pick } from "ramda";
+import { type Express } from "express";
+import { clone, omit } from "ramda";
 import request from "supertest";
 
 import { ExpressAppServer } from "../app-server";
@@ -51,6 +51,7 @@ import { AppServerTestUtils } from "./test-utils/app-server.e2e-test-utils";
 describe("ExpressAppServer", () => {
   const appTestUtils = new AppServerTestUtils(global);
   let photoDbTestUtils: IPhotoDbTestUtils;
+  let tagTestUtils: TagTestUtils;
 
   let expressHttpServer: ExpressAppServer;
   let app: Express;
@@ -58,6 +59,8 @@ describe("ExpressAppServer", () => {
   let tagDb: ITagDb;
   let photoDataDb: IPhotoDataDb;
   let photoImageDb: IPhotoImageDb;
+
+  const excludeManifestCheck = true;
 
   beforeEach(async () => {
     await appTestUtils.globalBeforeEach();
@@ -67,6 +70,19 @@ describe("ExpressAppServer", () => {
     photoDataDb = appTestUtils.getPhotoDataDb();
     photoImageDb = appTestUtils.getPhotoImageDb();
     tagDb = appTestUtils.getTagDb();
+
+    tagTestUtils = new TagTestUtils(tagDb);
+    photoDbTestUtils = new PhotoDbE2ETestUtils(
+      photoDataDb,
+      photoImageDb,
+      tagDb,
+    );
+
+    const allTags = await tagDb.find(undefined, { size: 1000 });
+    await tagTestUtils.deleteTagsFromDb(allTags.hits);
+
+    const allPhotos = await photoDataDb.find({ rendering: { size: 1000 } });
+    await photoDbTestUtils.deletePhotos(allPhotos.hits.map((p) => p._id));
   });
 
   afterEach(async () => {
@@ -78,17 +94,6 @@ describe("ExpressAppServer", () => {
   });
 
   describe("tag requests", () => {
-    let tagTestUtils: TagTestUtils;
-
-    beforeEach(() => {
-      tagTestUtils = new TagTestUtils(tagDb);
-      photoDbTestUtils = new PhotoDbE2ETestUtils(
-        photoDataDb,
-        photoImageDb,
-        tagDb,
-      );
-    });
-
     afterAll(async () => {
       // making sure to clean up the db
       await tagTestUtils.deleteAllTagsFromDb();
@@ -254,9 +259,9 @@ describe("ExpressAppServer", () => {
                 );
 
               expect(response.statusCode).toBe(200);
-              expect(photoStoredDataAfterTagReplace).toEqual(
-                expectedPhotoStoredData,
-              );
+              expect(
+                omit(["manifest"], photoStoredDataAfterTagReplace),
+              ).toEqual(expectedPhotoStoredData);
               expect.assertions(2);
             });
           });
@@ -487,7 +492,9 @@ describe("ExpressAppServer", () => {
               );
 
             expect(response.statusCode).toBe(200);
-            expect(photoAfterTagDelete).toEqual(expectedPhotoStoredData);
+            expect(omit(["manifest"], photoAfterTagDelete)).toEqual(
+              expectedPhotoStoredData,
+            );
             expect.assertions(2);
           });
         });
@@ -497,16 +504,9 @@ describe("ExpressAppServer", () => {
 
   describe("photo requests", () => {
     let photoExpectsTestUtils: IPhotoExpectsTestUtils;
-    let tagTestUtils: TagTestUtils;
 
     beforeEach(() => {
-      photoDbTestUtils = new PhotoDbE2ETestUtils(
-        photoDataDb,
-        photoImageDb,
-        tagDb,
-      );
       photoExpectsTestUtils = new PhotoExpectsTestUtils(photoDbTestUtils);
-      tagTestUtils = new TagTestUtils(tagDb);
     });
 
     describe(`POST ${addPhotoPath}`, () => {
@@ -562,6 +562,7 @@ describe("ExpressAppServer", () => {
             await photoExpectsTestUtils.expectPhotoStoredDataToBe(
               addPhotoParams._id,
               expectedPhotoStoredData,
+              excludeManifestCheck,
             );
             photoExpectsTestUtils.checkAssertions();
           });
@@ -616,6 +617,7 @@ describe("ExpressAppServer", () => {
             await photoExpectsTestUtils.expectPhotoStoredDataToBe(
               addPhotoParams._id,
               expectedStoredData,
+              excludeManifestCheck,
             );
             photoExpectsTestUtils.checkAssertions();
           });
@@ -837,9 +839,11 @@ describe("ExpressAppServer", () => {
             const searchResult =
               appTestUtils.getPhotosFromSearchResponse(response);
 
-            const expectedPhotos = orderedStoredPhotos.map((p) =>
-              omit(["imageBuffer"], p),
-            );
+            const expectedPhotos = orderedStoredPhotos.map((p) => {
+              p = omit(["imageBuffer"], p);
+              p.imageUrl = appTestUtils.getExpectedImageUrl(p._id);
+              return p;
+            });
             photoExpectsTestUtils.expectSubArrayToStartFromIndex(
               expectedPhotos,
               searchResult.hits,
@@ -943,6 +947,7 @@ describe("ExpressAppServer", () => {
               await photoExpectsTestUtils.expectPhotoStoredDataToBe(
                 storedPhoto._id,
                 expectedStoreData,
+                excludeManifestCheck,
               );
               photoExpectsTestUtils.checkAssertions();
             });
@@ -1007,6 +1012,7 @@ describe("ExpressAppServer", () => {
                 await photoExpectsTestUtils.expectPhotoStoredDataToBe(
                   replacePhotoParams._id,
                   expectedStoredData,
+                  excludeManifestCheck,
                 );
                 photoExpectsTestUtils.checkAssertions();
               });
@@ -1055,6 +1061,7 @@ describe("ExpressAppServer", () => {
                 await photoExpectsTestUtils.expectPhotoStoredDataToBe(
                   replacePhotoParams._id,
                   expectedStoredData,
+                  excludeManifestCheck,
                 );
                 photoExpectsTestUtils.checkAssertions();
               });
@@ -1104,6 +1111,7 @@ describe("ExpressAppServer", () => {
           await photoExpectsTestUtils.expectPhotoStoredDataToBe(
             deletePhotoParams,
             expectedStoreData,
+            excludeManifestCheck,
           );
           photoExpectsTestUtils.checkAssertions();
         });
@@ -1206,6 +1214,7 @@ describe("ExpressAppServer", () => {
             await photoExpectsTestUtils.expectPhotoStoredDataToBe(
               deletePhotoParams,
               expectedPhotoStoredData,
+              excludeManifestCheck,
             );
             photoExpectsTestUtils.checkAssertions();
           });

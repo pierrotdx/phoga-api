@@ -34,16 +34,27 @@ export class PhotoDbTestUtils implements IPhotoDbTestUtils {
     return await this.photoImageDb?.getById(id);
   }
 
-  async addPhotos(addPhotosParams: IAddPhotoParams[]): Promise<void> {
+  async addPhotos(
+    addPhotosParams: IAddPhotoParams[],
+    creationDate = new Date(),
+  ): Promise<void> {
     const insertPromises = addPhotosParams.map(this.addPhoto.bind(this));
     await Promise.all(insertPromises);
   }
 
-  async addPhoto(addPhotoParams: IAddPhotoParams): Promise<void> {
+  async addPhoto(
+    addPhotoParams: IAddPhotoParams,
+    creationDate = new Date(),
+  ): Promise<void> {
     await this.insertPhotoImageInDb(addPhotoParams);
 
     const storedPhotoData: IPhotoStoredData =
       await fromAddPhotoParamsToPhotoStoredData(addPhotoParams, this.tagDb);
+
+    storedPhotoData.manifest = {
+      creation: creationDate,
+      lastUpdate: creationDate,
+    };
 
     const imageUrl = await this.photoImageDb.getUrl(addPhotoParams._id);
     storedPhotoData.imageUrl = imageUrl;

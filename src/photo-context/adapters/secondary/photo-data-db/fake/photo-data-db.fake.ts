@@ -17,7 +17,7 @@ export class FakePhotoDataDb implements IPhotoDataDb {
     this.docs[storedPhotoData._id] = storedPhotoData;
   }
 
-  async getById(id: IPhoto["_id"]): Promise<IPhotoData> {
+  async getById(id: IPhoto["_id"]): Promise<IPhotoStoredData> {
     return clone(this.docs[id]);
   }
 
