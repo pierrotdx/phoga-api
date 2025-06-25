@@ -30,4 +30,8 @@ export class FakePhotoImageDb implements IPhotoImageDb {
   async checkExists(id: IPhoto["_id"]): Promise<boolean> {
     return !!this.photoImages[id];
   }
+
+  async getUrl(id: IPhoto["_id"]): Promise<string> {
+    return `https://no-url.com/${id}`;
+  }
 }

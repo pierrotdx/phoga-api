@@ -14,8 +14,8 @@ export class ReplaceTagTestUtils {
     this.tagsTestUtils = new TagTestUtils(tagDb);
   }
 
-  async insertTagInDb(tag: ITag): Promise<void> {
-    await this.tagsTestUtils.insertTagInDb(tag);
+  async insertTagInDb(tag: ITag, creationDate = new Date()): Promise<void> {
+    await this.tagsTestUtils.insertTagInDb(tag, creationDate);
   }
 
   async removeTagFromDb(id: ITag["_id"]): Promise<void> {

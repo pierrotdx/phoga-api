@@ -1,4 +1,4 @@
-import { IRendering, ISearchResult, SortDirection } from "#shared/models";
+import { ISearchResult, SortDirection } from "#shared/models";
 import {
   IPhotoDbTestUtils,
   IPhotoExpectsTestUtils,
@@ -6,7 +6,6 @@ import {
   PhotoExpectsTestUtils,
 } from "#shared/test-utils";
 import { ITag, ITagDb, TagDbFake } from "#tag-context";
-import { clone } from "ramda";
 
 import {
   FakePhotoDataDb,
@@ -18,11 +17,11 @@ import {
   IPhotoDataDb,
   IPhotoImageDb,
   IPhotoStoredData,
-  IPhotoUseCaseTestUtils,
+  ISearchPhotoOptions,
   ISearchPhotoParams,
   ISearchPhotoUseCase,
   Photo,
-  fromPhotoStoredDataToPhotoData,
+  comparePhotoDates,
 } from "../../../core/";
 import { PhotoUseCaseTestUtils } from "../test-utils";
 import { SearchPhotoUseCase } from "./search-photo";
@@ -36,20 +35,22 @@ describe(`${SearchPhotoUseCase.name}`, () => {
 
   let dbTestUtils: IPhotoDbTestUtils;
   let expectsTestUtils: IPhotoExpectsTestUtils;
-  let useCaseTestUtils: IPhotoUseCaseTestUtils<ISearchResult<IPhoto>>;
+  let useCaseTestUtils: PhotoUseCaseTestUtils<ISearchResult<IPhoto>>;
 
   beforeEach(async () => {
     photoDataDb = new FakePhotoDataDb();
     photoImageDb = new FakePhotoImageDb();
     tagDb = new TagDbFake();
 
-    testedUseCase = new SearchPhotoUseCase(photoDataDb, photoImageDb);
+    testedUseCase = new SearchPhotoUseCase(photoDataDb);
 
     dbTestUtils = new PhotoDbTestUtils(photoDataDb, photoImageDb, tagDb);
     expectsTestUtils = new PhotoExpectsTestUtils(dbTestUtils);
     useCaseTestUtils = new PhotoUseCaseTestUtils(
       testedUseCase,
       expectsTestUtils,
+      undefined,
+      photoImageDb,
     );
   });
 
@@ -59,8 +60,11 @@ describe(`${SearchPhotoUseCase.name}`, () => {
     const timeout = 10000;
 
     beforeEach(async () => {
-      storedPhotos = await dumbPhotoGenerator.generatePhotos(nbStoredPhotos);
+      storedPhotos = await dumbPhotoGenerator.generatePhotos(nbStoredPhotos, {
+        noImageBuffer: true,
+      });
       await dbTestUtils.addPhotos(storedPhotos);
+      await useCaseTestUtils.addImageUrls(storedPhotos);
     }, timeout);
 
     afterEach(async () => {
@@ -93,6 +97,7 @@ describe(`${SearchPhotoUseCase.name}`, () => {
         beforeEach(async () => {
           storedPhotosWithTag = dumbPhotoGenerator.generatePhotosStoredData(3, {
             tags: [tag],
+            noImageBuffer: true,
           });
           await dbTestUtils.addStoredPhotosData(storedPhotosWithTag);
 
@@ -106,10 +111,7 @@ describe(`${SearchPhotoUseCase.name}`, () => {
 
         it("should return the photos whose tags include the required tag", async () => {
           const expectedPhotos: IPhoto[] = storedPhotosWithTag.map(
-            (p) =>
-              new Photo(p._id, {
-                photoData: fromPhotoStoredDataToPhotoData(p),
-              }),
+            (photoData) => new Photo(photoData._id, { photoData }),
           );
           const expectedSearchResult: ISearchResult<IPhoto> = {
             hits: expectedPhotos,
@@ -127,16 +129,16 @@ describe(`${SearchPhotoUseCase.name}`, () => {
         });
       });
 
-      describe("when using the `rendering.date` option", () => {
+      describe("when using the `date` option", () => {
         it.each`
-          case            | rendering
+          case            | options
           ${"ascending"}  | ${{ dateOrder: SortDirection.Ascending }}
           ${"descending"} | ${{ dateOrder: SortDirection.Descending }}
         `(
           "should sort them by $case date when required",
-          async ({ rendering }: { rendering: IRendering }) => {
-            useCaseParams = { options: { rendering } };
-            const expectedOrder = rendering.dateOrder;
+          async ({ options }: { options: ISearchPhotoOptions }) => {
+            useCaseParams = { options };
+            const expectedOrder = options.dateOrder;
 
             const result =
               await useCaseTestUtils.executeTestedUseCase(useCaseParams);
@@ -147,17 +149,17 @@ describe(`${SearchPhotoUseCase.name}`, () => {
         );
       });
 
-      describe("when using the `rendering.size` options", () => {
+      describe("when using the `size` options", () => {
         it.each`
-          rendering      | expectedSize
+          options        | expectedSize
           ${{ size: 0 }} | ${0}
           ${{ size: 1 }} | ${1}
           ${{ size: 2 }} | ${2}
           ${{ size: 3 }} | ${3}
         `(
           "should return at most $expectedSize results when required",
-          async ({ rendering, expectedSize }) => {
-            useCaseParams = { options: { rendering } };
+          async ({ options, expectedSize }) => {
+            useCaseParams = { options };
 
             const result =
               await useCaseTestUtils.executeTestedUseCase(useCaseParams);
@@ -171,53 +173,31 @@ describe(`${SearchPhotoUseCase.name}`, () => {
         );
       });
 
-      describe("when using the `rendering.from` option", () => {
+      describe("when using the `from` option", () => {
+        let orderedStoredPhotos: IPhotoStoredData[];
+        const sortDirection = SortDirection.Ascending;
+
+        beforeEach(() => {
+          orderedStoredPhotos = storedPhotos.sort(comparePhotoDates);
+        });
+
         it.each`
-          rendering      | expectedStartIndex
-          ${{ from: 1 }} | ${0}
-          ${{ from: 2 }} | ${1}
-          ${{ from: 3 }} | ${2}
+          options                                  | expectedStartIndex
+          ${{ from: 1, dateOrder: sortDirection }} | ${0}
+          ${{ from: 2, dateOrder: sortDirection }} | ${1}
+          ${{ from: 3, dateOrder: sortDirection }} | ${2}
         `(
           "should return results starting from the $expectedStartIndex-th stored photo",
-          async ({ rendering, expectedStartIndex }) => {
-            useCaseParams = { options: { rendering } };
+          async ({ options, expectedStartIndex }) => {
+            useCaseParams = { options };
 
             const result =
               await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
             expectsTestUtils.expectSubArrayToStartFromIndex(
-              storedPhotos,
+              orderedStoredPhotos,
               result.hits,
               expectedStartIndex,
-            );
-            expectsTestUtils.checkAssertions();
-          },
-        );
-      });
-
-      describe("when using the `excludeImages` option", () => {
-        it.each`
-          case                | excludeImages
-          ${"without images"} | ${true}
-          ${"with images"}    | ${false}
-        `(
-          "should return photos $case when excludeImages is `$excludeImages`",
-          async ({ excludeImages }: { excludeImages: boolean }) => {
-            useCaseParams = { options: { excludeImages } };
-            const expectedPhotos = clone(storedPhotos).map((p) =>
-              excludeImages ? getPhotoWithoutImage(p) : p,
-            );
-            const expectedSearchResult: ISearchResult<IPhoto> = {
-              hits: expectedPhotos,
-              totalCount: storedPhotos.length,
-            };
-
-            const result =
-              await useCaseTestUtils.executeTestedUseCase(useCaseParams);
-
-            expectsTestUtils.expectEqualSearchResults(
-              result,
-              expectedSearchResult,
             );
             expectsTestUtils.checkAssertions();
           },
@@ -226,8 +206,3 @@ describe(`${SearchPhotoUseCase.name}`, () => {
     });
   });
 });
-
-function getPhotoWithoutImage(photo: IPhoto): IPhoto {
-  delete photo.imageBuffer;
-  return photo;
-}

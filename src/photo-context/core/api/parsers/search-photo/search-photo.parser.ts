@@ -1,4 +1,3 @@
-import { IRendering } from "#shared/models";
 import { Request } from "express";
 import { isEmpty } from "ramda";
 
@@ -35,7 +34,6 @@ export class SearchPhotoParser implements ISearchPhotoParser {
 
   private addOptions(params: ISearchPhotoParams, query: any): void {
     const options: ISearchPhotoOptions = {};
-    this.setExcludeImages(query, options);
     this.setRendering(query, options);
     assertSearchPhotoOptions(options);
     if (isEmpty(options)) {
@@ -44,29 +42,16 @@ export class SearchPhotoParser implements ISearchPhotoParser {
     params.options = options;
   }
 
-  private setExcludeImages(
-    data: any,
-    searchOptions: ISearchPhotoOptions,
-  ): void {
-    if (data?.excludeImages) {
-      searchOptions.excludeImages = data.excludeImages === "true";
-    }
-  }
-
   private setRendering(data: any, searchOptions: ISearchPhotoOptions): void {
     const { size, from, dateOrder } = data || {};
-    const rendering: IRendering = {};
     if (size) {
-      rendering.size = parseInt(size as string);
+      searchOptions.size = parseInt(size as string);
     }
     if (from) {
-      rendering.from = parseInt(from as string);
+      searchOptions.from = parseInt(from as string);
     }
     if (dateOrder) {
-      rendering.dateOrder = dateOrder;
-    }
-    if (!isEmpty(rendering)) {
-      searchOptions.rendering = rendering;
+      searchOptions.dateOrder = dateOrder;
     }
   }
 }

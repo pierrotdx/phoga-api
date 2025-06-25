@@ -1,6 +1,5 @@
 import {
   FakePhotoDataDb,
-  IPhoto,
   IPhotoDataDb,
   IPhotoStoredData,
   dumbPhotoGenerator,
@@ -20,6 +19,7 @@ describe("ReplaceTag", () => {
   let photoDbTestUtils: IPhotoDbTestUtils;
 
   const newTag: ITag = { _id: "dumb-id", name: "new tag" };
+  const tagCreationDate = new Date("2012-03-28");
 
   beforeEach(() => {
     tagDb = new TagDbFake();
@@ -38,7 +38,7 @@ describe("ReplaceTag", () => {
 
     beforeEach(async () => {
       tagToReplace = { _id: newTag._id, name: "tag to replace" };
-      await testUtils.insertTagInDb(tagToReplace);
+      await testUtils.insertTagInDb(tagToReplace, tagCreationDate);
     });
 
     afterEach(async () => {
@@ -46,19 +46,34 @@ describe("ReplaceTag", () => {
     });
 
     it("should replace the tag in tags db", async () => {
-      await testUtils.executeUseCase(newTag);
+      const lastUpdate = new Date("2024-03-23");
+      const expectedTag: ITag = {
+        ...newTag,
+        manifest: {
+          creation: tagCreationDate,
+          lastUpdate,
+        },
+      };
 
-      await testUtils.expectTagToBeInDb(newTag);
+      jest.useFakeTimers().setSystemTime(lastUpdate);
+      await testUtils.executeUseCase(newTag);
+      jest.useRealTimers();
+
+      await testUtils.expectTagToBeInDb(expectedTag);
     });
 
     describe("when the tag was stored in photos", () => {
       let photoStoredData: IPhotoStoredData;
+      const photoCreationDate = new Date("1993-07-23");
 
       beforeEach(async () => {
         photoStoredData = dumbPhotoGenerator.generatePhotoStoredData({
           tags: [tagToReplace],
         });
-        await photoDbTestUtils.addStoredPhotosData([photoStoredData]);
+        await photoDbTestUtils.addStoredPhotosData(
+          [photoStoredData],
+          photoCreationDate,
+        );
       });
 
       afterEach(async () => {
@@ -66,15 +81,25 @@ describe("ReplaceTag", () => {
       });
 
       it("should replace the tag in the photos db", async () => {
+        const lastUpdate = new Date("2021-04-04");
+        const expectedTag: ITag = {
+          ...newTag,
+          manifest: {
+            creation: tagCreationDate,
+            lastUpdate,
+          },
+        };
         const expectedPhotoStoredData: IPhotoStoredData = {
           ...photoStoredData,
-          tags: [newTag],
+          tags: [expectedTag],
         };
 
+        jest.useFakeTimers().setSystemTime(lastUpdate);
         await testUtils.executeUseCase(newTag);
+        jest.useRealTimers();
+
         const photoStoredDataAfterTagReplace =
           await photoDbTestUtils.getPhotoStoredData(photoStoredData._id);
-
         expect(photoStoredDataAfterTagReplace).toEqual(expectedPhotoStoredData);
         expect.assertions(1);
       });
@@ -83,9 +108,17 @@ describe("ReplaceTag", () => {
 
   describe("when there is no tag with the same id in db", () => {
     it("should add the tag to the db", async () => {
-      await testUtils.executeUseCase(newTag);
+      const expectedTag: ITag = { ...newTag };
+      expectedTag.manifest = {
+        creation: tagCreationDate,
+        lastUpdate: tagCreationDate,
+      };
 
-      await testUtils.expectTagToBeInDb(newTag);
+      jest.useFakeTimers().setSystemTime(tagCreationDate);
+      await testUtils.executeUseCase(newTag);
+      jest.useRealTimers();
+
+      await testUtils.expectTagToBeInDb(expectedTag);
     });
   });
 });

@@ -3,10 +3,14 @@ import { ISearchResult, SortDirection } from "#shared/models";
 
 export interface IPhotoExpectsTestUtils {
   expectEqualPhotos(photo1: IPhoto, photo2: IPhoto): void;
-  expectEqualSearchResults(expectedSearchResult: ISearchResult<IPhoto>, searchResult: ISearchResult<IPhoto>): void;
+  expectEqualSearchResults(
+    expectedSearchResult: ISearchResult<IPhoto>,
+    searchResult: ISearchResult<IPhoto>,
+  ): void;
   expectPhotoStoredDataToBe(
     id: IPhoto["_id"],
     expectedValue: IPhotoStoredData,
+    excludeManifestCheck?: boolean,
   ): Promise<void>;
   expectPhotoImageToBe(
     id: IPhoto["_id"],

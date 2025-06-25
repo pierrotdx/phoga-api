@@ -9,9 +9,11 @@ export async function fromAddPhotoParamsToPhotoStoredData(
     _id: addPhotoParams._id,
     metadata: addPhotoParams.metadata,
   };
+
   if (addPhotoParams.tagIds) {
     photoStoredData.tags = await getTags(tagDb, addPhotoParams.tagIds);
   }
+
   return photoStoredData;
 }
 

@@ -36,12 +36,8 @@ export class SearchPhotoParserTestUtils extends ParserTestUtils<ISearchPhotoPars
     return req;
   }
 
-  generateQueryParams(
-    excludesImages: boolean = true,
-    dateOrder: string = SortDirection.Ascending,
-  ) {
+  generateQueryParams(dateOrder: string = SortDirection.Ascending) {
     return {
-      excludeImages: JSON.stringify(excludesImages),
       size: Math.floor(Math.random() * 100).toString(),
       from: Math.floor(Math.random() * 100).toString(),
       dateOrder,
@@ -76,9 +72,6 @@ export class SearchPhotoParserTestUtils extends ParserTestUtils<ISearchPhotoPars
   ): void {
     const options: ISearchPhotoOptions = {};
     this.addRendering(options, queryParams);
-    if (queryParams.excludeImages) {
-      options.excludeImages = JSON.parse(queryParams.excludeImages);
-    }
     if (isEmpty(options)) {
       return;
     }
@@ -89,19 +82,14 @@ export class SearchPhotoParserTestUtils extends ParserTestUtils<ISearchPhotoPars
     options: ISearchPhotoOptions,
     queryParams: TQueryParams,
   ): void {
-    const rendering: IRendering = {};
     if (queryParams.dateOrder) {
-      rendering.dateOrder = queryParams.dateOrder as SortDirection;
+      options.dateOrder = queryParams.dateOrder as SortDirection;
     }
     if (queryParams.from) {
-      rendering.from = parseInt(queryParams.from);
+      options.from = parseInt(queryParams.from);
     }
     if (queryParams.size) {
-      rendering.size = parseInt(queryParams.size);
+      options.size = parseInt(queryParams.size);
     }
-    if (isEmpty(rendering)) {
-      return;
-    }
-    options.rendering = rendering;
   }
 }

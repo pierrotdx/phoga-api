@@ -10,7 +10,7 @@ export interface IPhotoDataDb {
   find: ({
     filter,
     rendering,
-  }: {
+  }?: {
     filter?: ISearchPhotoFilter;
     rendering?: IRendering;
   }) => Promise<ISearchResult<IPhotoStoredData>>;

@@ -44,12 +44,13 @@ describe(`${DeletePhotoUseCase.name}`, () => {
   });
 
   describe(`${DeletePhotoUseCase.prototype.execute.name}`, () => {
+    const creationDate = new Date("2025-02-10");
     let photoToDelete: IPhoto;
     let useCaseParams: IDeletePhotoParams;
 
     beforeEach(async () => {
       photoToDelete = await dumbPhotoGenerator.generatePhoto();
-      await dbTestUtils.addPhoto(photoToDelete);
+      await dbTestUtils.addPhoto(photoToDelete, creationDate);
 
       useCaseParams = photoToDelete._id;
     });
@@ -139,6 +140,13 @@ describe(`${DeletePhotoUseCase.name}`, () => {
       it("should not delete photo's data in photo-data db", async () => {
         const expectedPhotoStoredData: IPhotoStoredData =
           getExpectedPhotoDataStored(photoToDelete);
+        expectedPhotoStoredData.imageUrl = await photoImageDb.getUrl(
+          photoToDelete._id,
+        );
+        expectedPhotoStoredData.manifest = {
+          creation: creationDate,
+          lastUpdate: creationDate,
+        };
         try {
           await useCaseTestUtils.executeTestedUseCase(useCaseParams);
         } catch (err) {

@@ -12,7 +12,7 @@ import {
   PhotoEntryPointId,
 } from "#photo-context";
 import { ISearchResult } from "#shared/models";
-import { ExpressPhotoTestUtils } from "#shared/test-utils";
+import { ExpressPhotoTestUtils, parseTagDates } from "#shared/test-utils";
 import { IUuidGenerator, UuidGenerator } from "#shared/uuid";
 import request, { Response, Test } from "supertest";
 
@@ -28,8 +28,10 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
   private readonly uuidGenerator: IUuidGenerator = new UuidGenerator();
   private addPhotoUseCase: IAddPhotoUseCase;
 
+  private readonly photoImagesBucket: string;
   constructor(testEnv: any) {
     super(testEnv);
+    this.photoImagesBucket = testEnv.__GC_PHOTO_IMAGES_BUCKET__;
   }
 
   async globalBeforeEach(): Promise<void> {
@@ -80,15 +82,19 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
 
   getPhotosFromSearchResponse(res: Response): ISearchResult<IPhoto> {
     const searchResult = res.body as ISearchResult<IPhoto>;
-    const photosWithStringDates = searchResult.hits as IPhoto[];
+    const photosWithStringDates = searchResult.hits || ([] as IPhoto[]);
     const photos = photosWithStringDates.map((photo) => {
       if (photo.metadata?.date) {
         photo.metadata.date = new Date(photo.metadata.date);
+      }
+      if (photo.tags) {
+        photo.tags.forEach((t) => parseTagDates(t));
       }
       const photoData: IPhotoData = {
         _id: photo._id,
         metadata: photo.metadata,
         tags: photo.tags,
+        imageUrl: photo.imageUrl,
       };
       const imageBuffer = photo.imageBuffer
         ? Buffer.from(photo.imageBuffer)
@@ -123,14 +129,6 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
     return request(this.appServer.app).get(url);
   }
 
-  async sendGetPhotoImageReq(getPhotoParams: IGetPhotoParams): Promise<Test> {
-    const url = photoEntryPoints.getFullPathWithParams(
-      PhotoEntryPointId.GetPhotoImage,
-      { id: getPhotoParams },
-    );
-    return request(this.appServer.app).get(url);
-  }
-
   async sendSearchPhotoReq(
     searchPhotoParams: ISearchPhotoParams,
   ): Promise<Test> {
@@ -138,11 +136,14 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
     if (searchPhotoParams?.filter?.tagId) {
       req.query({ tagId: searchPhotoParams?.filter?.tagId });
     }
-    if (searchPhotoParams?.options?.rendering) {
-      req.query(searchPhotoParams.options?.rendering);
+    if (searchPhotoParams?.options?.dateOrder) {
+      req.query({ dateOrder: searchPhotoParams.options.dateOrder });
     }
-    if (searchPhotoParams?.options?.excludeImages) {
-      req.query({ excludeImages: searchPhotoParams.options?.excludeImages });
+    if (typeof searchPhotoParams?.options?.size === "number") {
+      req.query({ size: searchPhotoParams.options.size });
+    }
+    if (searchPhotoParams?.options?.from) {
+      req.query({ from: searchPhotoParams.options.from });
     }
     return req;
   }
@@ -192,5 +193,9 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
 
   async addPhoto(params: IAddPhotoParams): Promise<void> {
     await this.addPhotoUseCase.execute(params);
+  }
+
+  getExpectedImageUrl(id: IPhoto["_id"]): string {
+    return `https://storage.googleapis.com/${this.photoImagesBucket}/${id}`;
   }
 }

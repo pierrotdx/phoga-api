@@ -40,9 +40,16 @@ export class PhotoExpectsTestUtils implements IPhotoExpectsTestUtils {
   async expectPhotoStoredDataToBe(
     id: IPhoto["_id"],
     expectedValue: IPhotoStoredData,
+    excludeManifestCheck = false,
   ): Promise<void> {
     const storedPhotoData = await this.photoDbTestUtils.getPhotoStoredData(id);
-    expect(storedPhotoData).toEqual(expectedValue);
+    if (excludeManifestCheck) {
+      expect(omit(["manifest"], storedPhotoData)).toEqual(
+        omit(["manifest"], expectedValue),
+      );
+    } else {
+      expect(storedPhotoData).toEqual(expectedValue);
+    }
     this.assertionsCounter.increase();
   }
 

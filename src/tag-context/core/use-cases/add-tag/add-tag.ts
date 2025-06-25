@@ -8,6 +8,11 @@ export class AddTagUseCase implements IAddTagUseCase {
 
   async execute(tag: ITag): Promise<void> {
     await this.checkExistence(tag._id);
+    const date = new Date();
+    tag.manifest = {
+      creation: date,
+      lastUpdate: date,
+    };
     await this.tagDb.insert(tag);
   }
 

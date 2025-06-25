@@ -7,4 +7,5 @@ export interface IPhotoImageDb {
   delete: (id: IPhoto["_id"]) => Promise<void>;
   replace: (photo: IPhoto) => Promise<void>;
   checkExists: (id: IPhoto["_id"]) => Promise<boolean>;
+  getUrl(id: IPhoto["_id"]): Promise<string>;
 }
