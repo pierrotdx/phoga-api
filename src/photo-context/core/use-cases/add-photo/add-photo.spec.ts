@@ -7,6 +7,7 @@ import {
   PhotoExpectsTestUtils,
 } from "#shared/test-utils";
 import { ITag, ITagDb, TagDbFake } from "#tag-context";
+import { pick } from "ramda";
 
 import {
   FakePhotoDataDb,
@@ -16,6 +17,7 @@ import {
 import { IPhotoDataDb, IPhotoImageDb } from "../../../core";
 import {
   IAddPhotoParams,
+  IPhoto,
   IPhotoStoredData,
   IPhotoUseCaseTestUtils,
 } from "../../models";
@@ -82,25 +84,14 @@ describe(`${AddPhotoUseCase.name}`, () => {
     });
 
     describe("when there is an image to upload", () => {
-      const tags: ITag[] = [
-        { _id: "tag1", name: "tag1" },
-        { _id: "tag2", name: "tag2" },
-      ];
-      const tagIds = tags.map((t) => t._id);
+      let photo: IPhoto;
 
       beforeEach(async () => {
-        const photo = await dumbPhotoGenerator.generatePhoto();
-
-        await tagTestUtils.insertTagsInDb(tags);
-
-        useCaseParams = { ...photo, tagIds };
-      });
-
-      afterEach(async () => {
-        await tagTestUtils.deleteTagsFromDb(tags);
+        photo = await dumbPhotoGenerator.generatePhoto();
       });
 
       it("should upload the image to the photo-image db", async () => {
+        useCaseParams = pick(["_id", "imageBuffer"], photo);
         await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
         await expectTestUtils.expectPhotoImageToBe(
@@ -110,23 +101,80 @@ describe(`${AddPhotoUseCase.name}`, () => {
         expectTestUtils.checkAssertions();
       });
 
-      it("should upload the data (other than image) to the photo-data db", async () => {
-        const expectedStoredData: IPhotoStoredData = {
-          _id: useCaseParams._id,
-          metadata: useCaseParams.metadata,
-          tags,
-        };
+      describe("when there is no data (other than image) to upload", () => {
+        beforeEach(() => {
+          useCaseParams = pick(["_id", "imageBuffer"], photo);
+        });
 
-        await useCaseTestUtils.executeTestedUseCase(useCaseParams);
+        it("should create a document with the manifest and image url to the photo-data db", async () => {
+          const fakeDate = new Date("2025-06-23");
+          jest.useFakeTimers().setSystemTime(fakeDate);
 
-        const imageUrl = await photoImageDb.getUrl(useCaseParams._id);
-        expectedStoredData.imageUrl = imageUrl;
+          const expectedStoredData: IPhotoStoredData = {
+            _id: useCaseParams._id,
+            manifest: {
+              creation: fakeDate,
+              lastUpdate: fakeDate,
+            },
+          };
 
-        await expectTestUtils.expectPhotoStoredDataToBe(
-          useCaseParams._id,
-          expectedStoredData,
-        );
-        expectTestUtils.checkAssertions();
+          await useCaseTestUtils.executeTestedUseCase(useCaseParams);
+          jest.useRealTimers();
+
+          const imageUrl = await photoImageDb.getUrl(useCaseParams._id);
+          expectedStoredData.imageUrl = imageUrl;
+
+          await expectTestUtils.expectPhotoStoredDataToBe(
+            useCaseParams._id,
+            expectedStoredData,
+          );
+          expectTestUtils.checkAssertions();
+        });
+      });
+
+      describe("when there is data (other than image) to upload", () => {
+        const tags: ITag[] = [
+          { _id: "tag1", name: "tag1" },
+          { _id: "tag2", name: "tag2" },
+        ];
+        const tagIds = tags.map((t) => t._id);
+
+        beforeEach(async () => {
+          await tagTestUtils.insertTagsInDb(tags);
+
+          useCaseParams = { ...photo, tagIds };
+        });
+
+        afterEach(async () => {
+          await tagTestUtils.deleteTagsFromDb(tags);
+        });
+
+        it("should upload the data (other than image) to the photo-data db", async () => {
+          const fakeDate = new Date("2025-06-23");
+          jest.useFakeTimers().setSystemTime(fakeDate);
+
+          const expectedStoredData: IPhotoStoredData = {
+            _id: useCaseParams._id,
+            metadata: useCaseParams.metadata,
+            tags,
+            manifest: {
+              creation: fakeDate,
+              lastUpdate: fakeDate,
+            },
+          };
+
+          await useCaseTestUtils.executeTestedUseCase(useCaseParams);
+          jest.useRealTimers();
+
+          const imageUrl = await photoImageDb.getUrl(useCaseParams._id);
+          expectedStoredData.imageUrl = imageUrl;
+
+          await expectTestUtils.expectPhotoStoredDataToBe(
+            useCaseParams._id,
+            expectedStoredData,
+          );
+          expectTestUtils.checkAssertions();
+        });
       });
     });
   });

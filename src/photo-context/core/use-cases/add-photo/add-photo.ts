@@ -18,9 +18,8 @@ export class AddPhotoUseCase implements IAddPhotoUseCase {
 
   async execute(data: IAddPhotoParams): Promise<void> {
     await this.uploadImage(data);
-    const url = await this.photoImageDb.getUrl(data._id);
-    data.imageUrl = url;
-    await this.uploadPhotoStoredData(data);
+    const imageUrl = await this.photoImageDb.getUrl(data._id);
+    await this.uploadPhotoStoredData(data, imageUrl);
   }
 
   private async uploadImage(data: IAddPhotoParams) {
@@ -33,12 +32,22 @@ export class AddPhotoUseCase implements IAddPhotoUseCase {
     await this.photoImageDb.insert(data);
   }
 
-  private async uploadPhotoStoredData(data: IAddPhotoParams): Promise<void> {
+  private async uploadPhotoStoredData(
+    data: IAddPhotoParams,
+    imageUrl: string,
+  ): Promise<void> {
+    const date = new Date();
     const storedPhotoData: IPhotoStoredData = {
       _id: data._id,
-      metadata: data.metadata,
-      imageUrl: data.imageUrl,
+      imageUrl,
+      manifest: {
+        creation: date,
+        lastUpdate: date,
+      },
     };
+    if (data.metadata) {
+      storedPhotoData.metadata = data.metadata;
+    }
     if (data.tagIds) {
       storedPhotoData.tags = await this.getTags(data.tagIds);
     }

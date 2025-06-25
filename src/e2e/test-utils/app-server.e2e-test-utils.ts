@@ -12,7 +12,7 @@ import {
   PhotoEntryPointId,
 } from "#photo-context";
 import { ISearchResult } from "#shared/models";
-import { ExpressPhotoTestUtils } from "#shared/test-utils";
+import { ExpressPhotoTestUtils, parseTagDates } from "#shared/test-utils";
 import { IUuidGenerator, UuidGenerator } from "#shared/uuid";
 import request, { Response, Test } from "supertest";
 
@@ -86,6 +86,9 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
     const photos = photosWithStringDates.map((photo) => {
       if (photo.metadata?.date) {
         photo.metadata.date = new Date(photo.metadata.date);
+      }
+      if (photo.tags) {
+        photo.tags.forEach((t) => parseTagDates(t));
       }
       const photoData: IPhotoData = {
         _id: photo._id,

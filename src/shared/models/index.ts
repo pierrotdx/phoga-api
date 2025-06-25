@@ -1,6 +1,7 @@
 export * from "./factory";
 export * from "./http-errors";
 export * from "./image-buffer-encoding";
+export * from "./manifest";
 export * from "./parser";
 export * from "./permission";
 export * from "./rendering";

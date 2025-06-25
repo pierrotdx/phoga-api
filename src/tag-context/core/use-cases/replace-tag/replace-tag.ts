@@ -10,6 +10,12 @@ export class ReplaceTagUseCase implements IReplaceTagUseCase {
   ) {}
 
   async execute(tag: ITag): Promise<void> {
+    const creationDate = await this.getCreationDate(tag._id);
+    const lastUpdate = new Date();
+    tag.manifest = {
+      creation: creationDate || new Date(),
+      lastUpdate,
+    };
     await this.tagDb.replace(tag);
     await this.replaceTagInPhotos(tag);
   }
@@ -44,5 +50,10 @@ export class ReplaceTagUseCase implements IReplaceTagUseCase {
       async (p) => await this.photoDataDb.insert(p),
     );
     await Promise.all(insertPhotos$);
+  }
+
+  private async getCreationDate(id: ITag["_id"]): Promise<Date> {
+    const tag = await this.tagDb.getById(id);
+    return tag?.manifest?.creation;
   }
 }

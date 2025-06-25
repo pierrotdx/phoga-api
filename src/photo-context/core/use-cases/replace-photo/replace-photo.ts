@@ -18,8 +18,6 @@ export class ReplacePhotoUseCase implements IReplacePhotoUseCase {
 
   async execute(data: IReplacePhotoParams): Promise<void> {
     await this.replaceImage(data);
-    const imageUrl = await this.photoImageDb.getUrl(data._id);
-    data.imageUrl = imageUrl;
     await this.replacePhotoData(data);
   }
 
@@ -54,11 +52,21 @@ export class ReplacePhotoUseCase implements IReplacePhotoUseCase {
     const photoStoredData: IPhotoStoredData = {
       _id: data._id,
       metadata: data.metadata,
-      imageUrl: data.imageUrl,
     };
+
+    const imageUrl = await this.photoImageDb.getUrl(data._id);
+    photoStoredData.imageUrl = imageUrl;
+
     if (data.tagIds) {
       photoStoredData.tags = await this.getTags(data.tagIds);
     }
+
+    const creation = await this.getCreationDate(data._id);
+    photoStoredData.manifest = {
+      creation,
+      lastUpdate: new Date(),
+    };
+
     await this.photoDataDb.replace(photoStoredData);
   }
 
@@ -66,5 +74,10 @@ export class ReplacePhotoUseCase implements IReplacePhotoUseCase {
     const tags$ = tagIds.map(async (id) => await this.tagDb.getById(id));
     const tags = await Promise.all(tags$);
     return tags;
+  }
+
+  private async getCreationDate(id: IPhoto["_id"]): Promise<Date> {
+    const initPhoto = await this.photoDataDb.getById(id);
+    return initPhoto.manifest.creation;
   }
 }

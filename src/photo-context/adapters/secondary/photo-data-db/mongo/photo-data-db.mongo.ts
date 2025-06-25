@@ -14,7 +14,7 @@ import {
 export class PhotoDataDbMongo implements IPhotoDataDb {
   private readonly collection: Collection<IPhotoStoredData>;
   private readonly defaultSize = 20;
-  private readonly defaultSort: Sort = { _id: 1 };
+  private readonly defaultSort: Sort = { "manifest.creation": -1 };
 
   constructor(private readonly mongoManager: MongoManager) {
     const photoDataCollection = this.mongoManager.collections.PhotoData;

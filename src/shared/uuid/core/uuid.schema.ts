@@ -1,4 +1,4 @@
-import { TSchema } from "#shared/models";
+import { TSchema } from "../../models";
 
 export const UuidSchema: TSchema = {
   type: "string",

@@ -19,9 +19,18 @@ describe("AddTag", () => {
   });
 
   it("should add the requested tag to the database", async () => {
-    await testUtils.executeUseCase(tagToAdd);
+    const date = new Date("2020-02-23");
+    const expectedTag = { ...tagToAdd };
+    expectedTag.manifest = {
+      creation: date,
+      lastUpdate: date,
+    };
 
-    await testUtils.expectTagToBeInDb(tagToAdd);
+    jest.useFakeTimers().setSystemTime(date);
+    await testUtils.executeUseCase(tagToAdd);
+    jest.useRealTimers();
+
+    await testUtils.expectTagToBeInDb(expectedTag);
   });
 
   describe("when a tag with the same id is already in the db", () => {
