@@ -3,13 +3,14 @@ import { ITag, ITagDb } from "#tag-context";
 export class DbTagTestUtils {
   constructor(private readonly tagDb: ITagDb) {}
 
-  async insertTagInDb(tag: ITag): Promise<void> {
+  async insertTagInDb(tag: ITag, creationDate = new Date()): Promise<void> {
+    tag.manifest = { creation: creationDate, lastUpdate: creationDate };
     await this.tagDb.insert(tag);
   }
 
-  async insertTagsInDb(tags: ITag[]): Promise<void> {
+  async insertTagsInDb(tags: ITag[], creationDate = new Date()): Promise<void> {
     const insertAllTag$ = tags.map(async (t) => {
-      await this.insertTagInDb(t);
+      await this.insertTagInDb(t, creationDate);
     });
     await Promise.all(insertAllTag$);
   }

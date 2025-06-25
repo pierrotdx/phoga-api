@@ -23,10 +23,15 @@ export class PhotoDbTestUtils implements IPhotoDbTestUtils {
 
   async addStoredPhotosData(
     photosStoredData: IPhotoStoredData[],
+    creationDate = new Date(),
   ): Promise<void> {
-    const insertAll$ = photosStoredData.map(
-      async (p) => await this.photoDataDb.insert(p),
-    );
+    const insertAll$ = photosStoredData.map(async (p) => {
+      p.manifest = {
+        creation: creationDate,
+        lastUpdate: creationDate,
+      };
+      await this.photoDataDb.insert(p);
+    });
     await Promise.all(insertAll$);
   }
 
@@ -38,7 +43,9 @@ export class PhotoDbTestUtils implements IPhotoDbTestUtils {
     addPhotosParams: IAddPhotoParams[],
     creationDate = new Date(),
   ): Promise<void> {
-    const insertPromises = addPhotosParams.map(this.addPhoto.bind(this));
+    const insertPromises = addPhotosParams.map((p) =>
+      this.addPhoto(p, creationDate),
+    );
     await Promise.all(insertPromises);
   }
 

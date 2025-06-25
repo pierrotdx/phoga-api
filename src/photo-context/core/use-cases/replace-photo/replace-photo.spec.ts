@@ -193,6 +193,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
 
             jest.useFakeTimers().setSystemTime(newLastUpdate);
             await useCaseTestUtils.executeTestedUseCase(useCaseParams);
+            jest.useRealTimers();
 
             await expectsTestUtils.expectPhotoStoredDataToBe(
               useCaseParams._id,
@@ -229,6 +230,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
 
             jest.useFakeTimers().setSystemTime(newLastUpdate);
             await useCaseTestUtils.executeTestedUseCase(useCaseParams);
+            jest.useRealTimers();
 
             expectedStoredData.imageUrl = await photoImageDb.getUrl(
               useCaseParams._id,

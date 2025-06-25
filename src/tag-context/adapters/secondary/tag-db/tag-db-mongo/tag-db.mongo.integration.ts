@@ -24,9 +24,11 @@ describe("TagDbMongo", () => {
 
     describe("when there is not already a tag with the same id", () => {
       it("should insert the requested tag", async () => {
+        const expectedTag: ITag = { ...tagToInsert };
+
         await testUtils.insert(tagToInsert);
 
-        await testUtils.expectTagToBeInDb(tagToInsert);
+        await testUtils.expectTagToBeInDb(expectedTag);
       });
     });
 
@@ -87,9 +89,11 @@ describe("TagDbMongo", () => {
 
     describe("when there is not a tag with the same id in db", () => {
       it("should add the tag to the db", async () => {
+        const expectedTag: ITag = { ...newTag };
+
         await testUtils.replace(newTag);
 
-        await testUtils.expectTagToBeInDb(newTag);
+        await testUtils.expectTagToBeInDb(expectedTag);
       });
     });
 
@@ -101,9 +105,11 @@ describe("TagDbMongo", () => {
       });
 
       it("should replace the tag", async () => {
+        const expectedTag: ITag = { ...newTag };
+
         await testUtils.replace(newTag);
 
-        await testUtils.expectTagToBeInDb(newTag);
+        await testUtils.expectTagToBeInDb(expectedTag);
       });
     });
   });

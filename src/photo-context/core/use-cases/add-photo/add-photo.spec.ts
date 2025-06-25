@@ -119,6 +119,7 @@ describe(`${AddPhotoUseCase.name}`, () => {
           };
 
           await useCaseTestUtils.executeTestedUseCase(useCaseParams);
+          jest.useRealTimers();
 
           const imageUrl = await photoImageDb.getUrl(useCaseParams._id);
           expectedStoredData.imageUrl = imageUrl;
@@ -163,6 +164,7 @@ describe(`${AddPhotoUseCase.name}`, () => {
           };
 
           await useCaseTestUtils.executeTestedUseCase(useCaseParams);
+          jest.useRealTimers();
 
           const imageUrl = await photoImageDb.getUrl(useCaseParams._id);
           expectedStoredData.imageUrl = imageUrl;

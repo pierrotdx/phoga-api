@@ -4,7 +4,7 @@ import {
 } from "#shared/assertions-counter";
 import { ISearchResult, IUseCase } from "#shared/models";
 import { ITag, ITagDb } from "#tag-context";
-import { equals } from "ramda";
+import { equals, omit } from "ramda";
 
 import { DbTagTestUtils } from "./db-tag.test-utils";
 
@@ -28,10 +28,19 @@ export class TagTestUtils extends DbTagTestUtils {
     this.assertionsCounter.increase();
   }
 
-  async expectTagToBeInDb(expectedTag: ITag): Promise<void> {
+  async expectTagToBeInDb(
+    expectedTag: ITag,
+    excludeManifestCheck = false,
+  ): Promise<void> {
     const dbTag = await this.getTagFromDb(expectedTag._id);
 
-    expect(dbTag).toEqual(expectedTag);
+    if (excludeManifestCheck) {
+      expect(omit(["manifest"], dbTag)).toEqual(
+        omit(["manifest"], expectedTag),
+      );
+    } else {
+      expect(dbTag).toEqual(expectedTag);
+    }
     this.assertionsCounter.increase();
   }
 

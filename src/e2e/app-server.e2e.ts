@@ -20,6 +20,7 @@ import {
   PhotoDbE2ETestUtils,
   PhotoExpectsTestUtils,
   TagTestUtils,
+  parseTagDates,
 } from "#shared/test-utils";
 import {
   ISearchTagFilter,
@@ -139,7 +140,7 @@ describe("ExpressAppServer", () => {
               .auth(token, { type: "bearer" });
 
             expect(response.statusCode).toBe(200);
-            tagTestUtils.expectTagToBeInDb(tagToAdd);
+            tagTestUtils.expectTagToBeInDb(tagToAdd, excludeManifestCheck);
             expect.assertions(2);
           });
         });
@@ -200,7 +201,7 @@ describe("ExpressAppServer", () => {
               .auth(token, { type: "bearer" });
 
             expect(response.statusCode).toBe(200);
-            tagTestUtils.expectTagToBeInDb(newTag);
+            tagTestUtils.expectTagToBeInDb(newTag, excludeManifestCheck);
             expect.assertions(2);
           });
         });
@@ -220,7 +221,7 @@ describe("ExpressAppServer", () => {
               .auth(token, { type: "bearer" });
 
             expect(response.statusCode).toBe(200);
-            await tagTestUtils.expectTagToBeInDb(newTag);
+            await tagTestUtils.expectTagToBeInDb(newTag, excludeManifestCheck);
             expect.assertions(2);
           });
 
@@ -241,28 +242,33 @@ describe("ExpressAppServer", () => {
             });
 
             it("should replace the tag in the photos db", async () => {
-              const expectedPhotoStoredData: IPhotoStoredData = {
-                ...omit(["imageBuffer"], photoWithTagToReplace),
-                tags: [newTag],
-                imageUrl: appTestUtils.getExpectedImageUrl(
+              const photoStoredDataBeforeTagReplace =
+                await photoDbTestUtils.getPhotoStoredData(
                   photoWithTagToReplace._id,
-                ),
-              };
+                );
+              const tagInPhotoBefore: ITag =
+                photoStoredDataBeforeTagReplace.tags[0];
 
               const response = await request(app)
                 .put(replaceTagPath)
                 .send(newTag)
                 .auth(token, { type: "bearer" });
+
+              expect(response.statusCode).toBe(200);
               const photoStoredDataAfterTagReplace =
                 await photoDbTestUtils.getPhotoStoredData(
                   photoWithTagToReplace._id,
                 );
+              const tagInPhotoAfter = photoStoredDataAfterTagReplace.tags[0];
+              expect(omit(["manifest"], tagInPhotoAfter)).toEqual(newTag);
+              expect(tagInPhotoAfter.manifest.creation).toEqual(
+                tagInPhotoBefore.manifest.creation,
+              );
+              expect(tagInPhotoAfter.manifest.lastUpdate).not.toEqual(
+                tagInPhotoBefore.manifest.lastUpdate,
+              );
 
-              expect(response.statusCode).toBe(200);
-              expect(
-                omit(["manifest"], photoStoredDataAfterTagReplace),
-              ).toEqual(expectedPhotoStoredData);
-              expect.assertions(2);
+              expect.assertions(4);
             });
           });
         });
@@ -306,6 +312,7 @@ describe("ExpressAppServer", () => {
 
           const response = await request(app).get(url);
           const tagResponse: ITag = response.body;
+          parseTagDates(tagResponse);
 
           expect(response.statusCode).toBe(200);
           tagTestUtils.expectTagsToBeEqual(tagToGet, tagResponse);
@@ -337,6 +344,7 @@ describe("ExpressAppServer", () => {
             totalCount: dbTags.length,
           };
           const searchResult: ISearchResult<ITag> = response.body;
+          searchResult.hits.forEach((t) => parseTagDates(t));
 
           tagTestUtils.expectSearchResultToBe(
             expectedSearchResult,
@@ -357,6 +365,7 @@ describe("ExpressAppServer", () => {
 
           const response = await request(app).get(searchTagPath).query(filter);
           const searchResult = response.body as ISearchResult<ITag>;
+          searchResult.hits.forEach((t) => parseTagDates(t));
 
           tagTestUtils.expectSearchResultToBe(
             expectedSearchResult,
@@ -403,6 +412,7 @@ describe("ExpressAppServer", () => {
             const searchResult = response.body as ISearchResult<ITag>;
 
             const firstResult = searchResult.hits[0];
+            parseTagDates(firstResult);
             expect(firstResult).toEqual(expectedFirstResult);
             expect.assertions(1);
           });

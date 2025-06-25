@@ -1,7 +1,9 @@
 import { IAddPhotoParams, IPhoto, Photo } from "#photo-context";
 import { imageBufferEncoding } from "#shared/models";
 import { isUuid } from "#shared/uuid";
+import { ITag } from "#tag-context";
 import { Response, Test } from "supertest";
+import { parseTagDates } from "../tags";
 
 export class ExpressPhotoTestUtils {
   getPayloadFromPhoto(photo: IPhoto, encoding = imageBufferEncoding) {
@@ -18,13 +20,16 @@ export class ExpressPhotoTestUtils {
   getPhotoFromResponse(res: Response): IPhoto {
     return res.header["content-type"] === "image/jpeg"
       ? this.getPhotoFromGetImageResponse(res)
-      : this.getPhotoFromGetMetadataResponse(res);
+      : this.getPhotoFromGetPhotoDataResponse(res);
   }
 
-  private getPhotoFromGetMetadataResponse(res: Response): IPhoto {
+  private getPhotoFromGetPhotoDataResponse(res: Response): IPhoto {
     const { _id, metadata, tags } = res.body;
     if (metadata?.date) {
       metadata.date = new Date(metadata.date);
+    }
+    if (tags) {
+      (tags as ITag[]).forEach((t) => parseTagDates(t));
     }
     return new Photo(_id, { photoData: { metadata, tags } });
   }

@@ -13,7 +13,7 @@ export class TagDbMongo implements ITagDb {
   private readonly tagCollection: Collection<MongoStore<MongoDoc>>;
 
   private readonly defaultSize = 20;
-  private readonly defaultSortQuery: Sort = { _id: 1 };
+  private readonly defaultSortQuery: Sort = { "manifest.creation": -1 };
 
   constructor(private readonly mongoManager: MongoManager) {
     const tagCollectionName = this.mongoManager.collections.Tags;
