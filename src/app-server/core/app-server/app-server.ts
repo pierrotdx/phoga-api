@@ -83,12 +83,12 @@ export class ExpressAppServer implements IAppServer {
     this.logger.info(`express server listening on port: ${port}`);
   }
 
-  async close() {
+  async close(): Promise<void> {
     this.server.close();
     await this.serverClosed();
   }
 
-  private serverClosed = () => {
+  private readonly serverClosed = () => {
     return new Promise<void>((resolve, reject) => {
       this.server.on("close", (err: Error) => {
         if (err) {

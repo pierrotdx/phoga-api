@@ -55,7 +55,7 @@ describe(`${AddPhotoUseCase.name}`, () => {
 
     describe("when there is no image to upload", () => {
       beforeEach(async () => {
-        const photoWithoutImage = await dumbPhotoGenerator.generatePhoto();
+        const photoWithoutImage = dumbPhotoGenerator.generatePhoto();
         delete photoWithoutImage.imageBuffer;
         useCaseParams = photoWithoutImage;
       });
@@ -73,6 +73,7 @@ describe(`${AddPhotoUseCase.name}`, () => {
         try {
           await useCaseTestUtils.executeTestedUseCase(useCaseParams);
         } catch (err) {
+          console.log(err);
         } finally {
           await expectTestUtils.expectPhotoStoredDataToBe(
             useCaseParams._id,
@@ -87,7 +88,7 @@ describe(`${AddPhotoUseCase.name}`, () => {
       let photo: IPhoto;
 
       beforeEach(async () => {
-        photo = await dumbPhotoGenerator.generatePhoto();
+        photo = dumbPhotoGenerator.generatePhoto();
       });
 
       it("should upload the image to the photo-image db", async () => {

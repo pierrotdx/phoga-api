@@ -12,7 +12,7 @@ import { ImageBufferParser } from "../image-buffer-parser";
 
 export class AddPhotoParser implements IAddPhotoParser {
   private addPhotoParams: IAddPhotoParams;
-  private imageBufferParser = new ImageBufferParser();
+  private readonly imageBufferParser = new ImageBufferParser();
 
   async parse(req: Request): Promise<IAddPhotoParams> {
     this.reset();

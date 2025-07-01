@@ -7,7 +7,9 @@ export interface IExpressController {
   handler: Handler;
 }
 
-export abstract class ExpressController implements IExpressController {
+export abstract class ExpressController<TReqParams>
+  implements IExpressController
+{
   private readonly internalHandler = async (req: Request, res: Response) => {
     const params = await this.getParams(req);
     const result = await this.executeUseCase(params);
@@ -18,7 +20,7 @@ export abstract class ExpressController implements IExpressController {
 
   protected abstract getParamsFromRequest(
     req: Request,
-  ): unknown | Promise<unknown>;
+  ): TReqParams | Promise<TReqParams>;
 
   protected abstract executeUseCase(...args: unknown[]): Promise<unknown>;
 

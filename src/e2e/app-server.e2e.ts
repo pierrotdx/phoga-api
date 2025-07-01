@@ -229,7 +229,7 @@ describe("ExpressAppServer", () => {
             let photoWithTagToReplace: IPhoto;
 
             beforeEach(async () => {
-              photoWithTagToReplace = await dumbPhotoGenerator.generatePhoto();
+              photoWithTagToReplace = dumbPhotoGenerator.generatePhoto();
               const addPhotoParams: IAddPhotoParams = {
                 ...photoWithTagToReplace,
                 tagIds: [tagToReplace._id],
@@ -471,7 +471,7 @@ describe("ExpressAppServer", () => {
           beforeEach(async () => {
             await tagDb.insert(dumbTag);
 
-            photoWithTagToDelete = await dumbPhotoGenerator.generatePhoto();
+            photoWithTagToDelete = dumbPhotoGenerator.generatePhoto();
             const addPhotoParams: IAddPhotoParams = {
               ...photoWithTagToDelete,
               tagIds: [tagToDelete._id, dumbTag._id],
@@ -523,7 +523,7 @@ describe("ExpressAppServer", () => {
       let addPhotoParams: IAddPhotoParams;
 
       beforeEach(async () => {
-        addPhotoParams = await dumbPhotoGenerator.generatePhoto();
+        addPhotoParams = dumbPhotoGenerator.generatePhoto();
       });
 
       afterEach(async () => {
@@ -545,7 +545,7 @@ describe("ExpressAppServer", () => {
       describe("when the requester has the expected right", () => {
         describe("when there is no image to upload", () => {
           beforeEach(async () => {
-            const photoWithoutImage = await dumbPhotoGenerator.generatePhoto();
+            const photoWithoutImage = dumbPhotoGenerator.generatePhoto();
             delete photoWithoutImage.imageBuffer;
             addPhotoParams = photoWithoutImage;
           });
@@ -588,7 +588,7 @@ describe("ExpressAppServer", () => {
             ];
             await tagTestUtils.insertTagsInDb(tags);
 
-            const photo = await dumbPhotoGenerator.generatePhoto();
+            const photo = dumbPhotoGenerator.generatePhoto();
 
             addPhotoParams = { ...photo, tagIds: tags.map((t) => t._id) };
           });
@@ -667,7 +667,7 @@ describe("ExpressAppServer", () => {
           ];
           await tagTestUtils.insertTagsInDb(tags);
 
-          photoToGet = await dumbPhotoGenerator.generatePhoto();
+          photoToGet = dumbPhotoGenerator.generatePhoto();
           photoToGet.tags = tags;
 
           const photoToGetAddPhotoParams: IAddPhotoParams = {
@@ -703,7 +703,7 @@ describe("ExpressAppServer", () => {
       const timeout = 10000;
 
       beforeEach(async () => {
-        storedPhotos = await dumbPhotoGenerator.generatePhotos(3);
+        storedPhotos = dumbPhotoGenerator.generatePhotos(3);
         await photoDbTestUtils.addPhotos(storedPhotos);
       }, timeout);
 
@@ -725,7 +725,7 @@ describe("ExpressAppServer", () => {
           };
           await tagTestUtils.insertTagInDb(tag);
 
-          storedPhotosWithTag = await dumbPhotoGenerator.generatePhotos(3);
+          storedPhotosWithTag = dumbPhotoGenerator.generatePhotos(3);
           storedPhotosWithTag.forEach((p) => {
             p.tags = [tag];
             p.imageUrl = appTestUtils.getExpectedImageUrl(p._id);
@@ -913,7 +913,7 @@ describe("ExpressAppServer", () => {
 
         describe("when there is a photo to replace", () => {
           beforeEach(async () => {
-            storedPhoto = await dumbPhotoGenerator.generatePhoto();
+            storedPhoto = dumbPhotoGenerator.generatePhoto();
             await photoDbTestUtils.addPhoto(storedPhoto);
 
             replacePhotoParams = {
@@ -973,7 +973,7 @@ describe("ExpressAppServer", () => {
               ];
               await tagTestUtils.insertTagsInDb(tags);
 
-              const newPhoto = await dumbPhotoGenerator.generatePhoto({
+              const newPhoto = dumbPhotoGenerator.generatePhoto({
                 _id: storedPhoto._id,
               });
 
@@ -1032,13 +1032,12 @@ describe("ExpressAppServer", () => {
               let photoWithoutDataToReplace: IPhoto;
 
               beforeEach(async () => {
-                photoWithoutDataToReplace =
-                  await dumbPhotoGenerator.generatePhoto();
+                photoWithoutDataToReplace = dumbPhotoGenerator.generatePhoto();
                 delete photoWithoutDataToReplace.metadata;
 
                 await photoDbTestUtils.addPhoto(photoWithoutDataToReplace);
 
-                const newPhoto = await dumbPhotoGenerator.generatePhoto({
+                const newPhoto = dumbPhotoGenerator.generatePhoto({
                   _id: photoWithoutDataToReplace._id,
                 });
                 replacePhotoParams = {
@@ -1104,13 +1103,13 @@ describe("ExpressAppServer", () => {
         let photoToDelete: IPhoto;
 
         beforeEach(async () => {
-          photoToDelete = await dumbPhotoGenerator.generatePhoto();
+          photoToDelete = dumbPhotoGenerator.generatePhoto();
           await photoDbTestUtils.addPhoto(photoToDelete);
 
           deletePhotoParams = photoToDelete._id;
         });
 
-        it("should delete photo\'s data (other than image) from the photo-data db", async () => {
+        it("should delete photo's data (other than image) from the photo-data db", async () => {
           const expectedStoreData = undefined;
 
           await appTestUtils.sendDeletePhotoReq({
@@ -1147,7 +1146,7 @@ describe("ExpressAppServer", () => {
             jest
               .spyOn(photoDataDb, "delete")
               .mockImplementationOnce(() =>
-                Promise.reject("data-deletion failed"),
+                Promise.reject(new Error("data-deletion failed")),
               );
           });
 
@@ -1189,7 +1188,7 @@ describe("ExpressAppServer", () => {
             jest
               .spyOn(photoImageDb, "delete")
               .mockImplementationOnce(() =>
-                Promise.reject("image-deletion failed"),
+                Promise.reject(new Error("image-deletion failed")),
               );
           });
 

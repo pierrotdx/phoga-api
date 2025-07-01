@@ -10,16 +10,12 @@ export class SearchPhotoUseCase implements ISearchPhotoUseCase {
   async execute(
     searchPhotoParams: ISearchPhotoParams,
   ): Promise<ISearchResult<IPhoto>> {
-    try {
-      const searchResult = await this.searchPhotos(searchPhotoParams);
-      const formattedSearchResult: ISearchResult<IPhoto> = {
-        ...searchResult,
-        hits: searchResult.hits.map((p) => fromPhotoStoredDataToPhoto(p)),
-      };
-      return formattedSearchResult;
-    } catch (err) {
-      throw err;
-    }
+    const searchResult = await this.searchPhotos(searchPhotoParams);
+    const formattedSearchResult: ISearchResult<IPhoto> = {
+      ...searchResult,
+      hits: searchResult.hits.map((p) => fromPhotoStoredDataToPhoto(p)),
+    };
+    return formattedSearchResult;
   }
 
   private async searchPhotos(

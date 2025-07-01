@@ -40,7 +40,7 @@ export class PhotoImageDbGcs implements IPhotoImageDb {
       const fileStream = this.bucket.file(id).createReadStream();
       return await buffer(fileStream);
     } catch (err) {
-      return undefined;
+      console.log(err);
     }
   }
 

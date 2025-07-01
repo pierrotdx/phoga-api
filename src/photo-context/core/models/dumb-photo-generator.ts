@@ -5,8 +5,8 @@ import { IAddPhotoParams } from "./photo-parsers";
 import { IPhotoStoredData } from "./photo-stored-data";
 
 export interface IDumbPhotoGenerator {
-  generatePhoto(params?: IGeneratePhotoOptions): Promise<IPhoto>;
-  generatePhotos(nbPhotos: number): Promise<IPhoto[]>;
+  generatePhoto(params?: IGeneratePhotoOptions): IPhoto;
+  generatePhotos(nbPhotos: number): IPhoto[];
   generatePhotoStoredData(
     options?: IGeneratePhotoStoredDataOptions,
   ): IPhotoStoredData;

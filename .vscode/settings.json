@@ -4,4 +4,8 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnPaste": false,
   "editor.formatOnType": false,
+  "sonarlint.connectedMode.project": {
+    "connectionId": "pierrotdx",
+    "projectKey": "pierrotdx_phoga-api"
+  }
 }

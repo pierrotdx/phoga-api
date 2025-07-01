@@ -49,7 +49,7 @@ describe(`${GetPhotoUseCase.name}`, () => {
     let photoToGet: IPhoto;
 
     beforeEach(async () => {
-      photoToGet = await dumbPhotoGenerator.generatePhoto();
+      photoToGet = dumbPhotoGenerator.generatePhoto();
 
       useCaseParams = photoToGet._id;
     });

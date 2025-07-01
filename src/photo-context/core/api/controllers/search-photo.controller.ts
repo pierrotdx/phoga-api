@@ -16,7 +16,7 @@ import { SearchPhotoParser } from "../parsers";
 import { SearchPhotoSchema } from "../schemas";
 
 export class SearchPhotoController
-  extends ExpressController
+  extends ExpressController<ISearchPhotoParams>
   implements IExpressController
 {
   private readonly useCase: ISearchPhotoUseCase;

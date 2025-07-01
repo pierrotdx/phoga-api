@@ -9,6 +9,7 @@ export function isRendering(candidate: any): candidate is IRendering {
   try {
     return assertRendering(candidate);
   } catch (err) {
+    console.error(err);
     return false;
   }
 }

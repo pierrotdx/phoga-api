@@ -5,7 +5,7 @@ import { JWTPayload, auth, claimCheck } from "express-oauth2-jwt-bearer";
 import { IAuthHandler } from "../../../../core";
 
 export class ExpressAuthHandler implements IAuthHandler {
-  private _requiresAuth: Handler;
+  private readonly _requiresAuth: Handler;
   get requiresAuth() {
     return this._requiresAuth;
   }

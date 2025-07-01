@@ -4,7 +4,6 @@ import { Router } from "express";
 import {
   GetPhotoDataController,
   IPhotoDataDb,
-  IPhotoImageDb,
   IPhotoRouter,
   PhotoEntryPointId,
   PhotoEntryPoints,
