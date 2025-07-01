@@ -6,6 +6,7 @@ import { Request, Response } from "express";
 import {
   IReplaceTagParser,
   IReplaceTagUseCase,
+  ITag,
   ITagDb,
   ReplaceTagUseCase,
 } from "../../";
@@ -13,7 +14,7 @@ import { ReplaceTagParser } from "../parsers";
 import { ReplaceTagSchema } from "../schemas";
 
 export class ReplaceTagController
-  extends ExpressController
+  extends ExpressController<ITag>
   implements IExpressController
 {
   private readonly validator: IValidator = new AjvValidator(ReplaceTagSchema);
@@ -25,7 +26,7 @@ export class ReplaceTagController
     this.useCase = new ReplaceTagUseCase(tagDb, photoDataDb);
   }
 
-  protected getParamsFromRequest(req: Request): unknown | Promise<unknown> {
+  protected getParamsFromRequest(req: Request): ITag {
     this.validator.validate(req.body);
     return this.parser.parse(req);
   }

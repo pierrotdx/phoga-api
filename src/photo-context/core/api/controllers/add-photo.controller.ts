@@ -15,7 +15,7 @@ import { AddPhotoParser } from "../parsers";
 import { AddPhotoSchema } from "../schemas";
 
 export class AddPhotoController
-  extends ExpressController
+  extends ExpressController<IAddPhotoParams>
   implements IExpressController
 {
   private readonly useCase: IAddPhotoUseCase;
@@ -37,7 +37,7 @@ export class AddPhotoController
     this.parser = new AddPhotoParser();
   }
 
-  protected async getParamsFromRequest(req: Request): Promise<IPhoto> {
+  protected async getParamsFromRequest(req: Request): Promise<IAddPhotoParams> {
     // ATM for multipart/formData, we parse before validation...
     const parsedData = await this.parser.parse(req);
     this.validator.validate(parsedData);

@@ -42,7 +42,7 @@ describe(`${EntryPoint.name}`, () => {
       const grandParent = new EntryPoint("grandParent");
       const parent = new EntryPoint("parent", { parent: grandParent });
       const entryPoint = new EntryPoint(relativePath, { parent });
-      const expectedPath = `${grandParent.getRelativePath()}\/${parent.getRelativePath()}\/${relativePath}`;
+      const expectedPath = `${grandParent.getRelativePath()}/${parent.getRelativePath()}/${relativePath}`;
       const result = entryPoint.getFullPathRaw();
       expect(result).toBe(expectedPath);
       expect.assertions(1);

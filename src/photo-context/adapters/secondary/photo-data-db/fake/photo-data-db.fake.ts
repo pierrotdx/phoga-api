@@ -1,9 +1,8 @@
 import { IRendering, ISearchResult, SortDirection } from "#shared/models";
-import { clone, omit } from "ramda";
+import { clone } from "ramda";
 
 import {
   IPhoto,
-  IPhotoData,
   IPhotoDataDb,
   IPhotoStoredData,
   ISearchPhotoFilter,

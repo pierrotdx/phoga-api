@@ -1,10 +1,8 @@
 import { ILoremIpsumGenerator } from "#shared/lorem-ipsum";
 import { IUuidGenerator } from "#shared/uuid";
 import { ITag } from "#tag-context";
-import fetch from "node-fetch";
 import { clone } from "ramda";
 
-import { assertPhoto } from "../assertions/is-photo/is-photo";
 import {
   IAddPhotoParams,
   IDumbPhotoGenerator,
@@ -22,13 +20,13 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     private readonly loremIpsumGenerator: ILoremIpsumGenerator,
   ) {}
 
-  async generatePhoto(options?: IGeneratePhotoOptions): Promise<IPhoto> {
+  generatePhoto(options?: IGeneratePhotoOptions): IPhoto {
     const id = this.generateId(options);
     const metadata = this.generateMetadata(options);
     const photo = new Photo(id, { photoData: { metadata } });
     if (!options?.noImageBuffer) {
       const imageBuffer =
-        clone(options?.imageBuffer) || (await this.generateImageBuffer());
+        clone(options?.imageBuffer) || this.generateImageBuffer();
       photo.imageBuffer = imageBuffer;
     }
     return photo;
@@ -38,17 +36,9 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     return clone(options?._id) || this.uuidGenerator.generate();
   }
 
-  private async generateImageBuffer(
-    size: { width: number; height: number } = { width: 200, height: 200 },
-  ): Promise<Buffer> {
-    try {
-      const response = await fetch(
-        `https://picsum.photos/seed/picsum/${size.width}/${size.height}`,
-      );
-      return await response.buffer();
-    } catch (err) {
-      throw err;
-    }
+  private generateImageBuffer(): Buffer {
+    const dumbContent = this.loremIpsumGenerator.generateWords(2).join(" ");
+    return Buffer.from(dumbContent);
   }
 
   private generateMetadata(
@@ -93,13 +83,10 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     return description;
   }
 
-  async generatePhotos(
-    nbPhotos: number,
-    options?: IGeneratePhotoOptions,
-  ): Promise<IPhoto[]> {
+  generatePhotos(nbPhotos: number, options?: IGeneratePhotoOptions): IPhoto[] {
     const photos: IPhoto[] = [];
     while (photos.length < nbPhotos) {
-      const photo = await this.generatePhoto(options);
+      const photo = this.generatePhoto(options);
       photos.push(photo);
     }
     return photos;
@@ -151,7 +138,7 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
   async generateAddPhotoParams(
     options?: IGenerateAddPhotoParams,
   ): Promise<IAddPhotoParams> {
-    const photo = await this.generatePhoto(options);
+    const photo = this.generatePhoto(options);
     const tagIds: ITag["_id"][] = options?.tagIds || [
       this.uuidGenerator.generate(),
       this.uuidGenerator.generate(),

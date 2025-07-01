@@ -49,7 +49,7 @@ describe(`${DeletePhotoUseCase.name}`, () => {
     let useCaseParams: IDeletePhotoParams;
 
     beforeEach(async () => {
-      photoToDelete = await dumbPhotoGenerator.generatePhoto();
+      photoToDelete = dumbPhotoGenerator.generatePhoto();
       await dbTestUtils.addPhoto(photoToDelete, creationDate);
 
       useCaseParams = photoToDelete._id;
@@ -59,7 +59,7 @@ describe(`${DeletePhotoUseCase.name}`, () => {
       await dbTestUtils.deletePhoto(photoToDelete._id);
     });
 
-    it("should delete photo\'s data (other than image) from the photo-data db", async () => {
+    it("should delete photo's data (other than image) from the photo-data db", async () => {
       const expectedStoreData = undefined;
 
       await useCaseTestUtils.executeTestedUseCase(useCaseParams);
@@ -87,7 +87,9 @@ describe(`${DeletePhotoUseCase.name}`, () => {
       beforeEach(() => {
         photoDataDb.delete = jest
           .fn()
-          .mockImplementationOnce(() => Promise.reject("data-deletion failed"));
+          .mockImplementationOnce(() =>
+            Promise.reject(new Error("data-deletion failed")),
+          );
       });
 
       it(`should throw an error with status code ${HttpErrorCode.InternalServerError} (internal server error)`, async () => {
@@ -107,6 +109,7 @@ describe(`${DeletePhotoUseCase.name}`, () => {
         try {
           await useCaseTestUtils.executeTestedUseCase(useCaseParams);
         } catch (err) {
+          console.log(err);
         } finally {
           await expectsTestUtils.expectPhotoImageToBe(
             useCaseParams,
@@ -122,7 +125,7 @@ describe(`${DeletePhotoUseCase.name}`, () => {
         photoImageDb.delete = jest
           .fn()
           .mockImplementationOnce(() =>
-            Promise.reject("image-deletion failed"),
+            Promise.reject(new Error("image-deletion failed")),
           );
       });
 
@@ -150,6 +153,7 @@ describe(`${DeletePhotoUseCase.name}`, () => {
         try {
           await useCaseTestUtils.executeTestedUseCase(useCaseParams);
         } catch (err) {
+           console.log(err);
         } finally {
           await expectsTestUtils.expectPhotoStoredDataToBe(
             useCaseParams,

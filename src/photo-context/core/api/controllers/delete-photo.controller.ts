@@ -6,6 +6,7 @@ import {
   DeletePhotoParser,
   DeletePhotoSchema,
   DeletePhotoUseCase,
+  IDeletePhotoParams,
   IDeletePhotoParser,
   IDeletePhotoUseCase,
   IPhoto,
@@ -14,7 +15,7 @@ import {
 } from "../..";
 
 export class DeletePhotoController
-  extends ExpressController
+  extends ExpressController<IDeletePhotoParams>
   implements IExpressController
 {
   private readonly useCase: IDeletePhotoUseCase;
@@ -31,7 +32,7 @@ export class DeletePhotoController
     this.parser = new DeletePhotoParser();
   }
 
-  protected getParamsFromRequest(req: Request): string {
+  protected getParamsFromRequest(req: Request): IDeletePhotoParams {
     const reqData = { ...req.params, ...req.query };
     this.validator.validate(reqData);
     return this.parser.parse(req);

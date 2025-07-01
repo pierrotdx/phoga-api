@@ -12,6 +12,7 @@ export function isSearchPhotoOptions(
   try {
     return assertSearchPhotoOptions(candidate);
   } catch (err) {
+     console.error(err);
     return false;
   }
 }
