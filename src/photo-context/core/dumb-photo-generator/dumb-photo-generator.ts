@@ -26,7 +26,7 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
     const photo = new Photo(id, { photoData: { metadata } });
     if (!options?.noImageBuffer) {
       const imageBuffer =
-        clone(options?.imageBuffer) || this.generateImageBuffer();
+        clone(options?.imageBuffer) ?? this.generateImageBuffer();
       photo.imageBuffer = imageBuffer;
     }
     return photo;
