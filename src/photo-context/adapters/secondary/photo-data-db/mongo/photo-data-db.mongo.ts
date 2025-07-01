@@ -23,7 +23,7 @@ export class PhotoDataDbMongo implements IPhotoDataDb {
   }
 
   async getById(_id: IPhoto["_id"]): Promise<IPhotoStoredData> {
-    return (await this.collection.findOne({ _id })) || undefined;
+    return (await this.collection.findOne({ _id })) ?? undefined;
   }
 
   async insert(photoDataStore: IPhotoStoredData): Promise<void> {

@@ -16,7 +16,10 @@ type TQueryParams = ReturnType<
   typeof SearchPhotoParserTestUtils.prototype.generateQueryParams
 >;
 
-export class SearchPhotoParserTestUtils extends ParserTestUtils<ISearchPhotoParser> {
+export class SearchPhotoParserTestUtils extends ParserTestUtils<
+  ISearchPhotoParams,
+  ISearchPhotoParser
+> {
   protected testedParser: ISearchPhotoParser = new SearchPhotoParser();
   private readonly url = "/";
 

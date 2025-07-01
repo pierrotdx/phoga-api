@@ -8,7 +8,6 @@ import {
   PhotoDbTestUtils,
   PhotoExpectsTestUtils,
 } from "#shared/test-utils";
-import { time } from "console";
 
 import { dumbPhotoGenerator } from "../../../../adapters";
 import { IPhoto, IPhotoImageDb } from "../../../../core";
