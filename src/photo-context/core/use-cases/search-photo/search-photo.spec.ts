@@ -6,6 +6,7 @@ import {
   PhotoExpectsTestUtils,
 } from "#shared/test-utils";
 import { ITag, ITagDb, TagDbFake } from "#tag-context";
+import { clone } from "ramda";
 
 import {
   FakePhotoDataDb,
@@ -122,8 +123,8 @@ describe(`${SearchPhotoUseCase.name}`, () => {
             await useCaseTestUtils.executeTestedUseCase(useCaseParams);
 
           expectsTestUtils.expectEqualSearchResults(
-            searchResult,
             expectedSearchResult,
+            searchResult,
           );
           expectsTestUtils.checkAssertions();
         });
@@ -178,7 +179,8 @@ describe(`${SearchPhotoUseCase.name}`, () => {
         const sortDirection = SortDirection.Ascending;
 
         beforeEach(() => {
-          orderedStoredPhotos = storedPhotos.sort(comparePhotoDates);
+          orderedStoredPhotos = clone(storedPhotos);
+          orderedStoredPhotos.sort(comparePhotoDates);
         });
 
         it.each`

@@ -22,7 +22,8 @@ export class GetByIds {
       const files: File[] = [];
       filesStream
         .on("error", (err) => {
-          reject(err);
+          const error = err instanceof Error ? err : new Error(err);
+          reject(error);
         })
         .on("data", (chunk: File) => {
           if (ids.includes(chunk.name)) {

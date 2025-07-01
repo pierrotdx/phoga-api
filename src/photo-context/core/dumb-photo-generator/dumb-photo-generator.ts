@@ -33,7 +33,7 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
   }
 
   private generateId(options?: IGeneratePhotoOptions): string {
-    return clone(options?._id) || this.uuidGenerator.generate();
+    return clone(options?._id) ?? this.uuidGenerator.generate();
   }
 
   private generateImageBuffer(): Buffer {
@@ -44,13 +44,13 @@ export class DumbPhotoGenerator implements IDumbPhotoGenerator {
   private generateMetadata(
     options?: IGeneratePhotoOptions,
   ): IPhoto["metadata"] {
-    const date = clone(options?.date) || this.randomDate();
-    const titles = clone(options?.titles) || this.generateTitles();
+    const date = clone(options?.date) ?? this.randomDate();
+    const titles = clone(options?.titles) ?? this.generateTitles();
     const location =
-      clone(options?.location) ||
+      clone(options?.location) ??
       this.loremIpsumGenerator.generateWords(2).join(" ");
     const description =
-      clone(options?.description) || this.generateDescription();
+      clone(options?.description) ?? this.generateDescription();
     return { date, titles, location, description };
   }
 

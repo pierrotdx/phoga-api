@@ -1,10 +1,17 @@
 import { ParserTestUtils } from "#shared/test-utils";
-import { IGetPhotoParser, IPhoto } from "photo-context/core/models";
+import {
+  IGetPhotoParams,
+  IGetPhotoParser,
+  IPhoto,
+} from "photo-context/core/models";
 import request, { type Test } from "supertest";
 
 import { GetPhotoParser } from "./get-photo.parser";
 
-export class GetPhotoParserTestUtils extends ParserTestUtils<IGetPhotoParser> {
+export class GetPhotoParserTestUtils extends ParserTestUtils<
+  IGetPhotoParams,
+  IGetPhotoParser
+> {
   protected testedParser: IGetPhotoParser = new GetPhotoParser();
 
   private readonly baseUrl: string = "/";

@@ -8,7 +8,6 @@ import {
   IAddPhotoParams,
   IAddPhotoParser,
   IAddPhotoUseCase,
-  IPhoto,
 } from "../../models";
 import { AddPhotoUseCase } from "../../use-cases";
 import { AddPhotoParser } from "../parsers";

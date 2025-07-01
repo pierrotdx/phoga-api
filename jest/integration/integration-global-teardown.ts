@@ -1,5 +1,3 @@
-import compose from "docker-compose";
-
 import { DockerService } from "../../docker";
 import { JestGlobalManager } from "../jest-global-manager";
 import { IConfigFolders } from "../models";

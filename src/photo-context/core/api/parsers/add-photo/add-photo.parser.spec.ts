@@ -15,7 +15,7 @@ describe("AddPhotoParser", () => {
 
   describe("parse", () => {
     it("should parse input data into photo", async () => {
-      const payload = await testUtils.generatePayload();
+      const payload = testUtils.generatePayload();
       const expectedData = testUtils.getExpectedDataFromPayload(payload);
 
       await testUtils.sendRequest(payload);
@@ -26,7 +26,7 @@ describe("AddPhotoParser", () => {
     });
 
     it("should throw if the parsed data is not a photo", async () => {
-      const payload = await testUtils.generatePayload();
+      const payload = testUtils.generatePayload();
       const invalidPayload = payload;
       invalidPayload.date = 4 as any;
 

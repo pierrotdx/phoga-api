@@ -1,7 +1,6 @@
 import { ILoremIpsumGenerator } from "#shared/lorem-ipsum";
 import { ParserTestUtils } from "#shared/test-utils";
 import { IUuidGenerator } from "#shared/uuid";
-import fetch from "node-fetch";
 import request, { Test } from "supertest";
 
 import {
@@ -17,7 +16,7 @@ type TPayload = Awaited<
   ReturnType<typeof AddPhotoParserTestUtils.prototype.generatePayload>
 >;
 
-export class AddPhotoParserTestUtils extends ParserTestUtils<IAddPhotoParser> {
+export class AddPhotoParserTestUtils extends ParserTestUtils<IAddPhotoParams, IAddPhotoParser> {
   protected testedParser: IAddPhotoParser;
 
   private readonly url = "/";
@@ -43,17 +42,17 @@ export class AddPhotoParserTestUtils extends ParserTestUtils<IAddPhotoParser> {
     return req;
   }
 
-  private addDataToReq(req: Test, data: any): void {
+  private addDataToReq(req: Test, data: unknown): void {
     Object.entries(data).forEach(([key, value]) => {
       if (key !== "imageBuffer") {
-        req.field(key, value as any);
+        req.field(key, value);
       }
     });
-    req.attach("image", data.imageBuffer);
+    req.attach("image", (data as any).imageBuffer);
   }
 
-  async generatePayload() {
-    const imageBuffer = await this.generateImageBuffer();
+  generatePayload() {
+    const imageBuffer = this.generateImageBuffer();
     return {
       _id: this.uuidGenerator.generate(),
       imageBuffer,
@@ -65,9 +64,9 @@ export class AddPhotoParserTestUtils extends ParserTestUtils<IAddPhotoParser> {
     };
   }
 
-  private async generateImageBuffer(): Promise<Buffer> {
-    const response = await fetch("https://picsum.photos/seed/picsum/200/300");
-    return await response.buffer();
+  private generateImageBuffer(): Buffer {
+    const dumbContent = this.loremIpsum.generateWords(3).join();
+    return Buffer.from(dumbContent);
   }
 
   getExpectedDataFromPayload(payload: TPayload): IPhoto {
