@@ -60,7 +60,7 @@ describe(`${SearchPhotoUseCase.name}`, () => {
     const timeout = 10000;
 
     beforeEach(async () => {
-      storedPhotos = await dumbPhotoGenerator.generatePhotos(nbStoredPhotos, {
+      storedPhotos = dumbPhotoGenerator.generatePhotos(nbStoredPhotos, {
         noImageBuffer: true,
       });
       await dbTestUtils.addPhotos(storedPhotos);
@@ -84,8 +84,8 @@ describe(`${SearchPhotoUseCase.name}`, () => {
         const searchResult = await useCaseTestUtils.executeTestedUseCase();
 
         expectsTestUtils.expectEqualSearchResults(
-          searchResult,
           expectedSearchResult,
+          searchResult,
         );
         expectsTestUtils.checkAssertions();
       });

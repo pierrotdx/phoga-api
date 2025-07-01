@@ -63,7 +63,7 @@ export class LoggerWinston implements ILogger {
     return consoleTransport;
   }
 
-  private transformInfoForConsole = ({
+  private readonly transformInfoForConsole = ({
     level,
     message,
   }: Logform.TransformableInfo): string => {

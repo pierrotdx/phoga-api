@@ -5,6 +5,7 @@ import { Request, Response } from "express";
 import {
   ISearchTagFilter,
   ISearchTagOptions,
+  ISearchTagParams,
   ISearchTagParser,
   ISearchTagUseCase,
   ITag,
@@ -15,7 +16,7 @@ import {
 } from "../../";
 
 export class SearchTagController
-  extends ExpressController
+  extends ExpressController<ISearchTagParams>
   implements IExpressController
 {
   private readonly useCase: ISearchTagUseCase;
@@ -27,12 +28,15 @@ export class SearchTagController
     this.useCase = new SearchTagUseCase(tagDb);
   }
 
-  protected getParamsFromRequest(req: Request): unknown | Promise<unknown> {
+  protected getParamsFromRequest(req: Request): ISearchTagParams {
     this.validator.validate(req);
     return this.parser.parse(req);
   }
 
-  protected async executeUseCase(filter?: ISearchTagFilter, options?: ISearchTagOptions): Promise<unknown> {
+  protected async executeUseCase(
+    filter?: ISearchTagFilter,
+    options?: ISearchTagOptions,
+  ): Promise<unknown> {
     return await this.useCase.execute(filter, options);
   }
 

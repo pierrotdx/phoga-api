@@ -67,7 +67,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
 
     describe("when there is no photo to replace", () => {
       beforeEach(async () => {
-        const newPhoto = await dumbPhotoGenerator.generatePhoto();
+        const newPhoto = dumbPhotoGenerator.generatePhoto();
         useCaseParams = newPhoto;
       });
 
@@ -108,7 +108,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
 
       describe("when there is no image in the new photo", () => {
         beforeEach(async () => {
-          const newPhotoWithoutImage = await dumbPhotoGenerator.generatePhoto({
+          const newPhotoWithoutImage = dumbPhotoGenerator.generatePhoto({
             _id: photoToReplaceAddPhotoParams._id,
           });
           delete newPhotoWithoutImage.imageBuffer;
@@ -144,6 +144,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
           try {
             await useCaseTestUtils.executeTestedUseCase(useCaseParams);
           } catch (err) {
+            console.log(err);
           } finally {
             await expectsTestUtils.expectPhotoStoredDataToBe(
               photoToReplaceAddPhotoParams._id,
@@ -158,7 +159,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
         const newLastUpdate = new Date("2025-06-24");
 
         beforeEach(async () => {
-          const newPhoto = await dumbPhotoGenerator.generatePhoto({
+          const newPhoto = dumbPhotoGenerator.generatePhoto({
             _id: photoToReplaceAddPhotoParams._id,
           });
 
@@ -207,13 +208,12 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
           let photoWithoutDataToReplace: IPhoto;
 
           beforeEach(async () => {
-            photoWithoutDataToReplace =
-              await dumbPhotoGenerator.generatePhoto();
+            photoWithoutDataToReplace = dumbPhotoGenerator.generatePhoto();
             delete photoWithoutDataToReplace.metadata;
 
             await dbTestUtils.addPhoto(photoWithoutDataToReplace, creationDate);
 
-            const newPhoto = await dumbPhotoGenerator.generatePhoto({
+            const newPhoto = dumbPhotoGenerator.generatePhoto({
               _id: photoWithoutDataToReplace._id,
             });
 

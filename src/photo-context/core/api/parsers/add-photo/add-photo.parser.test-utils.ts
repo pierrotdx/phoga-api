@@ -66,13 +66,10 @@ export class AddPhotoParserTestUtils extends ParserTestUtils<IAddPhotoParser> {
   }
 
   private async generateImageBuffer(): Promise<Buffer> {
-    try {
-      const response = await fetch("https://picsum.photos/seed/picsum/200/300");
-      return await response.buffer();
-    } catch (err) {
-      throw err;
-    }
+    const response = await fetch("https://picsum.photos/seed/picsum/200/300");
+    return await response.buffer();
   }
+
   getExpectedDataFromPayload(payload: TPayload): IPhoto {
     const expectedData: IAddPhotoParams = new Photo(payload._id, {
       imageBuffer: payload.imageBuffer,

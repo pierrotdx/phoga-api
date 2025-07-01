@@ -6,6 +6,7 @@ import { type Request, type Response } from "express";
 import { IPhotoDataDb, IPhotoImageDb } from "../../gateways";
 import {
   IPhoto,
+  IReplacePhotoParams,
   IReplacePhotoParser,
   IReplacePhotoUseCase,
 } from "../../models";
@@ -14,7 +15,7 @@ import { ReplacePhotoParser } from "../parsers";
 import { AddPhotoSchema } from "../schemas";
 
 export class ReplacePhotoController
-  extends ExpressController
+  extends ExpressController<IReplacePhotoParams>
   implements IExpressController
 {
   private readonly useCase: IReplacePhotoUseCase;
@@ -36,7 +37,7 @@ export class ReplacePhotoController
     this.parser = new ReplacePhotoParser();
   }
 
-  protected async getParamsFromRequest(req: Request): Promise<IPhoto> {
+  protected async getParamsFromRequest(req: Request): Promise<IReplacePhotoParams> {
     const photo = await this.parser.parse(req);
     this.validator.validate(photo);
     return photo;

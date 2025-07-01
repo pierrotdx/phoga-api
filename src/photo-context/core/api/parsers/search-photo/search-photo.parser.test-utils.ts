@@ -1,4 +1,4 @@
-import { IRendering, SortDirection } from "#shared/models";
+import { SortDirection } from "#shared/models";
 import { ParserTestUtils } from "#shared/test-utils";
 import { IUuidGenerator, UuidGenerator } from "#shared/uuid";
 import { isEmpty } from "ramda";

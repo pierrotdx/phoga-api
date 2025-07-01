@@ -8,6 +8,7 @@ import {
   PhotoDbTestUtils,
   PhotoExpectsTestUtils,
 } from "#shared/test-utils";
+import { time } from "console";
 
 import { dumbPhotoGenerator } from "../../../../adapters";
 import { IPhoto, IPhotoImageDb } from "../../../../core";
@@ -38,7 +39,7 @@ describe("PhotoImageDbGcs", () => {
     let photoToInsert: IPhoto;
 
     beforeEach(async () => {
-      photoToInsert = await dumbPhotoGenerator.generatePhoto();
+      photoToInsert = dumbPhotoGenerator.generatePhoto();
     });
 
     afterEach(async () => {
@@ -72,7 +73,7 @@ describe("PhotoImageDbGcs", () => {
       let photoToCheck: IPhoto;
 
       beforeEach(async () => {
-        photoToCheck = await dumbPhotoGenerator.generatePhoto();
+        photoToCheck = dumbPhotoGenerator.generatePhoto();
         await dbTestUtils.addPhoto(photoToCheck);
       });
 
@@ -103,7 +104,7 @@ describe("PhotoImageDbGcs", () => {
       let photoToGet: IPhoto;
 
       beforeEach(async () => {
-        photoToGet = await dumbPhotoGenerator.generatePhoto();
+        photoToGet = dumbPhotoGenerator.generatePhoto();
         await dbTestUtils.addPhoto(photoToGet);
       });
 
@@ -127,7 +128,7 @@ describe("PhotoImageDbGcs", () => {
     let storedPhotos: IPhoto[];
 
     beforeEach(async () => {
-      storedPhotos = await dumbPhotoGenerator.generatePhotos(nbPhotos);
+      storedPhotos = dumbPhotoGenerator.generatePhotos(nbPhotos);
       await dbTestUtils.addPhotos(storedPhotos);
     }, timeout);
 
@@ -138,27 +139,33 @@ describe("PhotoImageDbGcs", () => {
 
     const nbTests = 3;
     for (let i = 0; i < nbTests; i++) {
-      it("should return the required images", async () => {
-        const ids = testUtils.pickRandomPhotoIds(storedPhotos);
-        const expectedPhotos = storedPhotos.filter((p) => ids.includes(p._id));
+      it(
+        "should return the required images",
+        async () => {
+          const ids = testUtils.pickRandomPhotoIds(storedPhotos);
+          const expectedPhotos = storedPhotos.filter((p) =>
+            ids.includes(p._id),
+          );
 
-        const result = await photoImageDbGcs.getByIds(ids);
+          const result = await photoImageDbGcs.getByIds(ids);
 
-        const assertionsCounter: IAssertionsCounter = new AssertionsCounter();
+          const assertionsCounter: IAssertionsCounter = new AssertionsCounter();
 
-        expect(expectedPhotos.length).toBe(Object.keys(result).length);
-        assertionsCounter.increase();
-
-        Object.entries(result).forEach(([id, image]) => {
-          const expectedImage = expectedPhotos.find(
-            (p) => p._id === id,
-          ).imageBuffer;
-          expect(image).toEqual(expectedImage);
+          expect(expectedPhotos.length).toBe(Object.keys(result).length);
           assertionsCounter.increase();
-        });
 
-        assertionsCounter.checkAssertions();
-      });
+          Object.entries(result).forEach(([id, image]) => {
+            const expectedImage = expectedPhotos.find(
+              (p) => p._id === id,
+            ).imageBuffer;
+            expect(image).toEqual(expectedImage);
+            assertionsCounter.increase();
+          });
+
+          assertionsCounter.checkAssertions();
+        },
+        timeout,
+      );
     }
   });
 
@@ -166,7 +173,7 @@ describe("PhotoImageDbGcs", () => {
     let photoToReplace: IPhoto;
 
     beforeEach(async () => {
-      photoToReplace = await dumbPhotoGenerator.generatePhoto();
+      photoToReplace = dumbPhotoGenerator.generatePhoto();
       await dbTestUtils.addPhoto(photoToReplace);
     });
 
@@ -175,7 +182,7 @@ describe("PhotoImageDbGcs", () => {
     });
 
     it("should replace the image of the required photo", async () => {
-      const newPhoto = await dumbPhotoGenerator.generatePhoto({
+      const newPhoto = dumbPhotoGenerator.generatePhoto({
         _id: photoToReplace._id,
       });
       const expectedImage = newPhoto.imageBuffer;
@@ -194,12 +201,8 @@ describe("PhotoImageDbGcs", () => {
     let photoToDelete: IPhoto;
 
     beforeEach(async () => {
-      photoToDelete = await dumbPhotoGenerator.generatePhoto();
+      photoToDelete = dumbPhotoGenerator.generatePhoto();
       await dbTestUtils.addPhoto(photoToDelete);
-    });
-
-    afterEach(async () => {
-      await dbTestUtils.deletePhoto(photoToDelete._id);
     });
 
     it("should delete the required photo", async () => {
@@ -214,7 +217,7 @@ describe("PhotoImageDbGcs", () => {
     let storedPhoto: IPhoto;
 
     beforeEach(async () => {
-      storedPhoto = await dumbPhotoGenerator.generatePhoto();
+      storedPhoto = dumbPhotoGenerator.generatePhoto();
       await photoImageDbGcs.insert(storedPhoto);
     });
 

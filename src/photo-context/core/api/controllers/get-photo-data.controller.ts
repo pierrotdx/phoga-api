@@ -6,6 +6,7 @@ import {
   GetPhotoParser,
   GetPhotoSchema,
   GetPhotoUseCase,
+  IGetPhotoParams,
   IGetPhotoParser,
   IGetPhotoUseCase,
   IPhoto,
@@ -13,7 +14,7 @@ import {
 } from "../..";
 
 export class GetPhotoDataController
-  extends ExpressController
+  extends ExpressController<IGetPhotoParams>
   implements IExpressController
 {
   private readonly useCase: IGetPhotoUseCase;
@@ -27,7 +28,7 @@ export class GetPhotoDataController
     this.parser = new GetPhotoParser();
   }
 
-  protected getParamsFromRequest(req: Request): IPhoto["_id"] {
+  protected getParamsFromRequest(req: Request): IGetPhotoParams {
     const reqData = { ...req.params, ...req.query };
     this.validator.validate(reqData);
     return this.parser.parse(req);

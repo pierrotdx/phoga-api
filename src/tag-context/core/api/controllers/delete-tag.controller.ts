@@ -7,13 +7,14 @@ import {
   DeleteTagUseCase,
   IDeleteTagParser,
   IDeleteTagUseCase,
+  ITag,
   ITagDb,
 } from "../../";
 import { DeleteTagParser } from "../parsers";
 import { DeleteTagSchema } from "../schemas";
 
 export class DeleteTagController
-  extends ExpressController
+  extends ExpressController<ITag["_id"]>
   implements IExpressController
 {
   private readonly validator: IValidator = new AjvValidator(DeleteTagSchema);
@@ -25,7 +26,7 @@ export class DeleteTagController
     this.useCase = new DeleteTagUseCase(tagDb, photoDataDb);
   }
 
-  protected getParamsFromRequest(req: Request): unknown | Promise<unknown> {
+  protected getParamsFromRequest(req: Request): ITag["_id"] {
     this.validator.validate(req.params);
     return this.parser.parse(req);
   }

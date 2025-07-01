@@ -87,10 +87,8 @@ export class PhotoDbTestUtils implements IPhotoDbTestUtils {
   }
 
   async deletePhoto(id: IPhoto["_id"]): Promise<void> {
-    try {
-      await this.deletePhotoStoredDataFromDb(id);
-      await this.deletePhotoImageFromDb(id);
-    } catch (err) {}
+    await this.deletePhotoStoredDataFromDb(id);
+    await this.deletePhotoImageFromDb(id);
   }
 
   private async deletePhotoStoredDataFromDb(id: IPhoto["_id"]): Promise<void> {

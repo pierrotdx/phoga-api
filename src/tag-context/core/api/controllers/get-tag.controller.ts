@@ -2,12 +2,12 @@ import { ExpressController, IExpressController } from "#shared/express";
 import { AjvValidator, IValidator } from "#shared/validators";
 import { Request, Response } from "express";
 
-import { GetTagUseCase, IGetTagParser, IGetTagUseCase, ITagDb } from "../../";
+import { GetTagUseCase, IGetTagParser, IGetTagUseCase, ITag, ITagDb } from "../../";
 import { GetTagParser } from "../parsers";
 import { GetTagSchema } from "../schemas";
 
 export class GetTagController
-  extends ExpressController
+  extends ExpressController<ITag["_id"]>
   implements IExpressController
 {
   private readonly validator: IValidator = new AjvValidator(GetTagSchema);
@@ -19,7 +19,7 @@ export class GetTagController
     this.useCase = new GetTagUseCase(tagDb);
   }
 
-  protected getParamsFromRequest(req: Request): unknown | Promise<unknown> {
+  protected  getParamsFromRequest(req: Request): ITag["_id"] {
     this.validator.validate(req.params);
     return this.parser.parse(req);
   }

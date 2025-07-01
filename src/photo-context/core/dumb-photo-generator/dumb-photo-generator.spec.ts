@@ -31,7 +31,7 @@ describe("dumbPhotoGenerator", () => {
     const nbTests = 5;
     for (let index = 0; index < nbTests; index++) {
       it("should generate a valid photo", async () => {
-        const photo = await dumbPhotoGenerator.generatePhoto();
+        const photo = dumbPhotoGenerator.generatePhoto();
         testUtils.expectAnInstanceOfPhoto(photo, assertionsCounter);
         assertionsCounter.checkAssertions();
       });
@@ -54,7 +54,7 @@ describe("dumbPhotoGenerator", () => {
         fieldPath: string[];
         options: IGeneratePhotoOptions;
       }) => {
-        const photo = await dumbPhotoGenerator.generatePhoto(options);
+        const photo = dumbPhotoGenerator.generatePhoto(options);
         testUtils.expectAnInstanceOfPhoto(photo, assertionsCounter);
         testUtils.expectMatchingValues({
           fieldPath,
@@ -69,7 +69,7 @@ describe("dumbPhotoGenerator", () => {
     it("should not generate an image buffer if required", async () => {
       const options: IGeneratePhotoOptions = { noImageBuffer: true };
 
-      const photo = await dumbPhotoGenerator.generatePhoto(options);
+      const photo = dumbPhotoGenerator.generatePhoto(options);
 
       expect(photo.imageBuffer).toBeUndefined();
       assertionsCounter.increase();
@@ -84,7 +84,7 @@ describe("dumbPhotoGenerator", () => {
     `(
       "should generate the required nb of photos ($nbPhotos)",
       async ({ nbPhotos }: { nbPhotos: number }) => {
-        const result = await dumbPhotoGenerator.generatePhotos(nbPhotos);
+        const result = dumbPhotoGenerator.generatePhotos(nbPhotos);
         expect(result.length).toBe(nbPhotos);
         assertionsCounter.increase();
         result.forEach((r) => {

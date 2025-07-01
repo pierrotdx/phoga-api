@@ -43,7 +43,7 @@ export class SearchPhotoParser implements ISearchPhotoParser {
   }
 
   private setRendering(data: any, searchOptions: ISearchPhotoOptions): void {
-    const { size, from, dateOrder } = data || {};
+    const { size, from, dateOrder } = data ?? {};
     if (size) {
       searchOptions.size = parseInt(size as string);
     }

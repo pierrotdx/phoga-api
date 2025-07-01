@@ -1,5 +1,5 @@
 import { ISearchResult } from "#shared/models";
-import { clone, slice } from "ramda";
+import { clone } from "ramda";
 
 import {
   ISearchTagFilter,

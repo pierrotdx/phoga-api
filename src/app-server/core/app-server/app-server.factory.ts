@@ -16,7 +16,7 @@ export class AppServerFactory implements Factory<IAppServer> {
   constructor({
     logger,
     photoImageDb,
-    photoDataDb: photoDataDb,
+    photoDataDb,
     tagDb,
   }: {
     logger: ILogger;
