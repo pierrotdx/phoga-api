@@ -2,19 +2,22 @@ import {
   AssertionsCounter,
   IAssertionsCounter,
 } from "#shared/assertions-counter";
-import { IParser } from "#shared/models";
+import { IParser, IParserAsync } from "#shared/models";
 import bodyParser from "body-parser";
 import express, { NextFunction, Request, Response } from "express";
 import { Test, Response as TestResponse } from "supertest";
 
-export abstract class ParserTestUtils<TParser extends IParser<unknown>> {
+export abstract class ParserTestUtils<
+  TParams,
+  TParser extends IParser<TParams> | IParserAsync<TParams>,
+> {
   protected abstract readonly testedParser: TParser;
 
   protected readonly app = express();
   protected abstract setupRouter(): void;
   protected abstract getRequest(payload: unknown): Test;
 
-  protected parsedData: unknown;
+  protected parsedData: TParams;
   protected response: TestResponse;
   protected responseError: any;
 
