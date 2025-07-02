@@ -4,7 +4,7 @@ describe("isUuid", () => {
   it.each`
     case                               | value
     ${"candidate is not a string"}     | ${1234}
-    ${"candidate is not a valid uuid"} | ${"erikgjn erijgn zifne"}
+    ${"candidate is not a valid uuid"} | ${"erikgjn erijgn zifneddd"}
   `("should return false if $case", ({ value }) => {
     expect(isUuid(value)).toBe(false);
     expect.assertions(1);
