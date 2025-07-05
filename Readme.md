@@ -12,34 +12,4 @@ As such, some choices of architecture or libraries are not based on efficiency b
 
 ### Current state
 
-The project is still under development and not ready for production. The staging version of the client can be previewed [here](https://staging-dot-phoga-client-dot-phoga-449314.ew.r.appspot.com) (initial loading may be a bit slow as server needs to wake up).
-
-## Dependencies
-
-```bash
-npm install
-```
-
-## Running tests
-
-### Unit tests
-
-```bash
-npm run test:unit // -- --verbose (for details)
-```
-
-### Integration tests
-
-1. Duplicate the file `docker\tests\.env.demo` and rename it `.env`.
-
-2. Start Docker Desktop.
-
-3. Run the following command (_note that the first launch might take some time as some Docker images will be downloaded_):
-
-```bash
-npm run test:int // -- --verbose (for details)
-```
-
-### E2E tests
-
-Not implemented yet.
+The project is still under development and not ready for production. The staging version of the client can be previewed [here](https://staging-dot-phoga-client-dot-phoga-449314.ew.r.appspot.com) **(initial loading may be a bit slow (~1 min) as server needs to wake up)**.
