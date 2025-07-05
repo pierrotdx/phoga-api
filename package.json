@@ -14,6 +14,7 @@
     "test:e2e": "jest --config ./jest/e2e/jest.e2e-config.js --runInBand",
     "test:local": "jest --config ./jest/jest.local-config.js --runInBand",
     "test:all": "npm run test:unit && npm run test:int && npm run test:e2e",
+    "test:ci": "jest --config ./jest/ci/jest.ci-config.js",
     "docker:dev:up": "docker-compose -f ./docker/dev/docker-compose.yaml up -d",
     "docker:dev:down": "docker-compose -f ./docker/dev/docker-compose.yaml down --volumes",
     "format:write": "prettier . --write",
