@@ -22,4 +22,5 @@ module.exports = {
     "#tag-context": "<rootDir>/src/tag-context/",
     "^#shared/(.*)$": "<rootDir>/src/shared/$1",
   },
+  globalSetup: "<rootDir>/jest/adapters/secondary/setup.ts",
 };

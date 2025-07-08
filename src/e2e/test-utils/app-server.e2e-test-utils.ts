@@ -12,7 +12,11 @@ import {
   PhotoEntryPointId,
 } from "#photo-context";
 import { ISearchResult } from "#shared/models";
-import { ExpressPhotoTestUtils, parseTagDates } from "#shared/test-utils";
+import {
+  ExpressPhotoTestUtils,
+  expectedImageUrl,
+  parseTagDates,
+} from "#shared/test-utils";
 import { IUuidGenerator, UuidGenerator } from "#shared/uuid";
 import request, { Response, Test } from "supertest";
 
@@ -29,9 +33,12 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
   private addPhotoUseCase: IAddPhotoUseCase;
 
   private readonly photoImagesBucket: string;
+  private readonly photoDbApiEndpoint: string;
+
   constructor(testEnv: any) {
     super(testEnv);
     this.photoImagesBucket = testEnv.__GC_PHOTO_IMAGES_BUCKET__;
+    this.photoDbApiEndpoint = testEnv.__GCS_API_ENDPOINT__;
   }
 
   async globalBeforeEach(): Promise<void> {
@@ -195,7 +202,10 @@ export class AppServerTestUtils extends AppServerSetupE2ETestUtils {
     await this.addPhotoUseCase.execute(params);
   }
 
-  getExpectedImageUrl(id: IPhoto["_id"]): string {
-    return `https://storage.googleapis.com/${this.photoImagesBucket}/${id}`;
-  }
+  getExpectedImageUrl = (id: IPhoto["_id"]): string =>
+    expectedImageUrl({
+      apiBaseUrl: this.photoDbApiEndpoint,
+      bucket: this.photoImagesBucket,
+      id,
+    });
 }
