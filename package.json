@@ -10,9 +10,9 @@
     "start:prod": "npm run build:prod && node ./dist/main.js",
     "watch": "tsc-watch --onSuccess \"node ./dist/main.js\"",
     "test:unit": "jest --config ./jest/adapters/primary/jest.unit.config.js",
-    "test:int": "dotenvx run -f .env.testing -- jest --config ./jest/adapters/primary/jest.integration.config.js --runInBand",
-    "test:e2e": "dotenvx run -f .env.testing -- jest --config ./jest/adapters/primary/jest.e2e.config.js --runInBand",
-    "test:ci": "dotenvx run -f .env.testing -- jest --config ./jest/adapters/primary/jest.ci.config.js",
+    "test:int": "jest --config ./jest/adapters/primary/jest.integration.config.js --runInBand",
+    "test:e2e": "jest --config ./jest/adapters/primary/jest.e2e.config.js --runInBand",
+    "test:ci": "jest --config ./jest/adapters/primary/jest.ci.config.js --runInBand",
     "docker:fake-infra:up": "docker-compose -f ./docker/fake-infra/docker-compose.yaml up -d",
     "docker:fake-infra:down": "docker-compose -f ./docker/fake-infra/docker-compose.yaml down --volumes",
     "format:write": "prettier . --write",
@@ -29,7 +29,6 @@
     "#shared/*": "./dist/shared/index.js"
   },
   "devDependencies": {
-    "@dotenvx/dotenvx": "^1.46.0",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.1",
