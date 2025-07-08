@@ -26,8 +26,8 @@ describe("PhotoImageDbGcs", () => {
 
   const timeout = 10000;
 
-  beforeEach(async () => {
-    await testUtils.globalSetup();
+  beforeEach(() => {
+    testUtils.globalSetup();
     photoImageDbGcs = testUtils.getPhotoImageDbGcs();
 
     dbTestUtils = new PhotoDbTestUtils(undefined, photoImageDbGcs);
@@ -225,7 +225,7 @@ describe("PhotoImageDbGcs", () => {
     });
 
     it("should return the image url", async () => {
-      const expectedUrl = `${global.__GCS_API_ENDPOINT__}/${global.__GC_PHOTO_IMAGES_BUCKET__}/${storedPhoto._id}`;
+      const expectedUrl = testUtils.getExpectedImageUrl(storedPhoto._id);
 
       const url = await photoImageDbGcs.getUrl(storedPhoto._id);
       expect(url).toBe(expectedUrl);

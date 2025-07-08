@@ -1,6 +1,15 @@
 {
   "editor.formatOnSave": true,
-  "cSpell.words": ["Logform", "phoga", "randomizer", "trivago", "uuidv"],
+  "cSpell.words": [
+    "initdb",
+    "INITDB",
+    "Logform",
+    "mongodb",
+    "phoga",
+    "randomizer",
+    "trivago",
+    "uuidv"
+  ],
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnPaste": false,
   "editor.formatOnType": false,

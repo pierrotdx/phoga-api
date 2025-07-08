@@ -1,3 +1,4 @@
+import { expectedImageUrl } from "#shared/test-utils";
 import { randomInt } from "node:crypto";
 
 import { Storage } from "@google-cloud/storage";
@@ -10,7 +11,7 @@ export class PhotoImageDbGcsTestUtils {
   public photoImageDbGcs: PhotoImageDbGcs;
 
   constructor(
-    apiEndpoint: string,
+    private readonly apiEndpoint: string,
     projectId: string,
     private readonly photoImageBucket: string,
   ) {
@@ -20,24 +21,11 @@ export class PhotoImageDbGcsTestUtils {
     });
   }
 
-  async globalSetup(): Promise<void> {
-    await this.createBucketIfNecessary();
-
+  globalSetup(): void {
     this.photoImageDbGcs = new PhotoImageDbGcs(
       this.storage,
       this.photoImageBucket,
     );
-  }
-
-  private async createBucketIfNecessary(): Promise<void> {
-    try {
-      await this.storage.createBucket(this.photoImageBucket);
-    } catch (err) {
-      if (err.message.includes("already exists")) {
-        return;
-      }
-      throw err;
-    }
   }
 
   getPhotoImageDbGcs(): PhotoImageDbGcs {
@@ -70,4 +58,11 @@ export class PhotoImageDbGcsTestUtils {
     }
     return indices;
   }
+
+  getExpectedImageUrl = (id: string) =>
+    expectedImageUrl({
+      apiBaseUrl: this.apiEndpoint,
+      bucket: this.photoImageBucket,
+      id,
+    });
 }

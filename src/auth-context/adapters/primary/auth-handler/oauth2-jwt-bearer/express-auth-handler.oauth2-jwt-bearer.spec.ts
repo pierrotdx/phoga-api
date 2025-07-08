@@ -13,11 +13,12 @@ import {
 } from "./test-utils.service";
 
 describe("ExpressAuthHandler", () => {
-  const tokenProvider = new FakeTokenProvider(issuerHost, issuerPort);
+  let tokenProvider: FakeTokenProvider;
   let authHandler: ExpressAuthHandler;
   let dumbApp: Express;
 
   beforeAll(async () => {
+    tokenProvider = new FakeTokenProvider(issuerHost, issuerPort);
     await tokenProvider.start({ aud: audience });
   });
 

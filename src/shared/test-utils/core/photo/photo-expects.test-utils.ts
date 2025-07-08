@@ -73,7 +73,10 @@ export class PhotoExpectsTestUtils implements IPhotoExpectsTestUtils {
     this.expectMatchingBuffers(photo1.imageBuffer, photo2.imageBuffer);
   }
 
-  private readonly expectMatchingBuffers = (bufferA: Buffer, bufferB: Buffer) => {
+  private readonly expectMatchingBuffers = (
+    bufferA: Buffer,
+    bufferB: Buffer,
+  ) => {
     const areEqualBuffers = bufferA.equals(bufferB);
     expect(areEqualBuffers).toBe(true);
     this.assertionsCounter.increase();
