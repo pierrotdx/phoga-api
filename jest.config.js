@@ -23,5 +23,4 @@ module.exports = {
     "^#shared/(.*)$": "<rootDir>/src/shared/$1",
   },
   globalSetup: "<rootDir>/jest/adapters/secondary/setup.ts",
-  setupFilesAfterEnv: ["dotenv/config"],
 };
