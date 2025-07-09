@@ -12,7 +12,7 @@
     "test:unit": "jest --config ./jest/adapters/primary/jest.unit.config.js",
     "test:int": "jest --config ./jest/adapters/primary/jest.integration.config.js --runInBand",
     "test:e2e": "jest --config ./jest/adapters/primary/jest.e2e.config.js --runInBand",
-    "test:ci": "jest --config ./jest/adapters/primary/jest.ci.config.js --runInBand",
+    "test:ci": "jest --config ./jest/adapters/primary/jest.ci.config.js --runInBand --verbose",
     "docker:fake-infra:up": "docker-compose -f ./docker/fake-infra/docker-compose.yaml up -d",
     "docker:fake-infra:down": "docker-compose -f ./docker/fake-infra/docker-compose.yaml down --volumes",
     "format:write": "prettier . --write",
