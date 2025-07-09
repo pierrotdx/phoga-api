@@ -6,6 +6,7 @@ export class EnvSetup implements IEnvSetup {
   private env: any;
 
   constructor(private readonly projectConfig: any) {
+    dotenv.config();
     this.setEnv();
   }
 
