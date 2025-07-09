@@ -16,17 +16,17 @@ jobs:
       - name: Create .env with Github Secrets
         run: |
           touch .env
-          echo GCS_API_ENDPOINT=${{ secrets.GCS_API_ENDPOINT }} >> .env
-          echo GC_PHOTO_IMAGES_BUCKET=${{ secrets.GC_PHOTO_IMAGES_BUCKET }} >> .env
-          echo MONGO_DB=${{ secrets.MONGO_DB }} >> .env
-          echo MONGO_PHOTO_BASE_COLLECTION=${{ secrets.MONGO_PHOTO_BASE_COLLECTION }} >> .env
-          echo MONGO_URL=${{ secrets.MONGO_URL }} >> .env
-          echo OAUTH2_AUDIENCE=${{ secrets.OAUTH2_AUDIENCE }} >> .env
-          echo OAUTH2_AUTHORIZATION_SERVER_DOMAIN=${{ secrets.OAUTH2_AUTHORIZATION_SERVER_DOMAIN }} >> .env
-          echo OAUTH2_CLIENT_ID=${{ secrets.OAUTH2_CLIENT_ID }} >> .env
-          echo OAUTH2_CLIENT_SECRET=${{ secrets.OAUTH2_CLIENT_SECRET }} >> .env
-          echo OAUTH2_USER_NAME=${{ secrets.OAUTH2_USER_NAME }} >> .env
-          echo OAUTH2_USER_PASSWORD=${{ secrets.OAUTH2_USER_PASSWORD }} >> .env
+          echo GCS_API_ENDPOINT=${{ env.GCS_API_ENDPOINT }} >> .env
+          echo GC_PHOTO_IMAGES_BUCKET=${{ env.GC_PHOTO_IMAGES_BUCKET }} >> .env
+          echo MONGO_DB=${{ env.MONGO_DB }} >> .env
+          echo MONGO_PHOTO_BASE_COLLECTION=${{ env.MONGO_PHOTO_BASE_COLLECTION }} >> .env
+          echo MONGO_URL=${{ env.MONGO_URL }} >> .env
+          echo OAUTH2_AUDIENCE=${{ env.OAUTH2_AUDIENCE }} >> .env
+          echo OAUTH2_AUTHORIZATION_SERVER_DOMAIN=${{ env.OAUTH2_AUTHORIZATION_SERVER_DOMAIN }} >> .env
+          echo OAUTH2_CLIENT_ID=${{ env.OAUTH2_CLIENT_ID }} >> .env
+          echo OAUTH2_CLIENT_SECRET=${{ env.OAUTH2_CLIENT_SECRET }} >> .env
+          echo OAUTH2_USER_NAME=${{ env.OAUTH2_USER_NAME }} >> .env
+          echo OAUTH2_USER_PASSWORD=${{ env.OAUTH2_USER_PASSWORD }} >> .env
       - name: Install dependencies
         run: npm ci
       - name: Test and coverage
