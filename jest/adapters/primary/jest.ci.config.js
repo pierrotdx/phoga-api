@@ -10,4 +10,5 @@ module.exports = {
     "<rootDir>**/src/**/*.e2e-spec.(ts)",
   ],
   collectCoverage: true,
+  setupFilesAfterEnv: ['dotenv/config']
 };
