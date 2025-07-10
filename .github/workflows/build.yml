@@ -17,8 +17,8 @@ jobs:
       - name: Create .env with GitHub Secrets
         run: |
           touch .env
-          echo MONGO_URL=${{ secrets.MONGO_URL }} >> .env
           echo MONGO_DB=${{ secrets.MONGO_DB }} >> .env
+          echo MONGO_URL=${{ secrets.MONGO_URL }} >> .env
           echo MONGO_PHOTO_BASE_COLLECTION=${{ secrets.MONGO_PHOTO_BASE_COLLECTION }} >> .env
           echo MONGO_TAG_COLLECTION=${{ secrets.MONGO_TAG_COLLECTION }} >> .env
           echo OAUTH2_AUTHORIZATION_SERVER_DOMAIN=${{ secrets.OAUTH2_AUTHORIZATION_SERVER_DOMAIN }} >> .env
