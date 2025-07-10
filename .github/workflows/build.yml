@@ -21,6 +21,7 @@ jobs:
         with:
           project_id: ${{ secrets.GC_PROJECT_ID }}
           workload_identity_provider: "projects/${{ secrets.GC_PROJECT_ID }}/locations/global/workloadIdentityPools/${{ secrets.GC_POOL }}/providers/${{ secrets.GC_ID_PROVIDER }}"
+          service_account: ${{ secrets.GC_SERVICE_ACCOUNT }}
       - name: Create .env with GitHub Secrets
         run: |
           touch .env

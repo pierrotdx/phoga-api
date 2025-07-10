@@ -11,8 +11,6 @@ export class MongoManager implements IMongoManager {
     private readonly mongoDbName: string,
     public readonly collections: IMongoCollections,
   ) {
-    console.log("mongoDbName", mongoDbName);
-    console.log("collections", collections);
     this.client = new MongoClient(this.mongoUrl);
   }
 
