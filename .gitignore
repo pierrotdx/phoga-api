@@ -23,6 +23,9 @@ coverage
 .env**
 !.env**demo**
 
+# Ignore generated credentials from google-github-actions/auth
+gha-creds-*.json
+
 # Dependency directory
 node_modules
 bower_components
