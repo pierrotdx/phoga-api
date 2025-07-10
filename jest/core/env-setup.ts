@@ -15,7 +15,6 @@ export class EnvSetup implements IEnvSetup {
     const folder = this.projectConfig.rootDir;
     dotenv.config({ path: `${folder}/.env` });
     this.env = process.env;
-    console.log("this.env", this.env);
   }
 
   setupEnvVariables = () => {
