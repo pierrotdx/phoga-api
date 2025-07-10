@@ -19,7 +19,7 @@ describe("ReplaceTag", () => {
   let photoDbTestUtils: IPhotoDbTestUtils;
 
   const newTag: ITag = { _id: "dumb-id", name: "new tag" };
-  const tagCreationDate = new Date("2012-03-28");
+  const tagCreationDate = new Date("2012-03-27");
 
   beforeEach(() => {
     tagDb = new TagDbFake();
