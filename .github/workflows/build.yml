@@ -9,11 +9,18 @@ jobs:
   sonarqube:
     name: SonarQube
     runs-on: ubuntu-latest
+    permissions:
+      contents: "read"
+      id-token: "write"
     environment: tests
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+      - uses: "google-github-actions/auth@v2"
+        with:
+          project_id: ${{ secrets.GC_PROJECT_ID }}
+          workload_identity_provider: "projects/${{ secrets.GC_PROJECT_ID }}/locations/global/workloadIdentityPools/${{ secrets.GC_POOL }}/providers/${{ secrets.GC_ID_PROVIDER }}"
       - name: Create .env with GitHub Secrets
         run: |
           touch .env
