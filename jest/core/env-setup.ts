@@ -1,7 +1,8 @@
 import dotenv from "dotenv";
-dotenv.config();
 
 import { IEnvSetup } from "./models";
+
+dotenv.config();
 
 export class EnvSetup implements IEnvSetup {
   private env: any;
@@ -14,6 +15,7 @@ export class EnvSetup implements IEnvSetup {
     const folder = this.projectConfig.rootDir;
     dotenv.config({ path: `${folder}/.env` });
     this.env = process.env;
+    console.log("this.env", this.env);
   }
 
   setupEnvVariables = () => {
