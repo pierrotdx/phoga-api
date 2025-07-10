@@ -4,7 +4,6 @@ class Setup implements IJestConfigAction {
   execute = async (globalConfig, projectConfig) => {
     const envSetup = new EnvSetup(projectConfig);
     envSetup.setupEnvVariables();
-    console.log("************* projectConfig", projectConfig);
   };
 }
 
