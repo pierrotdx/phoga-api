@@ -109,7 +109,7 @@ describe(`${DeletePhotoUseCase.name}`, () => {
         try {
           await useCaseTestUtils.executeTestedUseCase(useCaseParams);
         } catch (err) {
-          console.log(err);
+          // do nothing
         } finally {
           await expectsTestUtils.expectPhotoImageToBe(
             useCaseParams,
@@ -153,7 +153,7 @@ describe(`${DeletePhotoUseCase.name}`, () => {
         try {
           await useCaseTestUtils.executeTestedUseCase(useCaseParams);
         } catch (err) {
-           console.log(err);
+            // do nothing
         } finally {
           await expectsTestUtils.expectPhotoStoredDataToBe(
             useCaseParams,

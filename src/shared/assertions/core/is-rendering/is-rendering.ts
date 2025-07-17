@@ -9,7 +9,6 @@ export function isRendering(candidate: any): candidate is IRendering {
   try {
     return assertRendering(candidate);
   } catch (err) {
-    console.error(err);
     return false;
   }
 }
@@ -51,7 +50,7 @@ function assertDateOrder(dateOrderCandidate: unknown) {
     const hasValidValue = sortDirections.includes(dateOrderCandidate);
     assert(
       hasValidValue,
-      `'dateOrder' should belong to the following list ${sortDirections.join(", ")}`,
+      `'dateOrder' should belong to the following list ${sortDirections.join(", ")} but has value "${dateOrderCandidate}"`,
     );
   }
 }

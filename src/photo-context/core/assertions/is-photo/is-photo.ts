@@ -10,7 +10,6 @@ export function isPhoto(candidate: any): candidate is IPhoto {
   try {
     return assertPhoto(candidate);
   } catch (err) {
-    console.error(err);
     return false;
   }
 }
