@@ -71,7 +71,7 @@ export class LoggerWinston extends AbstractLogger {
     message,
   }: Logform.TransformableInfo): string => {
     const timestamp = new Date().toISOString();
-    return `${timestamp} ${level}: ${message}`;
+    return `${timestamp} ${level}: ${JSON.stringify(message)}`;
   };
 
   mute(): void {
