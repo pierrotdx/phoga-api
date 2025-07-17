@@ -36,12 +36,12 @@ export class PhotoImageDbGcs implements IPhotoImageDb {
   }
 
   async getById(id: IPhoto["_id"]): Promise<Buffer> {
-    try {
-      const fileStream = this.bucket.file(id).createReadStream();
-      return await buffer(fileStream);
-    } catch (err) {
-      console.log(err);
+    const fileExists = await this.checkExists(id);
+    if (!fileExists) {
+      return;
     }
+    const fileStream = this.bucket.file(id).createReadStream();
+    return await buffer(fileStream);
   }
 
   async delete(id: IPhoto["_id"]): Promise<void> {
