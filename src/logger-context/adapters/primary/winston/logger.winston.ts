@@ -6,18 +6,21 @@ import winston, {
 } from "winston";
 import "winston-daily-rotate-file";
 
-import { ILogger } from "../../core";
+import { AbstractLogger, ILogEntry, LogFn } from "../../../core";
 
-export class LoggerWinston implements ILogger {
+export class LoggerWinston extends AbstractLogger {
   private winstonLogger: WLogger;
-
   public transports: transport[];
 
   private localTransport: transport;
   private consoleTransport: transport;
 
-  constructor(private readonly silent = false) {
+  constructor(private readonly defaultSilent = false) {
+    super();
     this.initLogger();
+    if (this.defaultSilent) {
+      this.mute();
+    }
   }
 
   private initLogger() {
@@ -40,7 +43,7 @@ export class LoggerWinston implements ILogger {
       datePattern: "YYYY-MM-DD",
       zippedArchive: true,
       maxSize: "20m",
-      silent: this.silent,
+      silent: this.defaultSilent,
     });
     const localFormat = format.combine(format.timestamp(), format.json());
     localTransport.format = localFormat;
@@ -58,7 +61,7 @@ export class LoggerWinston implements ILogger {
         format.colorize(),
         format.printf(this.transformInfoForConsole),
       ),
-      silent: this.silent,
+      silent: this.defaultSilent,
     });
     return consoleTransport;
   }
@@ -71,17 +74,23 @@ export class LoggerWinston implements ILogger {
     return `${timestamp} ${level}: ${message}`;
   };
 
-  info(message: string, meta?: object): void {
-    this.winstonLogger.info(message, meta);
+  mute(): void {
+    this.winstonLogger.silent = true;
   }
 
-  warn(message: string, meta?: object): void {
-    this.winstonLogger.warn(message, meta);
+  unmute(): void {
+    this.winstonLogger.silent = false;
   }
 
-  error(err: Error | string): void {
-    const error = new Error();
-    error.stack = err instanceof Error ? err.stack : err;
-    this.winstonLogger.error(JSON.stringify(error.stack));
-  }
+  log: LogFn = (logEntry: ILogEntry): void => {
+    if (logEntry.context) {
+      this.winstonLogger.log(
+        logEntry.level,
+        logEntry.message,
+        logEntry.context,
+      );
+    } else {
+      this.winstonLogger.log(logEntry.level, logEntry.message);
+    }
+  };
 }

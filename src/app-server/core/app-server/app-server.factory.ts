@@ -1,5 +1,5 @@
 import { ExpressAuthHandler } from "#auth-context";
-import { ILogger } from "#logger-context";
+import { AbstractLogger } from "#logger-context";
 import { IPhotoDataDb, IPhotoImageDb } from "#photo-context";
 import { Factory } from "#shared/models";
 import { ITagDb } from "#tag-context";
@@ -8,7 +8,7 @@ import { IAppServer } from "../models";
 import { ExpressAppServer } from "./app-server";
 
 export class AppServerFactory implements Factory<IAppServer> {
-  private readonly logger: ILogger;
+  private readonly logger: AbstractLogger;
   private readonly photoImageDb: IPhotoImageDb;
   private readonly photoDataDb: IPhotoDataDb;
   private readonly tagDb: ITagDb;
@@ -19,7 +19,7 @@ export class AppServerFactory implements Factory<IAppServer> {
     photoDataDb,
     tagDb,
   }: {
-    logger: ILogger;
+    logger: AbstractLogger;
     photoImageDb: IPhotoImageDb;
     photoDataDb: IPhotoDataDb;
     tagDb: ITagDb;

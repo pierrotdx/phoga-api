@@ -144,7 +144,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
           try {
             await useCaseTestUtils.executeTestedUseCase(useCaseParams);
           } catch (err) {
-            console.log(err);
+             // do nothing
           } finally {
             await expectsTestUtils.expectPhotoStoredDataToBe(
               photoToReplaceAddPhotoParams._id,

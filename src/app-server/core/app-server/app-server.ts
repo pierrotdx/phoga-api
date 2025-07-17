@@ -1,5 +1,5 @@
 import { IAuthHandler } from "#auth-context";
-import { ILogger, LoggerWinston } from "#logger-context";
+import { AbstractLogger, LoggerWinston } from "#logger-context";
 import { IPhotoDataDb, IPhotoImageDb } from "#photo-context";
 import { IExpressLogger } from "#shared/express";
 import { ITagDb } from "#tag-context";
@@ -27,7 +27,7 @@ export class ExpressAppServer implements IAppServer {
     private readonly photoDataDb: IPhotoDataDb,
     private readonly imageDb: IPhotoImageDb,
     private readonly tagDb: ITagDb,
-    private readonly logger: ILogger,
+    private readonly logger: AbstractLogger,
     private readonly authHandler: IAuthHandler,
   ) {
     this.setLoggerHandler();
