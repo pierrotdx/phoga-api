@@ -1,4 +1,4 @@
-import { ILogger } from "#logger-context";
+import { AbstractLogger } from "#logger-context";
 import {
   IPhotoDataDb,
   IPhotoImageDb,
@@ -17,7 +17,7 @@ import { AppServerFactory } from "./app-server/core/app-server";
 dotenv.config();
 
 export class AppLauncher {
-  constructor(private readonly logger: ILogger) {}
+  constructor(private readonly logger: AbstractLogger) {}
 
   private photoDataDb: IPhotoDataDb;
   private photoImageDb: IPhotoImageDb;
