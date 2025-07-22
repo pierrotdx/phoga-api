@@ -1,4 +1,3 @@
-export * from "./assertions";
 export * from "./assertions-counter";
 export * from "./compare-dates";
 export * from "./counter";

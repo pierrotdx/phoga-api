@@ -1,7 +1,6 @@
 import { Request } from "express";
 import { isEmpty } from "ramda";
 
-import { assertSearchPhotoOptions } from "../../../assertions";
 import {
   ISearchPhotoFilter,
   ISearchPhotoOptions,
@@ -35,7 +34,6 @@ export class SearchPhotoParser implements ISearchPhotoParser {
   private addOptions(params: ISearchPhotoParams, query: any): void {
     const options: ISearchPhotoOptions = {};
     this.setRendering(query, options);
-    assertSearchPhotoOptions(options);
     if (isEmpty(options)) {
       return;
     }
