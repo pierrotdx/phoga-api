@@ -2,7 +2,7 @@ import {
   FakePhotoDataDb,
   IPhotoDataDb,
   IPhotoStoredData,
-  dumbPhotoGenerator,
+  Photo,
 } from "#photo-context";
 import { IPhotoDbTestUtils, PhotoDbTestUtils } from "#shared/test-utils";
 
@@ -67,8 +67,10 @@ describe("ReplaceTag", () => {
       const photoCreationDate = new Date("1993-07-23");
 
       beforeEach(async () => {
-        photoStoredData = dumbPhotoGenerator.generatePhotoStoredData({
-          tags: [tagToReplace],
+        photoStoredData = new Photo("photoStoredData", {
+          photoData: {
+            tags: [tagToReplace],
+          },
         });
         await photoDbTestUtils.addStoredPhotosData(
           [photoStoredData],

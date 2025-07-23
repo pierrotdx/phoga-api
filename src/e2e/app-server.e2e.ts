@@ -9,8 +9,8 @@ import {
   IReplacePhotoParams,
   ISearchPhotoOptions,
   ISearchPhotoParams,
+  Photo,
   comparePhotoDates,
-  dumbPhotoGenerator,
   fromAddPhotoParamsToPhotoStoredData,
 } from "#photo-context";
 import { HttpErrorCode, ISearchResult, SortDirection } from "#shared/models";
@@ -84,7 +84,7 @@ describe("ExpressAppServer", () => {
 
     const allPhotos = await photoDataDb.find({ rendering: { size: 1000 } });
     await photoDbTestUtils.deletePhotos(allPhotos.hits.map((p) => p._id));
-  });
+  }, 10000);
 
   afterEach(async () => {
     await appTestUtils.globalAfterEach();
@@ -229,7 +229,10 @@ describe("ExpressAppServer", () => {
             let photoWithTagToReplace: IPhoto;
 
             beforeEach(async () => {
-              photoWithTagToReplace = dumbPhotoGenerator.generatePhoto();
+              photoWithTagToReplace = new Photo(
+                "bf8240bd-45b2-43f9-86a2-0b41b97d7ffc",
+                { imageBuffer: Buffer.from("the image") },
+              );
               const addPhotoParams: IAddPhotoParams = {
                 ...photoWithTagToReplace,
                 tagIds: [tagToReplace._id],
@@ -471,7 +474,10 @@ describe("ExpressAppServer", () => {
           beforeEach(async () => {
             await tagDb.insert(dumbTag);
 
-            photoWithTagToDelete = dumbPhotoGenerator.generatePhoto();
+            photoWithTagToDelete = new Photo(
+              "7d265e53-7c29-419a-8fd5-3df2bab72446",
+              { imageBuffer: Buffer.from("the image buffer") },
+            );
             const addPhotoParams: IAddPhotoParams = {
               ...photoWithTagToDelete,
               tagIds: [tagToDelete._id, dumbTag._id],
@@ -523,7 +529,9 @@ describe("ExpressAppServer", () => {
       let addPhotoParams: IAddPhotoParams;
 
       beforeEach(async () => {
-        addPhotoParams = dumbPhotoGenerator.generatePhoto();
+        addPhotoParams = new Photo("101ab815-1045-43c5-8108-81e65d1678e0", {
+          imageBuffer: Buffer.from("dumb buffer"),
+        });
       });
 
       afterEach(async () => {
@@ -545,8 +553,9 @@ describe("ExpressAppServer", () => {
       describe("when the requester has the expected right", () => {
         describe("when there is no image to upload", () => {
           beforeEach(async () => {
-            const photoWithoutImage = dumbPhotoGenerator.generatePhoto();
-            delete photoWithoutImage.imageBuffer;
+            const photoWithoutImage = new Photo(
+              "bf326efd-f81e-4865-ba38-be3d4eecfb22",
+            );
             addPhotoParams = photoWithoutImage;
           });
 
@@ -588,7 +597,12 @@ describe("ExpressAppServer", () => {
             ];
             await tagTestUtils.insertTagsInDb(tags);
 
-            const photo = dumbPhotoGenerator.generatePhoto();
+            const photo = new Photo("1d439ae2-12a1-4ca2-bf1a-986f97bc74b5", {
+              imageBuffer: Buffer.from("toto"),
+              photoData: {
+                metadata: { description: "this is the description" },
+              },
+            });
 
             addPhotoParams = { ...photo, tagIds: tags.map((t) => t._id) };
           });
@@ -667,7 +681,9 @@ describe("ExpressAppServer", () => {
           ];
           await tagTestUtils.insertTagsInDb(tags);
 
-          photoToGet = dumbPhotoGenerator.generatePhoto();
+          photoToGet = new Photo("b7c06fbe-b67f-4719-843b-d8743f9c9459", {
+            imageBuffer: Buffer.from("some dumb data"),
+          });
           photoToGet.tags = tags;
 
           const photoToGetAddPhotoParams: IAddPhotoParams = {
@@ -703,7 +719,20 @@ describe("ExpressAppServer", () => {
       const timeout = 10000;
 
       beforeEach(async () => {
-        storedPhotos = dumbPhotoGenerator.generatePhotos(3);
+        storedPhotos = [
+          new Photo("57dbdff5-ce22-4fb0-b922-5d1b539b92a3", {
+            imageBuffer: Buffer.from("stored photo 1"),
+            photoData: { metadata: { date: new Date("2005-09-07") } },
+          }),
+          new Photo("525292cb-4a2b-4da2-aa0c-b27cec3d222f", {
+            imageBuffer: Buffer.from("stored photo 2"),
+            photoData: { metadata: { date: new Date("1938-03-17") } },
+          }),
+          new Photo("00c7854f-bd76-49dc-9337-93a9e245e68f", {
+            imageBuffer: Buffer.from("stored photo 3"),
+            photoData: { metadata: { date: new Date("2018-01-31") } },
+          }),
+        ];
         await photoDbTestUtils.addPhotos(storedPhotos);
       }, timeout);
 
@@ -725,7 +754,17 @@ describe("ExpressAppServer", () => {
           };
           await tagTestUtils.insertTagInDb(tag);
 
-          storedPhotosWithTag = dumbPhotoGenerator.generatePhotos(3);
+          storedPhotosWithTag = [
+            new Photo("6b901f55-40eb-4866-a26b-27366020eda4", {
+              imageBuffer: Buffer.from("photo 1"),
+            }),
+            new Photo("6ccedc35-a426-40f9-9b02-0d8f64c1ae7c", {
+              imageBuffer: Buffer.from("photo 2"),
+            }),
+            new Photo("4ce2f762-1f3d-4e84-b0a3-bb8a8dba6c37", {
+              imageBuffer: Buffer.from("photo 3"),
+            }),
+          ];
           storedPhotosWithTag.forEach((p) => {
             p.tags = [tag];
             p.imageUrl = appTestUtils.getExpectedImageUrl(p._id);
@@ -913,7 +952,9 @@ describe("ExpressAppServer", () => {
 
         describe("when there is a photo to replace", () => {
           beforeEach(async () => {
-            storedPhoto = dumbPhotoGenerator.generatePhoto();
+            storedPhoto = new Photo("97b412ea-3efc-401d-a66c-71e71442ddd5", {
+              imageBuffer: Buffer.from("dumb image buffer"),
+            });
             await photoDbTestUtils.addPhoto(storedPhoto);
 
             replacePhotoParams = {
@@ -973,8 +1014,9 @@ describe("ExpressAppServer", () => {
               ];
               await tagTestUtils.insertTagsInDb(tags);
 
-              const newPhoto = dumbPhotoGenerator.generatePhoto({
-                _id: storedPhoto._id,
+              const newPhoto = new Photo(storedPhoto._id, {
+                imageBuffer: Buffer.from("dumb buffer"),
+                photoData: { metadata: { description: "the description" } },
               });
 
               replacePhotoParams = {
@@ -1028,17 +1070,20 @@ describe("ExpressAppServer", () => {
               });
             });
 
-            describe("when the photo to replace did non have any data stored in the photo-data db", () => {
+            describe("when the photo to replace did not have any data stored in the photo-data db", () => {
               let photoWithoutDataToReplace: IPhoto;
 
               beforeEach(async () => {
-                photoWithoutDataToReplace = dumbPhotoGenerator.generatePhoto();
-                delete photoWithoutDataToReplace.metadata;
+                photoWithoutDataToReplace = new Photo(
+                  "b6810e09-ff1a-4d48-8c5c-58ca98f70617",
+                  { imageBuffer: Buffer.from("dumb image") },
+                );
 
                 await photoDbTestUtils.addPhoto(photoWithoutDataToReplace);
 
-                const newPhoto = dumbPhotoGenerator.generatePhoto({
-                  _id: photoWithoutDataToReplace._id,
+                const newPhoto = new Photo(photoWithoutDataToReplace._id, {
+                  photoData: { metadata: { description: "tutu" } },
+                  imageBuffer: Buffer.from("new image buffer"),
                 });
                 replacePhotoParams = {
                   ...newPhoto,
@@ -1103,7 +1148,10 @@ describe("ExpressAppServer", () => {
         let photoToDelete: IPhoto;
 
         beforeEach(async () => {
-          photoToDelete = dumbPhotoGenerator.generatePhoto();
+          photoToDelete = new Photo("888d5f64-9fa4-4db5-b97f-5a3b3e6d7931", {
+            imageBuffer: Buffer.from("dumb buffer"),
+            photoData: { metadata: { description: "toto" } },
+          });
           await photoDbTestUtils.addPhoto(photoToDelete);
 
           deletePhotoParams = photoToDelete._id;

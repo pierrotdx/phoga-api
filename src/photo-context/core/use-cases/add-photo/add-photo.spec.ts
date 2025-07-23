@@ -9,17 +9,14 @@ import {
 import { ITag, ITagDb, TagDbFake } from "#tag-context";
 import { pick } from "ramda";
 
-import {
-  FakePhotoDataDb,
-  FakePhotoImageDb,
-  dumbPhotoGenerator,
-} from "../../../adapters/";
+import { FakePhotoDataDb, FakePhotoImageDb } from "../../../adapters/";
 import { IPhotoDataDb, IPhotoImageDb } from "../../../core";
 import {
   IAddPhotoParams,
   IPhoto,
   IPhotoStoredData,
   IPhotoUseCaseTestUtils,
+  Photo,
 } from "../../models";
 import { PhotoUseCaseTestUtils } from "../test-utils";
 import { AddPhotoUseCase } from "./add-photo";
@@ -55,8 +52,7 @@ describe(`${AddPhotoUseCase.name}`, () => {
 
     describe("when there is no image to upload", () => {
       beforeEach(async () => {
-        const photoWithoutImage = dumbPhotoGenerator.generatePhoto();
-        delete photoWithoutImage.imageBuffer;
+        const photoWithoutImage = new Photo("photoWithoutImage");
         useCaseParams = photoWithoutImage;
       });
 
@@ -88,7 +84,18 @@ describe(`${AddPhotoUseCase.name}`, () => {
       let photo: IPhoto;
 
       beforeEach(async () => {
-        photo = dumbPhotoGenerator.generatePhoto();
+        const imageBuffer = Buffer.from("dumb buffer");
+        photo = new Photo("dumb photo", {
+          imageBuffer,
+          photoData: {
+            metadata: {
+              date: new Date("2007-03-18"),
+              description: "the description",
+              titles: ["title1"],
+              location: "here",
+            },
+          },
+        });
       });
 
       it("should upload the image to the photo-image db", async () => {

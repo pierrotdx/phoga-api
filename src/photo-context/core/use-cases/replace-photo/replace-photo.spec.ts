@@ -8,11 +8,7 @@ import {
 } from "#shared/test-utils";
 import { ITag, ITagDb, TagDbFake } from "#tag-context";
 
-import {
-  FakePhotoDataDb,
-  FakePhotoImageDb,
-  dumbPhotoGenerator,
-} from "../../../adapters/";
+import { FakePhotoDataDb, FakePhotoImageDb } from "../../../adapters/";
 import {
   IPhotoDataDb,
   IPhotoImageDb,
@@ -24,6 +20,7 @@ import {
   IPhotoStoredData,
   IPhotoUseCaseTestUtils,
   IReplacePhotoParams,
+  Photo,
 } from "../../models";
 import { PhotoUseCaseTestUtils } from "../test-utils";
 import { ReplacePhotoUseCase } from "./replace-photo";
@@ -67,7 +64,10 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
 
     describe("when there is no photo to replace", () => {
       beforeEach(async () => {
-        const newPhoto = dumbPhotoGenerator.generatePhoto();
+        const newPhoto = new Photo("new photo", {
+          imageBuffer: Buffer.from("dumb buffer text"),
+          photoData: { metadata: { description: "toto" } },
+        });
         useCaseParams = newPhoto;
       });
 
@@ -96,8 +96,12 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
       beforeEach(async () => {
         await tagTestUtils.insertTagsInDb(tags);
 
-        photoToReplaceAddPhotoParams =
-          await dumbPhotoGenerator.generateAddPhotoParams({ tagIds });
+        photoToReplaceAddPhotoParams = {
+          ...new Photo("photo-id", {
+            imageBuffer: Buffer.from("random text"),
+          }),
+          ...{ tagIds },
+        };
         await dbTestUtils.addPhoto(photoToReplaceAddPhotoParams, creationDate);
       });
 
@@ -108,9 +112,9 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
 
       describe("when there is no image in the new photo", () => {
         beforeEach(async () => {
-          const newPhotoWithoutImage = dumbPhotoGenerator.generatePhoto({
-            _id: photoToReplaceAddPhotoParams._id,
-          });
+          const newPhotoWithoutImage = new Photo(
+            photoToReplaceAddPhotoParams._id,
+          );
           delete newPhotoWithoutImage.imageBuffer;
 
           useCaseParams = newPhotoWithoutImage;
@@ -144,7 +148,7 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
           try {
             await useCaseTestUtils.executeTestedUseCase(useCaseParams);
           } catch (err) {
-             // do nothing
+            // do nothing
           } finally {
             await expectsTestUtils.expectPhotoStoredDataToBe(
               photoToReplaceAddPhotoParams._id,
@@ -159,10 +163,10 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
         const newLastUpdate = new Date("2025-06-24");
 
         beforeEach(async () => {
-          const newPhoto = dumbPhotoGenerator.generatePhoto({
-            _id: photoToReplaceAddPhotoParams._id,
+          const imageBuffer = Buffer.from("dumb buffer");
+          const newPhoto = new Photo(photoToReplaceAddPhotoParams._id, {
+            imageBuffer,
           });
-
           useCaseParams = { ...newPhoto, tagIds };
         });
 
@@ -208,15 +212,16 @@ describe(`${ReplacePhotoUseCase.name}`, () => {
           let photoWithoutDataToReplace: IPhoto;
 
           beforeEach(async () => {
-            photoWithoutDataToReplace = dumbPhotoGenerator.generatePhoto();
-            delete photoWithoutDataToReplace.metadata;
+            photoWithoutDataToReplace = new Photo("photoWithoutDataToReplace", {
+              imageBuffer: Buffer.from("dumb image buffer"),
+            });
 
             await dbTestUtils.addPhoto(photoWithoutDataToReplace, creationDate);
 
-            const newPhoto = dumbPhotoGenerator.generatePhoto({
-              _id: photoWithoutDataToReplace._id,
+            const newPhoto = new Photo(photoWithoutDataToReplace._id, {
+              imageBuffer: Buffer.from("some buffer"),
+              photoData: { metadata: { description: "dumb text" } },
             });
-
             useCaseParams = newPhoto;
           });
 
