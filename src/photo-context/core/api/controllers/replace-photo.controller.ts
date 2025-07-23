@@ -37,7 +37,9 @@ export class ReplacePhotoController
     this.parser = new ReplacePhotoParser();
   }
 
-  protected async getParamsFromRequest(req: Request): Promise<IReplacePhotoParams> {
+  protected async getParamsFromRequest(
+    req: Request,
+  ): Promise<IReplacePhotoParams> {
     const photo = await this.parser.parse(req);
     this.validator.validate(photo);
     return photo;

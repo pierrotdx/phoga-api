@@ -33,7 +33,7 @@ export class Photo implements IPhoto {
     if (photoData.metadata) {
       this.metadata = photoData.metadata;
     }
-    if (photoData?.tags) {
+    if (photoData.tags) {
       this.tags = photoData.tags;
     }
     if (photoData.imageUrl) {

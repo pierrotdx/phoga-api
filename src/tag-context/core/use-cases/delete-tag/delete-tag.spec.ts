@@ -2,7 +2,7 @@ import {
   FakePhotoDataDb,
   IPhotoDataDb,
   IPhotoStoredData,
-  dumbPhotoGenerator,
+  Photo,
 } from "#photo-context";
 import { IPhotoDbTestUtils, PhotoDbTestUtils } from "#shared/test-utils";
 
@@ -46,8 +46,10 @@ describe("DeleteTag", () => {
     beforeEach(async () => {
       photoDbTestUtils = new PhotoDbTestUtils(photoDataDb);
 
-      photoWithTagToDelete = dumbPhotoGenerator.generatePhotoStoredData({
-        tags: [tagToDelete, dumbTag],
+      photoWithTagToDelete = new Photo("photoWithTagToDelete", {
+        photoData: {
+          tags: [tagToDelete, dumbTag],
+        },
       });
       await photoDbTestUtils.addStoredPhotosData([photoWithTagToDelete]);
     });

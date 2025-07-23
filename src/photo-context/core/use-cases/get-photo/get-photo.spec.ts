@@ -7,17 +7,14 @@ import {
 } from "#shared/test-utils";
 import { omit } from "ramda";
 
-import {
-  FakePhotoDataDb,
-  FakePhotoImageDb,
-  dumbPhotoGenerator,
-} from "../../../adapters/";
+import { FakePhotoDataDb, FakePhotoImageDb } from "../../../adapters/";
 import { IPhotoDataDb, IPhotoImageDb } from "../../gateways";
 import {
   IGetPhotoParams,
   IPhoto,
   IPhotoData,
   IPhotoUseCaseTestUtils,
+  Photo,
 } from "../../models";
 import { PhotoUseCaseTestUtils } from "../test-utils";
 import { GetPhotoUseCase } from "./get-photo";
@@ -49,7 +46,7 @@ describe(`${GetPhotoUseCase.name}`, () => {
     let photoToGet: IPhoto;
 
     beforeEach(async () => {
-      photoToGet = dumbPhotoGenerator.generatePhoto();
+      photoToGet = new Photo("photoToGet");
 
       useCaseParams = photoToGet._id;
     });

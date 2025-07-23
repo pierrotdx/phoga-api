@@ -8,11 +8,7 @@ import {
 import { ITag, ITagDb, TagDbFake } from "#tag-context";
 import { clone } from "ramda";
 
-import {
-  FakePhotoDataDb,
-  FakePhotoImageDb,
-  dumbPhotoGenerator,
-} from "../../../adapters/";
+import { FakePhotoDataDb, FakePhotoImageDb } from "../../../adapters/";
 import {
   IPhoto,
   IPhotoDataDb,
@@ -56,14 +52,36 @@ describe(`${SearchPhotoUseCase.name}`, () => {
   });
 
   describe(`${SearchPhotoUseCase.prototype.execute.name}`, () => {
-    const nbStoredPhotos = 3;
     let storedPhotos: IPhoto[];
     const timeout = 10000;
 
     beforeEach(async () => {
-      storedPhotos = dumbPhotoGenerator.generatePhotos(nbStoredPhotos, {
-        noImageBuffer: true,
-      });
+      storedPhotos = [
+        new Photo("stored photo 1", {
+          photoData: {
+            metadata: {
+              description: "stored photo 1",
+              date: new Date("2004-04-04"),
+            },
+          },
+        }),
+        new Photo("stored photo 2", {
+          photoData: {
+            metadata: {
+              description: "stored photo 2",
+              date: new Date("2023-08-31"),
+            },
+          },
+        }),
+        new Photo("stored photo 3", {
+          photoData: {
+            metadata: {
+              description: "stored photo 3",
+              date: new Date("2012-06-08"),
+            },
+          },
+        }),
+      ];
       await dbTestUtils.addPhotos(storedPhotos);
       await useCaseTestUtils.addImageUrls(storedPhotos);
     }, timeout);
@@ -96,10 +114,17 @@ describe(`${SearchPhotoUseCase.name}`, () => {
         let storedPhotosWithTag: IPhotoStoredData[];
 
         beforeEach(async () => {
-          storedPhotosWithTag = dumbPhotoGenerator.generatePhotosStoredData(3, {
-            tags: [tag],
-            noImageBuffer: true,
-          });
+          storedPhotosWithTag = [
+            new Photo("stored photo with tag 1", {
+              photoData: { tags: [tag] },
+            }),
+            new Photo("stored photo with tag 2", {
+              photoData: { tags: [tag] },
+            }),
+            new Photo("stored photo with tag 3", {
+              photoData: { tags: [tag] },
+            }),
+          ];
           await dbTestUtils.addStoredPhotosData(storedPhotosWithTag);
 
           useCaseParams = { filter: { tagId: tag._id } };
