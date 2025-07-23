@@ -6,17 +6,14 @@ import {
   PhotoExpectsTestUtils,
 } from "#shared/test-utils";
 
-import {
-  FakePhotoDataDb,
-  FakePhotoImageDb,
-  dumbPhotoGenerator,
-} from "../../../adapters/";
+import { FakePhotoDataDb, FakePhotoImageDb } from "../../../adapters/";
 import { IPhotoDataDb, IPhotoImageDb } from "../../../core/gateways";
 import {
   IDeletePhotoParams,
   IPhoto,
   IPhotoStoredData,
   IPhotoUseCaseTestUtils,
+  Photo,
 } from "../../models";
 import { PhotoUseCaseTestUtils } from "../test-utils";
 import { DeletePhotoUseCase } from "./delete-photo";
@@ -49,7 +46,7 @@ describe(`${DeletePhotoUseCase.name}`, () => {
     let useCaseParams: IDeletePhotoParams;
 
     beforeEach(async () => {
-      photoToDelete = dumbPhotoGenerator.generatePhoto();
+      photoToDelete = new Photo("photoToDelete");
       await dbTestUtils.addPhoto(photoToDelete, creationDate);
 
       useCaseParams = photoToDelete._id;
@@ -153,7 +150,7 @@ describe(`${DeletePhotoUseCase.name}`, () => {
         try {
           await useCaseTestUtils.executeTestedUseCase(useCaseParams);
         } catch (err) {
-            // do nothing
+          // do nothing
         } finally {
           await expectsTestUtils.expectPhotoStoredDataToBe(
             useCaseParams,

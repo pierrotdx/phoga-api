@@ -7,8 +7,12 @@ import {
 } from "#shared/test-utils";
 import { ITag } from "#tag-context";
 
-import { IPhoto, IPhotoStoredData, ISearchPhotoFilter } from "../../../../core";
-import { dumbPhotoGenerator } from "../../../primary";
+import {
+  IPhoto,
+  IPhotoStoredData,
+  ISearchPhotoFilter,
+  Photo,
+} from "../../../../core";
 import { FakePhotoImageDb } from "../../photo-image-db";
 import { PhotoDataDbMongo } from "./photo-data-db.mongo";
 import { PhotoDataDbMongoTestUtils } from "./photo-data-db.mongo.test-utils";
@@ -45,7 +49,16 @@ describe("PhotoDataDbMongo", () => {
     let dataToInsert: IPhotoStoredData;
 
     beforeEach(() => {
-      dataToInsert = dumbPhotoGenerator.generatePhotoStoredData();
+      dataToInsert = new Photo("photoToInsert", {
+        photoData: {
+          metadata: {
+            date: new Date("2020-04-29"),
+            description: "dumb description",
+            location: "There",
+            titles: ["toto"],
+          },
+        },
+      });
     });
 
     afterEach(async () => {
@@ -67,7 +80,7 @@ describe("PhotoDataDbMongo", () => {
     let dataToGet: IPhotoStoredData;
 
     beforeEach(async () => {
-      dataToGet = dumbPhotoGenerator.generatePhotoStoredData();
+      dataToGet = new Photo("photoToGet");
       await dbTestUtils.addStoredPhotosData([dataToGet]);
     });
 
@@ -96,7 +109,16 @@ describe("PhotoDataDbMongo", () => {
     let dataToReplace: IPhotoStoredData;
 
     beforeEach(async () => {
-      dataToReplace = dumbPhotoGenerator.generatePhotoStoredData();
+      dataToReplace = new Photo("photoToReplace", {
+        photoData: {
+          metadata: {
+            date: new Date("2023-02-03"),
+            description: "dumb description",
+            location: "Here",
+            titles: ["title 1", "title 2"],
+          },
+        },
+      });
       await dbTestUtils.addPhoto(dataToReplace);
     });
 
@@ -105,8 +127,15 @@ describe("PhotoDataDbMongo", () => {
     });
 
     it("should replace the required document with the input photo base data", async () => {
-      const expectedData = dumbPhotoGenerator.generatePhotoStoredData({
-        _id: dataToReplace._id,
+      const expectedData = new Photo(dataToReplace._id, {
+        photoData: {
+          metadata: {
+            date: new Date("2023-02-03"),
+            description: "dumb description",
+            location: "Here",
+            titles: ["title 1", "title 2"],
+          },
+        },
       });
 
       await photoDataDbMongo.replace(expectedData);
@@ -123,7 +152,16 @@ describe("PhotoDataDbMongo", () => {
     let dataToDelete: IPhotoStoredData;
 
     beforeEach(async () => {
-      dataToDelete = dumbPhotoGenerator.generatePhotoStoredData();
+      dataToDelete = new Photo("photoToDelete", {
+        photoData: {
+          metadata: {
+            date: new Date("2014-08-05"),
+            description: "dumb description",
+            location: "somewhere",
+            titles: ["part one", "part two"],
+          },
+        },
+      });
       await dbTestUtils.addPhoto(dataToDelete);
     });
 
@@ -146,7 +184,35 @@ describe("PhotoDataDbMongo", () => {
     let storedPhotos: IPhotoStoredData[];
 
     beforeEach(async () => {
-      storedPhotos = dumbPhotoGenerator.generatePhotosStoredData(3);
+      storedPhotos = [
+        new Photo("storedPhoto1", {
+          photoData: {
+            metadata: {
+              titles: ["title 1"],
+              description: "the first one",
+              date: new Date("2003-05-17"),
+            },
+          },
+        }),
+        new Photo("storedPhoto2", {
+          photoData: {
+            metadata: {
+              titles: ["title 2"],
+              description: "the second one",
+              date: new Date("1997-02-09"),
+            },
+          },
+        }),
+        new Photo("storedPhoto3", {
+          photoData: {
+            metadata: {
+              titles: ["title 3"],
+              description: "the third one",
+              date: new Date("1994-06-27"),
+            },
+          },
+        }),
+      ];
       await dbTestUtils.addStoredPhotosData(storedPhotos);
     });
 
@@ -257,9 +323,11 @@ describe("PhotoDataDbMongo", () => {
       let filter: ISearchPhotoFilter;
 
       beforeEach(async () => {
-        storedPhotosWithTag = dumbPhotoGenerator.generatePhotosStoredData(3, {
-          tags: [tag],
-        });
+        storedPhotosWithTag = [
+          new Photo("storedPhotoWithTag1", { photoData: { tags: [tag] } }),
+          new Photo("storedPhotoWithTag2", { photoData: { tags: [tag] } }),
+          new Photo("storedPhotoWithTag3", { photoData: { tags: [tag] } }),
+        ];
         await dbTestUtils.addStoredPhotosData(storedPhotosWithTag);
 
         filter = { tagId: tag._id };

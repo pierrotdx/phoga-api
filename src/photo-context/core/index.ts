@@ -1,5 +1,4 @@
 export * from "./api";
-export * from "./dumb-photo-generator";
 export * from "./gateways";
 export * from "./models";
 export * from "./use-cases";

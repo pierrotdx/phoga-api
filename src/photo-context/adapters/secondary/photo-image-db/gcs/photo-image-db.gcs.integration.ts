@@ -9,8 +9,7 @@ import {
   PhotoExpectsTestUtils,
 } from "#shared/test-utils";
 
-import { dumbPhotoGenerator } from "../../../../adapters";
-import { IPhoto, IPhotoImageDb } from "../../../../core";
+import { IPhoto, IPhotoImageDb, Photo } from "../../../../core";
 import { PhotoImageDbGcsTestUtils } from "./photo-image-db.gcs.test-utils";
 
 describe("PhotoImageDbGcs", () => {
@@ -38,7 +37,10 @@ describe("PhotoImageDbGcs", () => {
     let photoToInsert: IPhoto;
 
     beforeEach(async () => {
-      photoToInsert = dumbPhotoGenerator.generatePhoto();
+      photoToInsert = new Photo("photoToInsert", {
+        photoData: { metadata: { description: "photo to insert" } },
+        imageBuffer: Buffer.from("dumb buffer 1"),
+      });
     });
 
     afterEach(async () => {
@@ -72,7 +74,9 @@ describe("PhotoImageDbGcs", () => {
       let photoToCheck: IPhoto;
 
       beforeEach(async () => {
-        photoToCheck = dumbPhotoGenerator.generatePhoto();
+        photoToCheck = new Photo("photoToCheck", {
+          imageBuffer: Buffer.from("dumb buffer"),
+        });
         await dbTestUtils.addPhoto(photoToCheck);
       });
 
@@ -103,7 +107,9 @@ describe("PhotoImageDbGcs", () => {
       let photoToGet: IPhoto;
 
       beforeEach(async () => {
-        photoToGet = dumbPhotoGenerator.generatePhoto();
+        photoToGet = new Photo("photoToGet", {
+          imageBuffer: Buffer.from("dumb buffer"),
+        });
         await dbTestUtils.addPhoto(photoToGet);
       });
 
@@ -123,11 +129,20 @@ describe("PhotoImageDbGcs", () => {
   });
 
   describe("getByIds", () => {
-    const nbPhotos = 6;
     let storedPhotos: IPhoto[];
 
     beforeEach(async () => {
-      storedPhotos = dumbPhotoGenerator.generatePhotos(nbPhotos);
+      storedPhotos = [
+        new Photo("stored photo 1", {
+          imageBuffer: Buffer.from("dumb buffer 1"),
+        }),
+        new Photo("stored photo 2", {
+          imageBuffer: Buffer.from("dumb buffer 2"),
+        }),
+        new Photo("stored photo 3", {
+          imageBuffer: Buffer.from("dumb buffer 3"),
+        }),
+      ];
       await dbTestUtils.addPhotos(storedPhotos);
     }, timeout);
 
@@ -172,7 +187,7 @@ describe("PhotoImageDbGcs", () => {
     let photoToReplace: IPhoto;
 
     beforeEach(async () => {
-      photoToReplace = dumbPhotoGenerator.generatePhoto();
+      photoToReplace = new Photo("photoToReplace");
       await dbTestUtils.addPhoto(photoToReplace);
     });
 
@@ -181,8 +196,8 @@ describe("PhotoImageDbGcs", () => {
     });
 
     it("should replace the image of the required photo", async () => {
-      const newPhoto = dumbPhotoGenerator.generatePhoto({
-        _id: photoToReplace._id,
+      const newPhoto = new Photo(photoToReplace._id, {
+        imageBuffer: Buffer.from("dumb buffer"),
       });
       const expectedImage = newPhoto.imageBuffer;
 
@@ -200,7 +215,9 @@ describe("PhotoImageDbGcs", () => {
     let photoToDelete: IPhoto;
 
     beforeEach(async () => {
-      photoToDelete = dumbPhotoGenerator.generatePhoto();
+      photoToDelete = new Photo("photoToDelete", {
+        imageBuffer: Buffer.from("dumb buffer"),
+      });
       await dbTestUtils.addPhoto(photoToDelete);
     });
 
@@ -216,7 +233,10 @@ describe("PhotoImageDbGcs", () => {
     let storedPhoto: IPhoto;
 
     beforeEach(async () => {
-      storedPhoto = dumbPhotoGenerator.generatePhoto();
+      storedPhoto = new Photo("storedPhoto", {
+        imageBuffer: Buffer.from("dumb buffer"),
+        photoData: { imageUrl: "dumb url" },
+      });
       await photoImageDbGcs.insert(storedPhoto);
     });
 
