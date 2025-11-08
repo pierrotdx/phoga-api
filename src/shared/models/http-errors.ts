@@ -11,6 +11,7 @@ export class ErrorWithStatus extends Error {
     message: string,
     public status?: number,
   ) {
-    super(message);
+    const stringMessage = typeof message === "string" ? message : JSON.stringify(message);
+    super(stringMessage);
   }
 }
