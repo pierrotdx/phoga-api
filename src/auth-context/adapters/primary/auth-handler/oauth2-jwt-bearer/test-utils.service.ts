@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 export const issuerPort = 8080;
-export const issuerHost = "localhost";
+export const issuerHost = "0.0.0.0";
 export const audience = "dumb-audience";
 export const baseRoute = "/";
 export const restrictedRoute = "/restricted";
